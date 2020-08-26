@@ -1,0 +1,20 @@
+This submenu contains commands that run example
+JavaScript scripts located in the folder at:
+
+   ImageJ/plugins/Examples/_Scripts
+
+To run JavaScript, ImageJ uses the Mozilla Rhino
+interpreter that is built into Java 1.6 and later.
+
+To run a script, download it, drag and drop it on the 
+"ImageJ" window, then press ctrl-r (Macros>Run Macro).
+Or copy it the clipboard, press shift+v (File>New>System Clipboard),
+then press ctrl+j (Macros>Evaluate JavaScript).
+
+More information is available at
+    
+   http://imagej.nih.gov/ij/developer/javascript.html
+
+Example scripts are available on the ImageJ website at
+
+   http://imagej.nih.gov/ij/macros/js/.

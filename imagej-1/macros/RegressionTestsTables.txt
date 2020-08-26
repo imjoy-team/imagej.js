@@ -1,0 +1,154 @@
+ var test;
+ tableTests(false);
+ tableTests(true);
+
+ function tableTests(batchMode) {
+    saveSettings;
+    if (batchMode)
+       test = "Tables (batch)";
+    else
+       test = "Tables";
+    setBatchMode(batchMode);
+    setOption("ExpandableArrays", true);
+    tables = newArray;
+    tableCount = 0;
+
+   Table.reset("Results");
+   if ("Results"!=Table.title) fail(1);
+   for (row=0, n=0; n<=2*PI; row++, n+=0.1) {
+     Table.set("n", row, n);
+     Table.set("sin(n)", row, sin(n));
+     Table.set("cos(n)", row, cos(n));
+   }
+   Table.update;
+   if ("Results"!=Table.title) fail(2);
+   tables[tableCount++] = Table.title;
+
+  // Duplicate
+   table1 = "Sine/Cosine Table";
+  Table.create(table1);
+  if (table1!=Table.title) fail(3);
+  for (n=0,row=0; n<=2*PI; n+=0.1,row++) {
+     Table.set("n", row, n);
+     Table.set("sin(n)", row, sin(n));
+     Table.set("cos(n)", row, cos(n));
+  }
+  Table.update;
+  if (Table.size()!=63) failt(4);
+  tables[tableCount++] = table1;
+
+  table2 = table1 +" Copy";
+  Table.create(table2);
+  headings = split(Table.headings(table1));
+  for (row=0; row<Table.size(table1); row++) {
+     for (col=0; col<headings.length; col++) {
+        value = Table.get(headings[col], row, table1);
+        Table.set(headings[col], row, value, table2);
+     }
+  }
+  Table.update(table2);
+  tables[tableCount++] = table2;
+  if (Table.size(table1)!=Table.size(table2)) fail(5);
+  if (Table.get("n",11,table1)!=Table.get("n",11,table2)) fail(6);
+
+  // Access plot data
+   if (!batchMode) {
+     yValues = newArray(0, 0.7, 2.3, 2.8, 1, 0.5);
+     Plot.create("Simple Plot", "X", "Y", yValues);
+     Plot.show;
+     Plot.showValues("Data");
+     for (i=0; i<Table.size; i++) {
+         x = Table.get("X", i);
+         y = Table.get("Y", i);
+         Table.set("Sum", i, x+y);
+     }
+     Table.update;
+     tables[tableCount++] = "Data";
+   }
+
+   // Access plot data using title
+   if (!batchMode) {
+      yValues = newArray(0, 0.7, 2.3, 2.8, 1, 0.5);
+      Plot.create("Simple Plot", "X", "Y", yValues);
+      Plot.show;
+      title= "Data";
+      Plot.showValues(title);
+      if ("Data"!=Table.title(title)) fail(7);
+      for (i=0; i<Table.size(title); i++) {
+          x = Table.get("X", i,title);
+          y = Table.get("Y", i,title);
+          Table.set("Sum", i, x+y,title);
+      }
+      Table.update(title);
+      close("Data");
+   }
+
+  // Access "Summary" table
+  run("T1 Head (2.4M, 16-bits)");
+  setSlice(64);
+  setAutoThreshold("Default dark");
+  run("Analyze Particles...", "summarize stack");
+  title = Table.title;
+  if (!startsWith(title,"Summary of")) fail(8);
+  if (Table.size<129) fail(9);
+  if (Table.get("Count",8)!=3) fail(10);
+  tables[tableCount++] = Table.title;
+
+  // Access "Overlay Elements" table
+  run("Image with Overlay");
+  run("List Elements");
+  if ("Overlay Elements"!=Table.title) fail(11);
+  if (Table.size!=13) fail(12);
+  if (Table.get("Width",0)!=110) fail(13);
+  color = Table.getString("Color", 0);
+  if (color!="red") fail(14);
+  if (""+Table.getString("Type", 0)!="Traced") fail(15);
+  if ("Traced"!=Table.getString("Type", 0)) fail(16);
+  tables[tableCount++] = Table.title;
+
+  // Measurements
+  Table.reset("Results");
+   if ("Results"!=Table.title) fail(17);
+   newImage("Untitled", "16-bit black", 100, 100, 1);
+   setOption("Area", true);
+   makeRectangle(42, 38, 42, 42);
+   run("Measure");
+   if (Table.get("Area", 0)!=1764) fail(18);
+   makeOval(18, 16, 70, 72);
+   run("Measure");
+   if (Table.get("Area", 1)!=3968) fail(19);
+   makePolygon(18,41,73,17,79,79);
+   run("Measure");
+   if (Table.get("Area", 2)!=1776) fail(20);
+
+  // ApplyMacro and duplicate, rename and delete columns
+  run("Blobs (25K)");
+  run("Set Measurements...", "area mean centroid feret's");
+  setAutoThreshold("Default");
+  Table.reset("Results");
+  run("Analyze Particles...", "display include in_situ");
+  code = "FeretMinimum=MinFeret; FeretMaximum=Feret;"
+    +"FeretAngleCopy=FeretAngle; FeretStartX=FeretX;"
+    +"FeretStartY=FeretY";
+  Table.applyMacro(code);
+  Table.deleteColumn("MinFeret");
+  Table.deleteColumn("Feret");
+  Table.deleteColumn("FeretAngle");
+  Table.deleteColumn("FeretX");
+  Table.deleteColumn("FeretY");
+  Table.renameColumn("FeretAngleCopy", "FeretAngle");
+  Table.update;
+  if (Table.get("FeretStartX",63)!=66) fail(21);
+  if (!isNaN(Table.get("Feret",0))) fail(22);
+
+  for (i=0; i<tableCount; i++)
+     close(tables[i]);
+  close("*");
+  restoreSettings;
+
+} 
+
+function fail(n) {
+  print("FAIL: "+test+ " test "+n+"  "+Table.title);
+}
+

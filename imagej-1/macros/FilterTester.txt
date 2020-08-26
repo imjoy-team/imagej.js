@@ -1,0 +1,395 @@
+// An ImageJ macro to test the result of various PlugInFilters
+// against a list of previously obtained results.
+// Consistancy between stacks and single-image operations,
+// correct undo as well as isotropy of filter operations are
+// also checked.
+//
+// version 2012-Dec-23
+
+// Options are explained in more detail below
+writeResults = false;                      //usually false, 'true' for learning mode
+verbose = false;                           //usually false, 'true' for debugging or timing
+nStackTests = 6;                           //usually 6, faster if fewer tests
+nIsotropyTests = 4;                        //usually 1 (=none), set to 4 for isotropy tests
+maxThreads = 5;                            //if >0, run with 1...maxThreads
+nRuns = 1;                                 //do everything nRun times (set >1 if poorly reproducible)
+stopOnFail=true;                           //stops and shows result on first 'fail'
+resultsFile = "FilterTesterTasklist.txt";  //usually "FilterTesterTasklist.txt"
+setOption("DisableUndo", false);           //usually false, true will cause "Fail: undo" errors,
+                                           //but should not cause any other errors
+
+// Set "writeResults" true to create a new list of results
+// (only do this if you are sure that the current Version of
+// ImageJ has no bugs)
+
+// 'resultsFile' is the name of the file with the commands & results 
+//(it must be in the "macros" folder)
+//The lines in that file contain (semicolon-delimited):
+// command-string; options-string; flags; results
+//   The strings should not be enclosed in quotes.
+//   The results are comma-delimited; mean, min, max for each type of
+//   selection and data file type
+// Flags are bitwise OR of bits:
+// bit 0 (1)  - do on 8-bit image
+// bit 1 (2)  - do on 16-bit image
+// bit 2 (4)  - do on 32-bit image
+// bit 3 (8)  - do on RGB image
+// bit 4 (16) - do on binary image
+// bit 5 (32) - do on stacks of the types defined previously
+// bit 6 (64) - command creates a separate output image (no stack) that should be measured
+// bit 7 (128) - disable anisotropy tests (if filtering is not isotropic, but works
+//              differently when rotated/flipped, e.g. "Shadow" filters).
+// bit 8 (256) - disable Undo test
+//
+// Lines starting with a character less than '0' (e.g., '#') are comments.
+
+// 'nStackTests' is the number of stack tests to do:
+// Stack tests: 0 = none; 2 = try processing single slice&full stack; 6 = do all tests
+// Stack test passes are:
+//   0 = single image
+//   odd = stack, process current slice only
+//   even = stack, process all
+//   startSlice = 1 in pass 1&2; goes up to slice 3 in pass 5&6
+
+// 'nIsotropyTests' is the number of isotropy tests to do (mainly useful when
+//  developing new filters):
+// 1 - no additional tests, 2 adds 90-degree rotated, 3 adds 180-degree rotated,
+//  4 adds flipped (i.e., does all isotropy tests)
+
+// Initialize
+
+saveSettings();
+setBackgroundColor(0, 0, 0);
+setBatchMode(true);
+run("Conversions...", "scale weighted");
+run("Set Measurements...", "  mean min redirect=None decimal=9");
+run("Options...", "iterations=1 count=1"); //process>binary>options
+oldThreads = parseInt(call("ij.Prefs.getThreads"));
+oldOptions = parseInt(call("ij.Prefs.get", "prefs.options", "1073762560"));
+optionKeepUndoBuffers = (oldOptions&(1<<30))!=0;
+optionNoClickToGC = (oldOptions&(1<<28))!=0;
+
+imageTypes = 5;                         //8-bit, 16-bit, 32-bit, RGB, binary
+var types = newArray("8bit","16bit","32bit","RGB","binary");
+var selections = newArray("all", "rect", "oval");
+var stackTests = newArray("single image", "slice 1 only", "stack currentslice 1", "slice 2 only", "stack currentslice 2", "slice 3 only", "stack currentslice 3")
+var isotropyTests = newArray("", " isotropy 90degR", " isotropy 180deg", " isotropy flipV"); // see also rotateRoi
+rotations = newArray("Rotate 90 Degrees Right", "Rotate 90 Degrees Right", "Flip Horizontally");
+if (nIsotropyTests < 1) nIsotropyTests = 1;
+if (nIsotropyTests > 4) nIsotropyTests = 4;
+
+cornerPixel = newArray(imageTypes);     //the pixel at (0,0) in the unrotated image (to check equal handling of all edges)
+measure = newArray(43, 34, 20, 20);     //coordinates of measure Rectangle
+rect = newArray(44, 31, 25, 22);        //coordinates of rect roi for processing
+oval = newArray(45, 33, 24, 12);        //coordinates of oval roi for processing
+measureR = newArray(4);                 //rotated versions for isotropy test
+rectR = newArray(4);
+ovalR = newArray(4);
+
+var success = true;                     //remember errors for final status display
+
+//create test images of 5 types
+
+blobsFile = getDirectory("startup")+"samples"+File.separator+"blobs.gif";
+blobsFile = "/atHome/ImageJ Developer/testimages/blobs.gif";
+
+if (File.exists(blobsFile))
+  open(blobsFile);
+else
+  run("Blobs (25K)");
+var width;
+width = getWidth();
+var height;
+height = getHeight();
+setPixel(49, 44, 254);
+setPixel(46,33,1);
+imageID = newArray(imageTypes*nIsotropyTests); //0...3 original of types, 4...7 rotated 90deg (isotropy test), etc.
+imageID[0] = getImageID();
+rename("Test8");
+run("Duplicate...", "title=Test16");
+run("16-bit");
+run("Multiply...", "value=2.333");
+imageID[1] = getImageID();
+run("Duplicate...", "title=Test32");
+run("32-bit");
+run("Multiply...", "value=0.0333");
+run("Add...", "value=-0.011");
+imageID[2] = getImageID();
+selectImage(imageID[0]);
+run("Duplicate...", "title=R");
+run("Multiply...", "value=0.6");
+selectImage(imageID[0]);
+run("Duplicate...", "title=G");
+run("Multiply...", "value=0.9");
+selectImage(imageID[0]);
+run("Duplicate...", "title=B");
+run("Multiply...", "value=1.1");
+run("RGB Merge...", "red=R green=G blue=B");
+rename("TestRGB");
+imageID[3] = getImageID();
+selectImage(imageID[0]);
+run("Duplicate...", "title=TestBinary");
+setThreshold(139, 255);
+run("Convert to Mask");
+resetThreshold();
+imageID[4] = getImageID();
+//create flipped and rotated versions for isotropy tests
+for (rot = 1; rot < nIsotropyTests; rot++) {
+  rotation = rotations[rot-1];
+  for (type = 0; type < imageTypes; type++) {
+    selectImage(imageID[(rot-1)*imageTypes+type]);	//create new image from previous rotation of same image type
+	titleS="title=[type"+type+"_isotropy"+rot+"]";
+	run("Duplicate...", titleS);
+	run(rotation);
+	imageID[rot*imageTypes+type] = getImageID();
+  }
+}
+if (maxThreads<1) {
+  minThreads = oldThreads;
+  maxThreads = oldThreads;
+} else
+  minThreads = 1;
+if (nRuns<1 || writeResults)
+  nRuns = 1;
+
+//read tasklist
+
+macroDir = getDirectory("macros");
+if (File.exists(macroDir+resultsFile))
+   tasklist = File.openAsString(macroDir+resultsFile);
+else {
+    print("Tasklist not found at");
+    print("    "+macroDir+resultsFile);
+    print("A tasklist is available at");
+    print("    http://rsb.info.nih.gov/ij/macros/FilterTesterTasklist.txt");
+    exit();
+}
+tasks = split(tasklist, "\n\r");
+startTime = getTime;
+progress = 0;
+progressAll = lengthOf(tasks);
+
+if (writeResults) {
+  if (File.exists(macroDir+resultsFile+".tmp"))
+    if (!File.delete(macroDir+resultsFile+".tmp")) exit("error - cannot delete old "+resultsFile+".tmp");
+  outFile = File.open(macroDir+resultsFile+".tmp");
+}
+
+for (iRun=0; iRun<nRuns; iRun++) {
+  if (nRuns>1) print("FilterTester Run "+(iRun+1)+"/"+nRuns);
+  //loop over commands
+  for (iTask = 0; iTask <  lengthOf(tasks); iTask++) {
+    if(charCodeAt(tasks[iTask], 0)<48) {               // comment line?
+      if (writeResults) print (outFile, tasks[iTask]); // keep comment lines
+    progressAll--;							           // comment lines don't count as progress
+    } else {                                           // non-comment line
+      taskParts = split(tasks[iTask],";");
+      if (writeResults)
+        outLine = taskParts[0]+";"+taskParts[1]+";"+taskParts[2]+";";
+      else {
+        results = split(taskParts[3],",");
+        if (lengthOf(results)<3) {
+          cleanup(imageID);
+          exit("Error: "+taskParts[0]+" - no results in\n"+resultsFile);
+        }
+      }
+      taskParts[1] = replace(taskParts[1],"\\\\n", "\n");// replace escaped linefeeds by real ones
+      flags = parseInt(taskParts[2]);
+      //print(taskParts[0]+": flags="+flags);
+      doStacks = bitSet(flags, 5);
+      separateOutput = bitSet(flags, 6);
+      anisotropic = bitSet(flags, 7);
+      noUndo = bitSet(flags, 8);
+      if (writeResults)
+        lastStackTest = 0;
+      else if (doStacks)
+        lastStackTest = nStackTests;
+      else
+        lastStackTest = 1;	//try on single image and slice one of a stack only
+      for (nThreads = minThreads; nThreads <= maxThreads; nThreads++) {
+        run("Memory & Threads...", "parallel=&nThreads run");
+        for (stack = 0; stack <= lastStackTest; stack++) {
+          startSlice = floor((stack-1)/2)+1;
+          allSlices = (stack > 0) && ((stack-2*floor(stack/2)) == 0);
+          if (allSlices)
+            allSlicesS = " stack";
+          else
+            allSlicesS = "";
+          //print(stackTests[stack]+" allSlices="+toString(allSlices)+" startSlice="+toString(startSlice));
+          if (stack>0 || writeResults || anisotropic)
+            nRot = 1;
+          else
+            nRot = nIsotropyTests;
+          for (rot = 0; rot < nRot; rot++) {
+            testNum = 0;
+            for (type = 0; type < imageTypes; type++) if (bitSet(flags,type)) {
+              for (selection = 0; selection < 3; selection++) {
+                //print("  type="+type+" selection="+selection+", isotropy test="+rot);
+                rotateRoi(rot, measure, measureR);
+                rotateRoi(rot, rect, rectR);
+                rotateRoi(rot, oval, ovalR);
+                selectImage(imageID[rot*imageTypes+type]);
+                run("Duplicate...", "title=test");
+                makeRectangle(measureR[0],measureR[1],measureR[2],measureR[3]);
+                getStatistics(area, meanIn, minIn, maxIn, std, histogram);
+                run("Select None");
+                if (stack >0) {  // create a stack
+                  //make all slices equal if only one should be processed to detect unwanted processing.
+                  //make other slices blank when processing all to detect slice confusion
+                  if (allSlices) run("Cut");
+                  else run("Copy");
+                  run("Add Slice");
+                  if (!allSlices) run("Paste");
+                  run("Add Slice");
+                  if (!allSlices) run("Paste");
+                  setSlice(startSlice);
+                  if (allSlices) run("Paste");
+                }
+                if (allSlices) setSlice(4-startSlice); //try processing a slice different from the current one
+                if (selection == 1)
+                  makeRectangle(rectR[0],rectR[1],rectR[2],rectR[3]);
+                else if (selection == 2)
+                  makeOval(ovalR[0],ovalR[1],ovalR[2],ovalR[3]);
+                inputImage = getImageID();
+//print(taskParts[0], taskParts[1]+allSlicesS, getTitle, is("binary"));
+//if (!is("binary")) setBatchMode("exit and display");
+                run(taskParts[0], taskParts[1]+allSlicesS); // THE OPERATION
+                if (verbose)
+                  print("t="+(getTime-startTime)+"\nrun("+taskParts[0]+", \""+taskParts[1]+allSlicesS+"\");   "+getWidth+"x"+getHeight+"x"+nSlices+"x"+bitDepth+" threads="+nThreads);
+                makeRectangle(measureR[0],measureR[1],measureR[2],measureR[3]);
+                if (allSlices) setSlice(startSlice);
+                getStatistics(area, mean, min, max, std, histogram);
+                if (writeResults) {
+                  outLine = outLine+toString(mean)+","+toString(min)+","+toString(max)+",";
+                  if (abs(mean-meanIn)<0.000001 && abs(min-minIn)<0.000001 && abs(max-maxIn)<0.000001)
+                        failNoChange(taskParts[0],taskParts[1],type,selection, nThreads);
+                } else {  // if not writeResults
+                  meanR = parseFloat(results[3*testNum]);  //compare values with numbers in TaskList file
+                  minR = parseFloat(results[3*testNum+1]);
+                  maxR = parseFloat(results[3*testNum+2]);
+                  //print(taskParts[0]+" mean="+toString(mean)+" expected="+toString(meanR));
+                  if (abs(mean-meanR)>0.0001) fail(taskParts[0], taskParts[1], type, rot, selection, nThreads, stack, mean,meanR,"mean");
+                  if (abs(min-minR)>0.0001) fail(taskParts[0], taskParts[1], type, rot, selection, nThreads, stack, min,minR,"min");
+                  if (abs(max-maxR)>0.0001) fail(taskParts[0], taskParts[1], type, rot, selection, nThreads, stack, max,maxR,"max");
+                  if (stack==0 && selection==0) {
+                    corner = getCorner(rot);
+                  if (rot == 0) cornerPixel[type] = corner;
+                  else if (abs(corner-cornerPixel[type]) > 0.0001)
+                    fail(taskParts[0], taskParts[1], type, rot, selection, nThreads, stack, corner, cornerPixel[type], "cornerPixel");
+                  }
+                  if (stack >0 && !separateOutput) {
+                    for (slice = 1; slice<=3; slice++) if (slice!=startSlice) { //check: other slice overwritten?
+                      setSlice(slice);
+                      getStatistics(area, mean, min, max, std, histogram);
+                      if (abs(mean-meanR)<0.000001 && abs(min-minR)<0.000001 && abs(max-maxR)<0.000001)
+                        failOver(taskParts[0], taskParts[1], type, selection, nThreads, stack, slice);
+                    }
+                  } //if stack>0
+                  if (stack == 0 && !separateOutput &&! noUndo) {  //check: does undo work?
+                    run("Undo");
+                    getStatistics(area, mean, min, max, std, histogram);
+                    if (abs(mean-meanIn)>0.000001 || abs(min-minIn)>0.000001 || abs(max-maxIn)>0.000001)
+                      failUndo(taskParts[0], taskParts[1], type, selection, nThreads);
+                  }
+                } // if writeResults else
+                close();
+                if (separateOutput) {
+                  selectImage(inputImage);
+                  close();
+                }
+                testNum ++;
+              } // for selection
+            } // for type
+          } // for rot (isotropy test)
+          if (writeResults)
+            print (outFile, outLine);
+        } // for stack
+      } // for nThreads
+      progress++;
+      showProgress(progress, progressAll);
+    } // if not comment
+  } // for iTask
+}
+cleanup(imageID);
+restoreSettings();
+restoreMemOptionS = "";
+if (optionKeepUndoBuffers) restoreMemOptionS = restoreMemOptionS + " keep";
+if (!optionNoClickToGC) restoreMemOptionS = restoreMemOptionS + " run";
+run("Memory & Threads...", "parallel="+oldThreads+restoreMemOptionS);
+
+setBatchMode("exit and display");
+if (writeResults) {
+  File.close(outFile);
+  if (!File.delete(macroDir+resultsFile)) exit("cannot delete old "+resultsFile); //delete old results file and replace by new
+  dummy = File.rename(macroDir+resultsFile+".tmp", macroDir+resultsFile);
+  showStatus("PlugInFilterTester writing done");
+} else {
+  if (success) doneS = " successful";
+  else doneS = ": errors";
+  beep;
+  showStatus("FilterTester"+doneS+" ("+d2s((getTime-startTime)/1000,2)+" seconds)");
+  wait(2000);
+}
+
+
+function fail(task, text, type, rot, selection, threads, stack, val, valR, what) {
+  print("FAIL: "+task+": "+text+" type="+types[type]+isotropyTests[rot]+" select="+selections[selection]+" nThreads="+threads+", "+stackTests[stack]+": "+what+"="+toString(val)+" expected="+toString(valR));
+  failCommonTasks();
+}
+
+function failOver(task, text, type, selection, threads, stack, slice) {
+  print("FAIL: "+task+": "+text+" type="+types[type]+" select="+selections[selection]+" nThreads="+threads+", "+stackTests[stack]+": slice "+slice+" overwritten");
+  failCommonTasks();
+}
+
+function failUndo(task, text, type, selection, threads) {
+  print("FAIL: Undo of "+task+": "+text+" type="+types[type]+" select="+selections[selection]+" nThreads="+threads);
+  failCommonTasks();
+}
+
+function failNoChange(task, text, type, selection, threads) {
+  print("WARNING: "+task+": "+text+" type="+types[type]+" select="+selections[selection]+" nThreads="+threads+" changes nothing, stack tests will fail ('overwritten')");
+  failCommonTasks();
+}
+
+function failCommonTasks() {
+  success = false;
+  if (stopOnFail) {
+    setBatchMode("exit and display");
+    restoreSettings();
+    exit("FilterTester - Stopped on Fail\nNOTE:\nOptions>Memory&Threads may be changed");
+  }
+}
+
+function cleanup(imageID) {
+  for (i = 0; i < lengthOf(imageID); i++) {
+    selectImage(imageID[i]);
+    close();
+  }
+}
+
+function bitSet(number,bitNum) {
+  mask = 1;
+  for (i=0; i<bitNum; i++)
+    mask *= 2;
+  return ((number & mask)!=0);
+}
+
+function rotateRoi(rotation, in, out) {      // in, out array elements are roi.x, roi.y, roi.width, roi.height
+  if (rotation==0) {                         // no rotation, unchaged roi
+    out[0] = in[0]; out[1] = in[1]; out[2] = in[2]; out[3] = in[3];
+  } else if (rotation==1) {                  // rotated 90 degrees right
+    out[0] = height-in[1]-in[3]; out[1] = in[0]; out[2] = in[3]; out[3] = in[2];
+  } else if (rotation==2) {                  // rotated 180 degrees
+    out[0] = width-in[0]-in[2]; out[1] = height-in[1]-in[3]; out[2] = in[2]; out[3] = in[3];
+  } else if (rotation==3) {                  // flipped vertically
+    out[0] = in[0]; out[1] = height-in[1]-in[3]; out[2] = in[2]; out[3] = in[3];
+  }
+}
+
+function getCorner(rotation) {
+  if (rotation==0) return getPixel(0,0);
+  else if (rotation==1) return getPixel(height-1,0);
+  else if (rotation==2) return getPixel(width-1,height-1);
+  else if (rotation==3) return getPixel(0,height-1);
+}

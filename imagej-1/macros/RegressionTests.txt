@@ -1,0 +1,739 @@
+// Macro language regression tests
+
+  n = 1;  // Iterations
+  t0 = getTime;
+  for (i=1; i<=n; i++) {
+    runMacro("RegressionTests.js"); // run JavaScript regression tests
+    if (i==1)
+       runMacro("FilterTester"); // run Michael Schmid's filter tests
+    test = "null";
+    roiManagerTest(true); roiManagerTest(false);
+    measure();
+    binary();
+    logic("Logic");
+    math("Math");
+    functionCalls("FunctionCall");
+    images("Image");
+    setBatchMode(true); images("BatchImage"); setBatchMode(false);
+    benchmarks("Benchmark");
+    analyzeParticles();
+    duplication(false); duplication(true);
+     imageActivation(false); imageActivation(true);
+    tableTests(false); tableTests(true);
+    metadata(false); metadata(true);
+    particleAnalyzer();
+  }
+  beep;
+  time = d2s((getTime-t0)/1000,2);
+  showStatus("Regression tests done ("+time+" seconds)");
+  wait(4000);
+  exit();
+
+// Logic tests
+function logic(thisTest) {
+    test = thisTest;
+    if (1>2) fail(1);
+    if (2>1) ; else fail(2);
+    if (1+2*3!=7||2/3+1!=1+(2/3)) fail(3);
+    s = "ImageJ has a very nice macro language";
+    if (s=="ImageJ has a very nice macro language2") fail(4);
+    if ("ImageJ has a very nice macro language "==s) fail(5);
+    a = newArray(1, 2, 3);
+    if (a[0]+a[0]!=a[1]) fail(6);
+    s = newArray('one', 'two');
+    if (s[0]+s[1] != 'onetwo') fail(7);
+    if (s[0]>=s[1]) fail(8);
+}
+
+// Math tests
+function math(thisTest) {
+    test = thisTest;
+    n = 10;
+    if (n++!=10) fail(1);
+    if (++n!=12) fail(2);
+    if (n--!=12) fail(3);
+    if (--n!=10) fail(4);
+    a=newArray(0,1,2,3,4,5,6);
+    for (i=0; i<a.length; i++)
+        sum = sum+=a[i];
+    if (sum!=21) fail(10);
+    i = 2;
+    if (a[i++]!=2) fail(11);
+    if (i!=3) fail(12);
+    if (a[++i]!=4) fail(13);
+    if (i!=4) fail(14);
+    if (a[i--]!=4) fail(15);
+    if (i!=3) fail(16);
+    if (a[--i]!=2) fail(17);
+    if (i!=2) fail(18);
+    i = 1;
+    n = a[i++];
+    if (n!=1) fail(19);
+    if (i!=2) fail(20);
+    n = a[++i];
+    if (n!=3) fail(21);
+    if (i!=3) fail(21);
+}
+
+function functionCalls(thisTest) {
+   test = thisTest;
+   f1(123);
+   f2("aString");
+   f3(1+2/3);
+   v=1.5; f4(v);
+   v = 'hello'; f5(v);
+   if (f6()!=-1) fail(6);
+   if (2-3!=f6()) fail(6);
+   if ("return"!=f7()) fail(7); //**
+   a = f8(); if (a.length!=3 || a[1]!=22) fail(8);
+   a = newArray(1,2); 
+   b = newArray('one','two'); 
+   f9(a);
+   f10(b);
+   f11(a[0]);
+   f12(b[1]);
+}
+
+function f1(a) {if (a!=123) fail(1);}
+function f2(a) {if (a!='aString') fail(2);}
+function f3(a) {if (a!=1+2/3) fail(3);}
+function f4(a) {if (a!=1.5) fail(4);}
+function f5(a) {if (a!='hello') fail(5);}
+function f6() {return -1;}
+function f7() {return 'return';}
+function f8() {a=newArray(11,22,33); return a;}
+function f9(b) {if (b.length!=2||b[1]!=2) fail(9);}
+function f10(b) {if (b.length!=2||b[0]!='one') fail(10);}
+function f11(a) {if (a!=1) fail(11);}
+function f12(a) {if (a!='two') fail(12);}
+
+
+function images(thisTest) {
+    test = thisTest;
+    n = 10;
+    openAtStart = nImages;
+    id = newArray(n);
+    for (i=0; i<n; i++) {
+        size = 20*(i+1)*(i+1);
+        run("New...", "name=Image"+i+" type=8-bit fill=Ramp width="+size+" height="+size+" slices=1");
+        id[i] = getImageID();
+    }
+    for (i=0; i<n; i++) {
+        title = "Image"+i;
+        selectImage(title);
+        if (getTitle()!="Image"+i) fail(1);
+    }
+    for (i=0; i<n; i++) {
+        selectImage(id[i]);
+        if (getTitle()!="Image"+i) fail(2);
+    }
+    for (i=0; i<n; i++) {
+        title = "Image"+i;
+        selectWindow(title);
+        if (getTitle()!=title) fail(3);
+    }
+    for (i=0; i<n; i++) {
+        selectImage(id[i]);
+        run("Close");
+        if (nImages()!=openAtStart + n-i-1) fail(4);
+    }
+    runRGBSplitTest();
+}
+
+function runRGBSplitTest() {
+    name = "Test Image";
+    run("New...", "name=["+name+"] type=8-bit fill=White width=1000 height=1000 slices=1");
+    run("Red");
+    run("RGB Color");
+    run("RGB Split");
+    selectWindow(name+" (red)");
+    run("Invert");
+    selectWindow(name+" (green)");
+    run("Invert");
+    run("RGB Merge...", "red=["+name+" (red)] green=["+name+" (green)] blue=["+name+" (blue)]");
+    if (toHex(getPixel(0,0))!="ff00ff00") fail(5);
+    close();
+}
+
+function benchmarks(thisTest) {
+    test = thisTest;
+    if (sieve()!=1899) fail(1);
+    if (ackermann(2,5)!=13) fail(2);
+}
+
+function sieve() {
+    SIZE = 8190;
+    flags = newArray(SIZE+1);
+    //start = getTime();
+    count=0;
+    for(i=0; i<=SIZE; i++) flags[i]=true;
+    for (i=0; i<=SIZE; i++) {
+       if (flags[i]) {
+          prime=i+i+3;
+          for(k=i+prime; k<=SIZE; k+=prime)
+             flags[k]=false;
+          count++;
+       }
+    }
+    //print((getTime-start)/1000);
+    return count;
+}
+
+function ackermann(m, n) {
+    if (m==0)
+        return n + 1;
+    else if (n==0)
+        return ackermann(m-1, 1);
+    else
+        return ackermann(m-1, ackermann(m, n-1));
+}
+
+function fail(n) {
+  print("FAIL: "+test+ " test "+n);
+}
+
+function fail2(n, msg) {
+  print("FAIL: "+test+ " test "+n+" ("+msg+")");
+}
+
+function analyzeParticles() {
+    imageCount = nImages;
+    test = "Particle analyzer";
+    run("Embryos (42K)");
+    run("Set Measurements...", "area mean min centroid redirect=None decimal=3");
+    processEmbryos();
+    checkResults(1, imageCount+1);
+    run("Clear Results");
+    setBatchMode(true);
+    processEmbryos();
+    selectWindow("embryos.jpg");
+    close();
+    setBatchMode(false);
+    checkResults(2, imageCount);
+    selectWindow("Results");
+    run("Close");
+}
+
+function checkResults(n, count) {
+    if (nResults!=9 || nImages!= count || getResult("XStart", 0)!=36
+    || getResult("Area", 0)!=2697  || getResult("Min", 0)!=31
+    || getResult("Max", 0)!=144)
+         fail(n);
+}
+
+function processEmbryos() {
+    run("Duplicate...", "title=embryos-1.jpg");
+    run("HSB Stack");
+    run("Convert Stack to Images");
+    selectWindow("Hue");
+    close();
+    selectWindow("Saturation");
+    close();
+    selectWindow("Brightness");
+    setAutoThreshold();
+    setColor(0);
+    fillRect(917, 1078, 507, 84);
+    run("Select None");
+    run("Analyze Particles...", "size=50 circularity=0.75 show=Masks display exclude clear include record");
+    close();
+    selectWindow("Brightness");
+    close();
+}
+
+  function measure() {
+    test = "Measure";
+    measure2();
+    setBatchMode(true);
+    test = "Measure (batch)";
+    measure2();
+    setBatchMode(false);
+  }
+
+  function measure2() {
+     newImage("Test Image", "8-bit White", 500, 500, 1);
+     id = getImageID;
+     makeOval(20, 20, 229, 219);
+     setForegroundColor(0, 0, 0);
+     run("Fill");
+     makeOval(94, 105, 49, 55);
+     setForegroundColor(255, 255, 255);
+     run("Fill");
+     makeOval(20, 20, 229, 219);
+     run("Set Scale...", "distance=1 known=1 pixel=1 unit=");
+     run("Set Measurements...", "area fit circularity feret's redirect=None decimal=5");
+     run("Clear Results");
+     run("Measure");
+     area = getResult("Area",0);
+     feret = getResult("Feret",0);
+     circularity = getResult("Circ.",0);
+     minor = getResult("Minor",0);
+     if (area!=39395) fail(1);
+     if (abs(feret-229)>1) fail(2);
+     if (abs(circularity-0.9994)>0.0001) fail(3); // 0.9997 before 1.52m11
+     if (abs(minor-219.0134)>0.0001) fail(4);
+     run("Duplicate...", "title=temp");
+     run("Restore Selection");
+     setAutoThreshold();
+     run("Convert to Mask");
+     run("Restore Selection");
+     getHistogram(values, counts, 256);
+     if (counts[255]!=2115) fail(5);
+     close;
+     selectImage(id);
+     close;
+     selectWindow("Results");
+     run("Close");
+  }
+
+  function binary() {
+    test = "Binary";
+    binary2();
+    setBatchMode(true);
+    test = "Binary (batch)";
+    binary2();
+    setBatchMode(false);
+  }
+
+  function binary2() {
+     run("Options...", "iterations=1 count=1 ");
+     run("Blobs (25K)");
+     run("Convert to Mask");
+     getHistogram(0, counts, 256);
+     if (counts[255]!= 22243) fail(1);
+     run("Erode");
+     getHistogram(0, counts, 256);
+     if (counts[255]!= 17256) fail(2);
+     run("Undo");
+     run("Close-");
+     getHistogram(0, counts, 256);
+     if (counts[255]!= 21900) fail(3);
+     run("Undo");
+     run("Open");
+     getHistogram(0, counts, 256);
+     if (counts[255]!= 22148) fail(4);
+     run("Undo");
+     run("Skeletonize");
+     getHistogram(0, counts, 256);
+     if (counts[255]!= 686) fail(5);
+     run("Undo");
+     run("Options...", "iterations=4 count=4");
+     run("Open");
+     getHistogram(0, counts, 256);
+     if (counts[255]!= 19196) fail(6);
+     run("Options...", "iterations=1 count=1 ");
+     close;
+  }
+
+ 
+function roiManagerTest(batchMode) {
+   if (batchMode)
+      test = "Roi Manager (batch mode)";
+   else
+      test = "Roi Manager";
+   setBatchMode(batchMode);
+   newImage("Untitled", "8-bit", 2000, 2000, 1);
+   width = getWidth();
+   height = getHeight();
+   if (roiManager("count")>0) roiManager("reset");
+   n = 250;
+   x = newArray(n);
+   y = newArray(n);
+   w = newArray(n);
+   h = newArray(n);
+   for (i=0; i<n; i++) {
+       w[i] = round(random()*width/2+1);
+       h[i] = round(random()*width/2+1);
+       x[i] = round(random()*(width-1));
+       y[i] = round(random()*(height-1));
+       makeRectangle(x[i], y[i], w[i], h[i]);
+       roiManager("add");
+   }
+   n = roiManager("count");
+   for (i=0; i<n; i++) {
+       roiManager("select", i);
+       getSelectionBounds(x2, y2, w2, h2);
+       if (x2!=x[i] || y2!=y[i] || w2!=w[i] || h2!=h[i]) {
+          fail(1);
+          print(i, x[i], y[i], w[i], h[i]);
+       }
+    }
+   close;
+   setBatchMode(false);
+   if (isOpen("ROI Manager")) {
+      selectWindow("ROI Manager");
+      run("Close");
+   }
+}
+
+function duplication(batchMode) {
+  if (batchMode)
+     test = "Duplication (batch mode)";
+  else
+     test = "Duplication";
+  setBatchMode(batchMode);
+  run("Close All");
+  slices = 100;
+  newImage("Stack", "16-bit black", 500, 500, slices);
+  for (i=1; i<=nSlices; i++) {
+     setSlice(i);
+     setColor(i);
+     fill();
+  }
+  // duplicate entire stack
+  run("Duplicate...", "duplicate");
+  if (nImages!=2 || nSlices!=slices) fail(1);
+  close;
+  // crop entire stack
+  makeRectangle(100, 100, 300, 300);
+  run("Duplicate...", "duplicate");
+  if (nImages!=2||nSlices!=slices|| getWidth!=300) fail(2);
+  close;
+  run("Select None");
+  // duplicate slices 40-59
+  run("Duplicate...", "duplicate range=40-59");
+  if (nImages!=2||nSlices!=20|| getPixel(0,0)!=40) fail(3);
+  close;
+ // duplicate slice 50
+  run("Duplicate...", "duplicate range=50-50");
+  if (nImages!=2||nSlices!=1|| getPixel(0,0)!=50) fail(4);
+  close;
+  // duplicate slice 33
+  setSlice(33);
+  run("Duplicate...", " ");
+  if (nImages!=2||nSlices!=1|| getPixel(0,0)!=33) fail(5);
+  close;
+ // crop slice 44
+  setSlice(44);
+  makeRectangle(100, 100, 200, 200);
+  run("Duplicate...", " ");
+  if (nImages!=2||nSlices!=1||getWidth!=200||getPixel(0,0)!=44) fail(6);
+  run("Close All");
+  setBatchMode(false);
+}
+
+  function imageActivation(batchMode) {
+    if (batchMode)
+       test = "Image Activation (batch)";
+    else
+       test = "Image Activation";
+    setBatchMode(batchMode);
+
+    run("Close All");
+    n = 15;
+    title = "Stack";
+    newImage(title, "8-bit ramp", 2000, 2000, n);
+    id = getImageID;
+    run("Stack to Images");
+    if (nImages!=n) fail2(1,"");
+    id2 = id;
+    for (i=1; i<=n; i++) {
+      title2 = title+"-"+IJ.pad(i,4);
+      selectWindow(title2);
+      if (getTitle!=title2) fail2(2,"");
+      id2 -= 1;
+      if (getImageID!=id2) fail2(3,"");
+   }
+   run("Images to Stack", "name=Stack title=001 use");
+   n2 = n-7+1;
+   if (nImages!=n2) fail2(4,""+nSlices);
+   for (i=n2; i>0; i--) {
+      selectImage(i);
+      if (getTitle!="Stack")
+        close;
+    }
+    if (nImages!=1 || nSlices!=7) fail2(5,"");
+    id3 = getImageID;
+    run("Stack to Images");
+    n3 = nImages;
+    if (n3!=7) fail2(6,"");
+    for (i=1; i<=n3; i++) {
+      id3 -= 1;
+      selectImage(id3);
+      if (getImageID!=id3) fail2(7,"");
+    }
+
+    run("Close All");
+    run("Blobs (25K)");
+    id = getImageID;
+    run("Duplicate...", " ");
+    selectImage(id);
+    run("FFT");
+    close;
+    if (getImageID!=id) fail2(8, ""+getImageID+" "+id);
+    run("Close All");
+
+    newImage("dummy", "32-bit ramp", 500, 500, 1);
+    id1 = getImageID();
+    title = "Stack";
+    newImage(title, "32-bit ramp", 500, 500, 3);
+    id2 = getImageID();
+    run("Stack to Images");
+    title2 = getTitle;
+    if (title2!=title+"-0003") fail2(9, title2);
+
+    run("Close All");
+    run("Blobs (25K)");
+    newImage("Untitled", "8-bit random", 2000, 2000, 1);
+    selectWindow("blobs.gif");
+    run("Duplicate...", "title=copyForMeasuring");
+    run("Median...", "radius=15");
+    getStatistics(area, mean, min, max, std);
+    if (abs(std-43.5047)>0.0001) fail2(10,"");
+    close();
+    if (getTitle!="blobs.gif") fail2(11,getTitle+" blobs.gif");
+  }
+
+function tableTests(batchMode) {
+    saveSettings;
+    if (batchMode)
+       test = "Tables (batch)";
+    else
+       test = "Tables";
+    setBatchMode(batchMode);
+    setOption("ExpandableArrays", true);
+    tables = newArray;
+    tableCount = 0;
+
+   Table.reset("Results");
+   if ("Results"!=Table.title) fail(1);
+   for (row=0, n=0; n<=2*PI; row++, n+=0.1) {
+     Table.set("n", row, n);
+     Table.set("sin(n)", row, sin(n));
+     Table.set("cos(n)", row, cos(n));
+   }
+   Table.update;
+   if ("Results"!=Table.title) fail(2);
+   tables[tableCount++] = Table.title;
+
+  // Duplicate
+   table1 = "Sine/Cosine Table";
+  Table.create(table1);
+  if (table1!=Table.title) fail(3);
+  for (n=0,row=0; n<=2*PI; n+=0.1,row++) {
+     Table.set("n", row, n);
+     Table.set("sin(n)", row, sin(n));
+     Table.set("cos(n)", row, cos(n));
+  }
+  Table.update;
+  if (Table.size()!=63) failt(4);
+  tables[tableCount++] = table1;
+
+  table2 = table1 +" Copy";
+  Table.create(table2);
+  headings = split(Table.headings(table1));
+  for (row=0; row<Table.size(table1); row++) {
+     for (col=0; col<headings.length; col++) {
+        value = Table.get(headings[col], row, table1);
+        Table.set(headings[col], row, value, table2);
+     }
+  }
+  Table.update(table2);
+  tables[tableCount++] = table2;
+  if (Table.size(table1)!=Table.size(table2)) fail(5);
+  if (Table.get("n",11,table1)!=Table.get("n",11,table2)) fail(6);
+
+  // Access plot data
+   if (!batchMode) {
+     yValues = newArray(0, 0.7, 2.3, 2.8, 1, 0.5);
+     Plot.create("Simple Plot", "X", "Y", yValues);
+     Plot.show;
+     Plot.showValues("Data");
+     for (i=0; i<Table.size; i++) {
+         x = Table.get("X", i);
+         y = Table.get("Y", i);
+         Table.set("Sum", i, x+y);
+     }
+     Table.update;
+     tables[tableCount++] = "Data";
+   }
+
+   // Access plot data using title
+   if (!batchMode) {
+      yValues = newArray(0, 0.7, 2.3, 2.8, 1, 0.5);
+      Plot.create("Simple Plot", "X", "Y", yValues);
+      Plot.show;
+      title= "Data";
+      Plot.showValues(title);
+      if ("Data"!=Table.title(title)) fail(7);
+      for (i=0; i<Table.size(title); i++) {
+          x = Table.get("X", i,title);
+          y = Table.get("Y", i,title);
+          Table.set("Sum", i, x+y,title);
+      }
+      Table.update(title);
+      close("Data");
+   }
+
+  // Access "Summary" table
+  run("T1 Head (2.4M, 16-bits)");
+  setSlice(64);
+  setAutoThreshold("Default dark");
+  run("Analyze Particles...", "summarize stack");
+  title = Table.title;
+  if (!startsWith(title,"Summary of")) fail(8);
+  if (Table.size<129) fail(9);
+  if (Table.get("Count",8)!=3) fail(10);
+  tables[tableCount++] = Table.title;
+
+  // Access "Overlay Elements" table
+  run("Image with Overlay");
+  run("List Elements");
+  if (!startsWith(Table.title,"Overlay Elements")) {
+     fail(11);
+     print("   ", nImages, getTitle, Overlay.size, Table.title);
+  }
+  if (Table.size!=13) fail(12);
+  if (Table.get("Width",0)!=110) fail(13);
+  color = Table.getString("Color", 0);
+  if (color!="red") fail(14);
+  if (""+Table.getString("Type", 0)!="Traced") fail(15);
+  if ("Traced"!=Table.getString("Type", 0)) fail(16);
+  tables[tableCount++] = Table.title;
+
+  // Measurements
+  Table.reset("Results");
+   if ("Results"!=Table.title) fail(17);
+   newImage("Untitled", "16-bit black", 100, 100, 1);
+   setOption("Area", true);
+   makeRectangle(42, 38, 42, 42);
+   run("Measure");
+   if (Table.get("Area", 0)!=1764) fail(18);
+   makeOval(18, 16, 70, 72);
+   run("Measure");
+   if (Table.get("Area", 1)!=3968) fail(19);
+   makePolygon(18,41,73,17,79,79);
+   run("Measure");
+   if (Table.get("Area", 2)!=1778) fail(20);  //1776 before 1.52m11
+
+  // ApplyMacro and duplicate, rename and delete columns
+  run("Blobs (25K)");
+  run("Set Measurements...", "area mean centroid feret's");
+  setAutoThreshold("Default");
+  Table.reset("Results");
+  run("Analyze Particles...", "display include in_situ");
+  code = "FeretMinimum=MinFeret; FeretMaximum=Feret;"
+    +"FeretAngleCopy=FeretAngle; FeretStartX=FeretX;"
+    +"FeretStartY=FeretY";
+  Table.applyMacro(code);
+  Table.deleteColumn("MinFeret");
+  Table.deleteColumn("Feret");
+  Table.deleteColumn("FeretAngle");
+  Table.deleteColumn("FeretX");
+  Table.deleteColumn("FeretY");
+  Table.renameColumn("FeretAngleCopy", "FeretAngle");
+  Table.update;
+  if (Table.get("FeretStartX",63)!=66) fail(21);
+  if (!isNaN(Table.get("Feret",0))) fail(22);
+
+  for (i=0; i<tableCount; i++)
+     close(tables[i]);
+  close("*");
+  restoreSettings;
+
+} //tableTests
+
+ function metadata(batchMode) {
+    if (batchMode)
+       test = "Metadata (batch)";
+    else
+       test = "Metadata";
+    setBatchMode(batchMode);
+    newImage("Untitled", "8-bit ramp", 100, 100, 1);
+    info1 = "Info1";
+    setMetadata("Info", info1);
+    data1 = "metadata1";
+    setMetadata("label", data1);
+    if (getMetadata("Label")!=data1) fail(1);
+    run("Add Slice");
+    data2 = "metadata2";
+    setMetadata("label", data2);
+    if (getSliceNumber()!=2) fail(2);
+    if (getMetadata("Label")!=data2) fail(3);
+    if (getSliceNumber()!=2) fail(4);
+    if (getMetadata("Info")!=info1) fail(5);
+    run("Duplicate...", " ");
+    if (getSliceNumber()!=1) fail(6);
+    if (getMetadata("Label")!=data2) fail(7);
+    if (getMetadata("Info")!=info1) fail(8);
+    close;
+    run("Duplicate...", "duplicate");
+    setSlice(1);
+    if (getSliceNumber()!=1) fail(9);
+    if (getMetadata("Label")!=data1) fail(10);
+    setSlice(2);
+    if (getMetadata("Label")!=data2) fail(11);
+    run("Delete Slice");
+    if (getSliceNumber()!=1) fail(12);
+    if (nSlices!=1) fail(13);
+    if (getMetadata("Label")!=data1) fail(14);
+    if (getMetadata("Info")!=info1) fail(15);
+
+    // Test versions missing "info" and "label" args
+    newImage("Untitled", "8-bit ramp", 100, 100, 1);
+    info1 = "Info1";
+    setMetadata(info1);
+    if (getMetadata()!=info1) fail(16);
+    info2 = "Info2";
+    setMetadata(info2);
+    if (getMetadata()!=info2) fail(17);
+    run("Add Slice");
+    label1 = "label1";
+    setMetadata(label1);
+    if (getMetadata()!=label1) fail(18);
+    if (getMetadata("info")!=info2) fail(19);
+    if (getMetadata("label")!=label1) fail(20);
+    newImage("Untitled", "8-bit ramp", 100, 100, 10);
+    for (i=1; i<10; i++) {
+      setSlice(i);
+      label = "label"+i;
+      setMetadata(label);
+    }
+    for (i=1; i<10; i++) {
+      setSlice(i);
+      label = "label"+i;
+      if (getMetadata()!=label) fail(21);
+    }
+   close("*");
+} 
+
+function particleAnalyzer() {
+  saveSettings;
+  test = "Particle Analyzer";
+  labels = newArray("Area","Mean","StdDev","Mode","Min","Max", "X","Y",
+    "XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
+    "Circ.","Feret","IntDen","Median","Skew","Kurt","RawIntDen","FeretX",
+    "FeretY","FeretAngle","MinFeret","AR","Round","Solidity");
+  results = newArray("347.55","187.73","28.47","203.38","128.00","230.38","130.29","127.44",
+    "130.25","127.42","67.90","120.58","116.64","19.34","21.61","23.91","16.50","82.02",
+    "0.83","24.87","67786.25","193.50","NaN","NaN","67786.25","123.83",
+    "131.11","85.31","16.97","1.62","0.71","0.93");  //16.82 in 1.52m11
+  run("Blobs (25K)");
+  setAutoThreshold("Default no-reset");
+  options = "area mean standard modal min centroid center perimeter"
+    + " bounding fit shape feret's integrated median skewness kurtosis"
+    + " area_fraction display redirect=None decimal=3";
+  run("Set Measurements...", options);
+  run("Analyze Particles...", "display clear");
+  run("Summarize");  
+  if (nResults()-4!=64)
+     fail(1);
+  for (i=0; i<labels.length; i++)
+     compare(i);
+  close("*");
+  close("Results");
+  restoreSettings;
+}
+
+  function compare(i) {
+     value = getResult(labels[i], nResults-4);
+     if (d2s(value,2)!=results[i]) {
+        fail2(i+2, labels[i]);
+     }
+  }
+
+
+
+
+
+
+

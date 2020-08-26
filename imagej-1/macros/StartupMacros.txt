@@ -1,0 +1,48 @@
+// "StartupMacros"
+// The macros and tools in this file ("StartupMacros.txt") are 
+// automatically installed in the Plugins>Macros submenu and
+// in the toolbar when ImageJ starts up.
+
+// The "AutoRun" macro has been replaced by the Edit>Options>Startup command.
+
+  macro "Command Finder Built-in Tool" {}
+  macro "Developer Menu Built-in Tool" {}
+  macro "Brush Built-in Tool" {}
+  macro "Flood Filler Built-in Tool" {}
+  macro "Arrow Built-in Tool" {}
+
+  var pmCmds = newMenu("Popup Menu",
+       newArray("Help...", "Rename...", "Duplicate...", "Original Scale", 
+       "Paste Control...", "-", "Record...", "Capture Screen ", "Monitor Memory...", 
+       "List Commands...", "Control Panel...", "Startup Macros...", "Search..."));
+
+  macro "Popup Menu" {
+      cmd = getArgument();
+      if (cmd=="Help...")
+           showMessage("About Popup Menu",
+               "To customize this menu, edit the line that starts with\n\"var pmCmds\" in ImageJ/macros/StartupMacros.txt.");
+      else
+          run(cmd);
+  }
+
+ macro "-" {} //menu divider
+
+  macro "About Startup Macros..." {
+      path = getDirectory("macros")+"About Startup Macros";
+      if (!File.exists(path))
+          exit("\"About Startup Macros\" not found in ImageJ/macros/.");
+      open(path);
+  }
+
+  // This example macro demonstrates how to create a
+  // custom command with a keyboard shortcut.
+  //macro "Save As JPEG... [j]" {
+  //   quality = call("ij.plugin.JpegWriter.getQuality");
+  //   quality = getNumber("JPEG quality (0-100):", quality);
+  //   run("Input/Output...", "jpeg="+quality);
+  //   saveAs("Jpeg");
+  //}
+
+
+
+

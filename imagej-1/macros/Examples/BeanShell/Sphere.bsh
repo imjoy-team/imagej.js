@@ -1,0 +1,19 @@
+// Delete ImageJ/plugins/jars/BeanShell.jar and restart ImageJ if
+// this script takes more than a few seconds to run. ImageJ will
+// download a faster version the next time you run a BeanShell script.
+
+     t0 = System.currentTimeMillis();
+     size = 512;
+     ip = new FloatProcessor(size,size);
+     for (int y=0; y<size; y++) {
+        IJ.showProgress(y,size-1);
+        for (x=0; x<size; x++) {
+           dx=x-size/2; dy=y-size/2;
+           d = Math.sqrt(dx*dx+dy*dy);
+           ip.setf(x,y,(float)-d);
+        }
+    }
+    time = (System.currentTimeMillis()-t0)/1000.0+" seconds";
+    img = new ImagePlus(""+time,ip);
+    IJ.run(img,"Red/Green","");
+    img.show();

@@ -1,0 +1,22 @@
+// This BeanShell script demonstrates how to use the 
+// ImageProcessor.applyMacro() method to do animation.
+
+  imp = IJ.openImage("http://imagej.nih.gov/ij/images/boats.gif");
+  div = 500;
+  n = 30;
+  delta = div/n;
+  stack = new ImageStack(imp.getWidth(), imp.getHeight());
+  ip = imp.getProcessor();
+  for (i=0; i<n; i++) {
+     IJ.showProgress(i, n-1);
+     IJ.showStatus("Creating frame "+i+"/"+n);
+     code = "a+=PI+d/"+div+";v=getPixel(d*cos(a)+w/2,d*sin(a)+h/2);";
+     ip2 = ip.duplicate();
+     ip2.applyMacro(code);
+     stack.addSlice(ip2);
+     div -= delta;
+  }
+  new ImagePlus("Rotational Animation", stack).show();
+  IJ.run("Animation Options...", "speed=5 loop");
+  IJ.doCommand("Start Animation [\\]");
+

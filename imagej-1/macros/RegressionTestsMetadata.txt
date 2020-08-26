@@ -1,0 +1,46 @@
+ var test;
+ metadata(false);
+ metadata(true);
+
+ function metadata(batchMode) {
+    if (batchMode)
+       test = "Metadata (batch)";
+    else
+       test = "Metadata";
+    setBatchMode(batchMode);
+    newImage("Untitled", "8-bit ramp", 100, 100, 1);
+    info1 = "Info1";
+    setMetadata("Info", info1);
+    data1 = "metadata1";
+    setMetadata("label", data1);
+    if (getMetadata("Label")!=data1) fail(1);
+    run("Add Slice");
+    data2 = "metadata2";
+    setMetadata("label", data2);
+    if (getSliceNumber()!=2) fail(2);
+    if (getMetadata("Label")!=data2) fail(3);
+    if (getSliceNumber()!=2) fail(4);
+    if (getMetadata("Info")!=info1) fail(5);
+    run("Duplicate...", " ");
+    if (getSliceNumber()!=1) fail(6);
+    if (getMetadata("Label")!=data2) fail(7);
+    if (getMetadata("Info")!=info1) fail(8);
+    close;
+    run("Duplicate...", "duplicate");
+    setSlice(1);
+    if (getSliceNumber()!=1) fail(9);
+    if (getMetadata("Label")!=data1) fail(10);
+    setSlice(2);
+    if (getMetadata("Label")!=data2) fail(11);
+    run("Delete Slice");
+    if (getSliceNumber()!=1) fail(12);
+    if (nSlices!=1) fail(13);
+    if (getMetadata("Label")!=data1) fail(14);
+    if (getMetadata("Info")!=info1) fail(15);
+    close("*");
+} 
+
+function fail(n) {
+  print("FAIL: "+test+ " test "+n);
+}
+

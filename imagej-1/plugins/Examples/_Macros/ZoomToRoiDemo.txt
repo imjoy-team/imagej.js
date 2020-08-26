@@ -1,0 +1,8 @@
+// This macro demonstrates how the Image>Zoom>Set
+// command can be used to display the contents of a
+// selection at a specified magnification level.
+
+  newImage("ABC", "8-bit random", 400, 200, 1);
+  makeOval(110, 80, 40,30);
+  run("Clear");
+  run("Set... ", "zoom=700");

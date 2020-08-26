@@ -1,0 +1,23 @@
+// This macro demonstrates how to use the Image>Overlay commands
+// to display  graphics and text in a non-destructive image overlay.
+//
+// JavaScript version: http://rsb.info.nih.gov/ij/macros/js/CreateOverlay.js
+
+   requires("1.43j");
+   run("Blobs (25K)");
+   setFont("Sanserif", 24);
+   makeText("This is an overlay", 30, 10);
+   run("Add Selection...", "stroke=cyan fill=#77000000");
+   makePolygon(12,77,80,53,126,73,205,56,247,128,181,103,117,94,29,126);
+   run("Fit Spline");
+   run("Add Selection...", "fill=#660000ff");
+   makeOval(90, 110, 90, 90);
+   run("Add Selection...", "stroke=yellow width=10");
+   makeLine(38,176,71,220,174,238,237,197);
+   run("Fit Spline");
+   run("Add Selection...", "stroke=green width=10");
+   run("Select None");
+   wait(1000);
+   run("Hide Overlay");
+   wait(1000);
+   run("Show Overlay");

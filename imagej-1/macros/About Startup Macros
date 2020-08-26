@@ -1,0 +1,9 @@
+  Macros and macro tools in ImageJ/macros/StartupMacros.txt
+  are automatically installed in the Plugins>Macros menu and
+  in the toolbar when ImageJ starts. Use the Plugins>Macros>
+  Startup Macros... command to display or edit this file.
+
+  More information is available at:
+  <http://imagej.nih.gov/ij/developer>
+
+
