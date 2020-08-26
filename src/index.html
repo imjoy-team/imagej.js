@@ -71,6 +71,16 @@
   cheerpjRunMain("ij.ImageJ", "/app/imagej-1/ij.jar");
 </script>
 <script>
+  // fix ios height issue
+  function resetHeight(){
+      // reset the body height to that of the inner browser
+      document.body.style.height = window.innerHeight + "px";
+  }
+  // reset the height whenever the window's resized
+  window.addEventListener("resize", resetHeight);
+  // called to initially set the height.
+  resetHeight();
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
