@@ -27,9 +27,9 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: |
-      wget https://d3415aa6bfa4.leaningtech.com/cheerpj_linux_2.1.tar.gz
-      tar -xvf cheerpj_linux_2.1.tar.gz
-      CHEERPJ_DIR=$(pwd)/cheerpj_2 sh compile.sh
+        wget https://d3415aa6bfa4.leaningtech.com/cheerpj_linux_2.1.tar.gz
+        tar -xvf cheerpj_linux_2.1.tar.gz
+        CHEERPJ_DIR=$(pwd)/cheerpj_2 bash compile.sh
     - name: Save build output
       uses: actions/upload-artifact@v1
       with:
