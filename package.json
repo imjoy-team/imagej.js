@@ -1,6 +1,6 @@
 {
   "name": "imagej.js",
-  "version": "0.4.1",
+  "version": "0.1.0",
   "description": "ImageJ running in the browser",
   "main": "lib/index.bundle.js",
   "module": "src/index.js",
