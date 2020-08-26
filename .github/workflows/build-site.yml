@@ -1,0 +1,54 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Build Site
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm run build
+    - run: |
+      wget https://d3415aa6bfa4.leaningtech.com/cheerpj_linux_2.1.tar.gz
+      tar -xvf cheerpj_linux_2.1.tar.gz
+      CHEERPJ_DIR=$(pwd)/cheerpj_2 sh compile.sh
+    - name: Save build output
+      uses: actions/upload-artifact@v1
+      with:
+        name: built-output
+        path: ./dist
+  
+  deploy-plugin:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Load saved build output
+        uses: actions/download-artifact@v1
+        with:
+          name: built-output
+          path: ./dist
+      - name: Deploy the plugin file to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3.5.0
+        with:
+          deploy_key: ${{ secrets.ACTION_DEPLOY_KEY }}
+          publish_dir: ./dist
+          commit_message: Deploy to GitHub Pages
