@@ -1,0 +1,12 @@
+{
+    "name": "ImageJ.JS",
+    "short_name": "IJ.JS",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "description": "ImageJ running in the browser.",
+    "related_applications": [{
+      "platform": "web",
+      "url": "https://imjoy.io"
+    }]
+  }
