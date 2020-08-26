@@ -26,7 +26,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
     - run: npm run build
-    - run: |
+    - name: compile imagej.js
+      run: |
         wget https://d3415aa6bfa4.leaningtech.com/cheerpj_linux_2.1.tar.gz
         tar -xvf cheerpj_linux_2.1.tar.gz
         CHEERPJ_DIR=$(pwd)/cheerpj_2.1 bash compile.sh

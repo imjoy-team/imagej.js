@@ -18,6 +18,3 @@ mv ImageJ imagej-1
 # compile ij.jar and we should get
 cd imagej-1
 ${CHEERPJ_DIR}/cheerpjfy.py ij.jar
-
-# build the site
-npm run build
