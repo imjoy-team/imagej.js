@@ -23,6 +23,12 @@
   <title>ImageJ.JS</title>
   <script src="https://cjrtnc.leaningtech.com/2.1/loader.js"></script>
   <style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0px;
+    }
+
     .container {
       width: calc(100vw - 20px);
       height: calc(100vh - 20px);
@@ -32,6 +38,7 @@
     #cheerpjDisplay {
       box-shadow: none;
     }
+
     .menu {
       z-index: 9999;
     }
@@ -72,9 +79,9 @@
 </script>
 <script>
   // fix ios height issue
-  function resetHeight(){
-      // reset the body height to that of the inner browser
-      document.body.style.height = window.innerHeight + "px";
+  function resetHeight() {
+    // reset the body height to that of the inner browser
+    document.body.style.height = window.innerHeight + "px";
   }
   // reset the height whenever the window's resized
   window.addEventListener("resize", resetHeight);
