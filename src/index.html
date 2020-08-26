@@ -39,6 +39,7 @@
       box-shadow: none;
     }
 
+    /* make menu always on top of window */
     .menuItem:hover>* {
       z-index: 9999;
     }
@@ -46,6 +47,7 @@
     .bordered {
       border-radius: 2px;
     }
+
     .cheerpjLoading:before {
       background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
       background-size: 300px !important;
@@ -67,7 +69,14 @@
       margin-right: auto;
       transform: translate(-50%, 0);
     }
-    #drag-overlay{
+
+    /* fix text label display in window */
+    .window>div>div {
+      width: 100% !important;
+      background-color: transparent !important;
+    }
+
+    #drag-overlay {
       position: absolute;
       width: 100vw;
       height: 100vh;
@@ -75,14 +84,15 @@
       display: none;
       text-align: center;
     }
-    #drag-overlay>span{
+
+    #drag-overlay>span {
       position: relative;
       top: 30%;
       transform: translateY(-30%);
       line-height: 90px;
-      font-size: 20px; 
+      font-size: 20px;
+      font-family: Arial, Helvetica, sans-serif;
     }
-
   </style>
 </head>
 
