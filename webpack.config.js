@@ -5,8 +5,9 @@ const HtmlReplaceWebpackPlugin = require('html-replace-webpack-plugin')
 // const WriteFilePlugin = require('write-file-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin
+const WorkboxPlugin = require('workbox-webpack-plugin');
 
-const config =  (env, argv) => ({
+const config = (env, argv) => ({
   mode: 'development',
   entry: {
     index: './src/index.js',
@@ -31,34 +32,52 @@ const config =  (env, argv) => ({
   },
   plugins: [
     // new CleanWebpackPlugin(['dist']),
-    new CopyPlugin([
-      { from: path.resolve(__dirname, 'src', 'assets'), to: path.resolve(__dirname, 'dist', 'assets')},
-      { from: path.resolve(__dirname, 'src', 'CNAME')},
-      { from: path.resolve(__dirname, 'src', 'service-worker.js')},
-      { from: path.resolve(__dirname, 'src', 'manifest.webmanifest')}
-    ]),
-    new HtmlWebpackPlugin(
+    new CopyPlugin([{
+        from: path.resolve(__dirname, 'src', 'assets'),
+        to: path.resolve(__dirname, 'dist', 'assets')
+      },
       {
-        filename: 'index.html',
-        template: path.resolve(__dirname, 'src', 'index.html'),
-        inject: true
+        from: path.resolve(__dirname, 'src', 'CNAME')
+      },
+      {
+        from: path.resolve(__dirname, 'src', 'service-worker.js')
+      },
+      {
+        from: path.resolve(__dirname, 'src', 'manifest.webmanifest')
       }
-    ),
-    new HtmlReplaceWebpackPlugin([
-      {
-        pattern: 'IJ_VERSION',
-        replacement: require("./package.json").version
-      }]
-    ),
+    ]),
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: path.resolve(__dirname, 'src', 'index.html'),
+      inject: true
+    }),
+    new HtmlReplaceWebpackPlugin([{
+      pattern: 'IJ_VERSION',
+      replacement: require("./package.json").version
+    }]),
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       openAnalyzer: false,
     }),
+    new WorkboxPlugin.GenerateSW({
+      // these options encourage the ServiceWorkers to get in there fast
+      // and not allow any straggling "old" SWs to hang around
+      clientsClaim: true,
+      skipWaiting: true,
+      runtimeCaching: [{
+          urlPattern: new RegExp('https://cjrtnc.leaningtech.com/.*'),
+          handler: 'StaleWhileRevalidate'
+        },
+        {
+          urlPattern: new RegExp('https://static.imjoy.io/.*'),
+          handler: 'StaleWhileRevalidate'
+        }
+      ]
+    }),
     // new WriteFilePlugin(),
   ],
   module: {
-    rules: [
-      {
+    rules: [{
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
@@ -68,7 +87,9 @@ const config =  (env, argv) => ({
               [
                 '@babel/preset-env',
                 {
-                  targets: { browsers: ['last 2 Chrome versions'] },
+                  targets: {
+                    browsers: ['last 2 Chrome versions']
+                  },
                   useBuiltIns: 'entry',
                   corejs: '3.0.0',
                   modules: false,

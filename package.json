@@ -1,6 +1,6 @@
 {
   "name": "imagej.js",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "ImageJ running in the browser",
   "main": "lib/index.bundle.js",
   "module": "src/index.js",
@@ -67,6 +67,7 @@
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.1",
     "webpack-merge": "^4.1.1",
+    "workbox-webpack-plugin": "^5.1.3",
     "write-file-webpack-plugin": "^4.5.1"
   },
   "gitHead": "9f00f654748b85702463b60a98751943c0107486"
