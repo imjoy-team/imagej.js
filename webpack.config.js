@@ -33,7 +33,9 @@ const config =  (env, argv) => ({
     // new CleanWebpackPlugin(['dist']),
     new CopyPlugin([
       { from: path.resolve(__dirname, 'src', 'assets'), to: path.resolve(__dirname, 'dist', 'assets')},
-      { from: path.resolve(__dirname, 'src', 'CNAME')}
+      { from: path.resolve(__dirname, 'src', 'CNAME')},
+      { from: path.resolve(__dirname, 'src', 'service-worker.js')},
+      { from: path.resolve(__dirname, 'src', 'manifest.webmanifest')}
     ]),
     new HtmlWebpackPlugin(
       {
