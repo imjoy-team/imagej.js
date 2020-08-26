@@ -39,10 +39,13 @@
       box-shadow: none;
     }
 
-    .menu {
+    .menuItem:hover>* {
       z-index: 9999;
     }
 
+    .bordered {
+      border-radius: 2px;
+    }
     .cheerpjLoading:before {
       background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
       background-size: 300px !important;
@@ -64,41 +67,31 @@
       margin-right: auto;
       transform: translate(-50%, 0);
     }
+    #drag-overlay{
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(126, 126, 126, 0.255);
+      display: none;
+      text-align: center;
+    }
+    #drag-overlay>span{
+      position: relative;
+      top: 30%;
+      transform: translateY(-30%);
+      line-height: 90px;
+      font-size: 20px; 
+    }
+
   </style>
 </head>
 
 <body>
-  <div class="container" id="ij-container">
+  <div id="drag-overlay">
+    <span>Drop file here to open</span>
+  </div>
+  <div class="container" id="app-container">
   </div>
 </body>
-<script>
-  cheerpjInit();
-  const parent = document.getElementById('ij-container');
-  cheerpjCreateDisplay(-1, -1, parent);
-  cheerpjRunMain("ij.ImageJ", "/app/imagej-1/ij.jar");
-</script>
-<script>
-  // fix ios height issue
-  function resetHeight() {
-    // reset the body height to that of the inner browser
-    document.body.style.height = window.innerHeight + "px";
-  }
-  // reset the height whenever the window's resized
-  window.addEventListener("resize", resetHeight);
-  // called to initially set the height.
-  resetHeight();
-
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
-        // Registration was successful
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      }, function (err) {
-        // registration failed :(
-        console.log('ServiceWorker registration failed: ', err);
-      });
-    });
-  }
-</script>
 
 </html>

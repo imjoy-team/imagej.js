@@ -13,7 +13,7 @@ const config = (env, argv) => ({
     index: './src/index.js',
   },
   output: {
-    filename: 'index.bundle.js',
+    filename: 'index.js',
     path: path.resolve(__dirname, 'dist'),
     library: 'imagej',
     libraryTarget: 'umd',
@@ -38,9 +38,6 @@ const config = (env, argv) => ({
       },
       {
         from: path.resolve(__dirname, 'src', 'CNAME')
-      },
-      {
-        from: path.resolve(__dirname, 'src', 'service-worker.js')
       },
       {
         from: path.resolve(__dirname, 'src', 'manifest.webmanifest')

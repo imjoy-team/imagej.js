@@ -1,14 +1,14 @@
 {
   "name": "imagej.js",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "ImageJ running in the browser",
-  "main": "lib/index.bundle.js",
+  "main": "lib/index.js",
   "module": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no tests available\" && exit 1",
     "build": "webpack --mode production --devtool source-map",
     "watch": "webpack --watch",
-    "serve": "webpack-dev-server",
+    "serve": "webpack-dev-server --watch",
     "stats": "webpack --profile --json > stats.json",
     "format": "prettier --write \"{src,tests}/**/**\"",
     "check-format": "prettier --check \"{src,tests}/**/**\"",
