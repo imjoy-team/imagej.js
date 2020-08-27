@@ -28,6 +28,9 @@ async function startImageJ() {
         getPlugins: await cjResolveCall("ij.Menus", "getPlugins", []),
         getPlugInsPath: await cjResolveCall("ij.Menus", "getPlugInsPath", []),
         getImage: await cjResolveCall("ij.IJ", "getImage", []),
+        save: await cjResolveCall("ij.IJ", "save", ["ij.ImagePlus", "java.lang.String"]),
+        saveAs: await cjResolveCall("ij.IJ", "saveAs", ["ij.ImagePlus", "java.lang.String", "java.lang.String"]),
+        getString: await cjResolveCall("ij.IJ", "getString", ["java.lang.String", "java.lang.String"]),
         // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
         // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
     }
@@ -38,6 +41,122 @@ async function mountFile(file) {
     const bytes = await readFile(file)
     cheerpjAddStringFile(filepath, bytes);
     return filepath;
+}
+
+async function saveFile(imagej, imp, format, filename) {
+    await imagej.saveAs(imp, format, '/files/' + filename)
+    const request = indexedDB.open("cjFS_/files/");
+    request.onerror = function (event) {
+        console.error("Failed to read file", event);
+    };
+    request.onsuccess = function (event) {
+        const db = event.target.result;
+        var transaction = db.transaction(["files"], "readwrite");
+        var objectStore = transaction.objectStore("files");
+        objectStore.get("/" + filename).onsuccess = (e) => {
+            const fileBytes = e.target.result.contents
+            objectStore.delete("/" + filename)
+            const blob = new Blob([fileBytes.buffer], {
+                type: "application/octet-stream"
+            });
+
+            if (window.navigator.msSaveOrOpenBlob) {
+                window.navigator.msSaveBlob(blob, filename);
+            } else {
+                const elem = window.document.createElement('a');
+                elem.href = window.URL.createObjectURL(blob);
+                elem.download = filename;
+                document.body.appendChild(elem);
+                elem.click();
+                document.body.removeChild(elem);
+            }
+        }
+    };
+}
+
+async function fixMenu(imagej) {
+    const removes = ["Open Next", "Open Samples", "Open Recent", "Show Folder",
+        "Copy to System", "Import", "Revert", "Install...", "Run...", "Edit...", "Compile and Run...",
+        "Capture Screen", "Capture Delayed...", "Capture Image",
+    ]
+    const items = document.querySelectorAll("#cheerpjDisplay>.window:nth-child(2) li > a")
+    for (let it of items) {
+        it.text = it.text.trim()
+        if (removes.includes(it.text)) {
+            // remove li
+            const el = it.parentNode;
+            el.parentNode.removeChild(el);
+        } else if (it.text === 'Open...') {
+            const openMenu = it.parentNode;
+            const fileInput = document.getElementById('open-file')
+            fileInput.onchange = () => {
+                const files = fileInput.files;
+                for (let i = 0, len = files.length; i < len; i++) {
+                    mountFile(files[i]).then((filepath) => {
+                        imagej.openFile(filepath)
+                    })
+                }
+                fileInput.value = "";
+            }
+            openMenu.onclick = (e) => {
+
+                e.stopPropagation()
+                fileInput.click()
+            }
+        } else {
+            function fixSaveMenu(format, ext) {
+                const saveMenu = it.parentNode;
+                saveMenu.onclick = async (e) => {
+                    e.stopPropagation()
+                    const imp = await imagej.getImage();
+                    const original_name = cjStringJavaToJs(await cjCall(imp, "getTitle"))
+                    const filename = cjStringJavaToJs(await imagej.getString("Saving file as ", original_name.split('.')[0] + (ext || ('.' + format))))
+                    if (filename)
+                        saveFile(imagej, imp, format, filename)
+                }
+            }
+            if (it.text === 'Save' || it.text === 'Tiff...') {
+                fixSaveMenu('tiff', '.tif')
+            } else if (it.text === 'Gif...') {
+                fixSaveMenu('gif', '.gif')
+            } else if (it.text === 'Jpeg...') {
+                fixSaveMenu('jpeg', '.jpg')
+            } else if (it.text === 'Text Image...') {
+                fixSaveMenu('text image', '.txt')
+            } else if (it.text === 'ZIP...') {
+                fixSaveMenu('zip', '.zip')
+            } else if (it.text === 'Raw Data...') {
+                fixSaveMenu('raw', '.raw')
+            } else if (it.text === 'Raw Data...') {
+                fixSaveMenu('raw', '.raw')
+            } else if (it.text === 'Image Sequence...') {
+                // remove li
+                const el = it.parentNode;
+                el.parentNode.removeChild(el);
+            } else if (it.text === 'AVI...') {
+                fixSaveMenu('avi', '.avi')
+            } else if (it.text === 'BMP...') {
+                fixSaveMenu('bmp', '.bmp')
+            } else if (it.text === 'PNG...') {
+                fixSaveMenu('png', '.png')
+            } else if (it.text === 'PGM...') {
+                fixSaveMenu('pgm', '.pgm')
+            } else if (it.text === 'FITS...') {
+                fixSaveMenu('fits', '.fits')
+            } else if (it.text === 'LUT...') {
+                fixSaveMenu('lut', '.lut')
+            } else if (it.text === 'Selection...') {
+                fixSaveMenu('selection', '.roi')
+            } else if (it.text === 'XY Coordinates...') {
+                fixSaveMenu('xy Coordinates', '.txt')
+            } else if (it.text === 'Results...') {
+                fixSaveMenu('measurements', '.csv')
+            } else if (it.text === 'Text...') {
+                fixSaveMenu('text', '.txt')
+            }
+
+        }
+    }
 }
 
 function setupDragAndDrop(imagej) {
@@ -146,6 +265,10 @@ registerServiceWorker();
 fixHeight();
 startImageJ().then((imagej) => {
     setupDragAndDrop(imagej);
+    setTimeout(() => {
+        fixMenu(imagej);
+    }, 2000)
+
     // if inside an iframe, setup ImJoy
     if (window.self !== window.top) {
         setupImJoyAPI(imagej);
