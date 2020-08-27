@@ -18,8 +18,7 @@ async function startImageJ() {
     // cjCall("ij.IJ", "setDebugMode", true)
 
     return {
-        doCommand: await cjResolveCall("ij.IJ", "doCommand", ["java.lang.String"]),
-        runCommand: await cjResolveCall("ij.IJ", "run", ["java.lang.String"]),
+        run: await cjResolveCall("ij.IJ", "run", ["java.lang.String", "java.lang.String"]),
         showStatus: await cjResolveCall("ij.IJ", "showStatus", ["java.lang.String"]),
         showMessage: await cjResolveCall("ij.IJ", "showMessage", ["java.lang.String", "java.lang.String"]),
         runPlugIn: await cjResolveCall("ij.IJ", "runPlugIn", ["java.lang.String", "java.lang.String"]),
@@ -43,35 +42,46 @@ async function mountFile(file) {
     return filepath;
 }
 
-async function saveFile(imagej, imp, format, filename) {
-    await imagej.saveAs(imp, format, '/files/' + filename)
-    const request = indexedDB.open("cjFS_/files/");
-    request.onerror = function (event) {
-        console.error("Failed to read file", event);
-    };
-    request.onsuccess = function (event) {
-        const db = event.target.result;
-        var transaction = db.transaction(["files"], "readwrite");
-        var objectStore = transaction.objectStore("files");
-        objectStore.get("/" + filename).onsuccess = (e) => {
-            const fileBytes = e.target.result.contents
-            objectStore.delete("/" + filename)
-            const blob = new Blob([fileBytes.buffer], {
-                type: "application/octet-stream"
-            });
+async function getImageData(imagej) {
+    const imp = await imagej.getImage();
+    const width = await cjCall(imp, "getWidth")
+    const height = await cjCall(imp, "getHeight")
+    const slices = await cjCall(imp, "getNSlices")
+    const channels = await cjCall(imp, "getNChannels")
+    const frames = await cjCall(imp, "getNFrames")
+    const type = await cjCall(imp, "getType")
+    const bytes = await saveFileToBytes(imagej, imp, 'raw', 'tmp')
+    return {
+        type: type.value0,
+        shape: [height.value0, width.value0, channels.value0, slices.value0, frames.value0],
+        bytes
+    }
+}
 
-            if (window.navigator.msSaveOrOpenBlob) {
-                window.navigator.msSaveBlob(blob, filename);
-            } else {
-                const elem = window.document.createElement('a');
-                elem.href = window.URL.createObjectURL(blob);
-                elem.download = filename;
-                document.body.appendChild(elem);
-                elem.click();
-                document.body.removeChild(elem);
+function saveFileToBytes(imagej, imp, format, filename) {
+    return new Promise(async (resolve, reject) => {
+        await imagej.saveAs(imp, format, '/files/' + filename)
+        const request = indexedDB.open("cjFS_/files/");
+        request.onerror = function (event) {
+            console.error("Failed to read file", event);
+            reject("Failed to open file system")
+        };
+        request.onsuccess = function (event) {
+            const db = event.target.result;
+            var transaction = db.transaction(["files"], "readwrite");
+            var objectStore = transaction.objectStore("files");
+            const req = objectStore.get("/" + filename);
+            req.onsuccess = (e) => {
+                const fileBytes = e.target.result.contents
+                objectStore.delete("/" + filename)
+                resolve(fileBytes)
             }
-        }
-    };
+            req.onerror = () => {
+                reject("Failed to read file: " + filename)
+            }
+        };
+    })
+
 }
 
 async function fixMenu(imagej) {
@@ -111,8 +121,23 @@ async function fixMenu(imagej) {
                     const imp = await imagej.getImage();
                     const original_name = cjStringJavaToJs(await cjCall(imp, "getTitle"))
                     const filename = cjStringJavaToJs(await imagej.getString("Saving file as ", original_name.split('.')[0] + (ext || ('.' + format))))
-                    if (filename)
-                        saveFile(imagej, imp, format, filename)
+                    if (filename) {
+                        const fileBytes = await saveFileToBytes(imagej, imp, format, filename)
+                        const blob = new Blob([fileBytes.buffer], {
+                            type: "application/octet-stream"
+                        });
+
+                        if (window.navigator.msSaveOrOpenBlob) {
+                            window.navigator.msSaveBlob(blob, filename);
+                        } else {
+                            const elem = window.document.createElement('a');
+                            elem.href = window.URL.createObjectURL(blob);
+                            elem.download = filename;
+                            document.body.appendChild(elem);
+                            elem.click();
+                            document.body.removeChild(elem);
+                        }
+                    }
                 }
             }
             if (it.text === 'Save' || it.text === 'Tiff...') {
@@ -271,6 +296,6 @@ startImageJ().then((imagej) => {
 
     // if inside an iframe, setup ImJoy
     if (window.self !== window.top) {
-        setupImJoyAPI(imagej);
+        setupImJoyAPI(imagej, getImageData);
     }
 })
