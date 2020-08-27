@@ -5,9 +5,12 @@ async function startImageJ() {
     });
     const appContainer = document.getElementById('app-container');
     cheerpjCreateDisplay(-1, -1, appContainer);
-    cheerpjRunMain("ij.ImageJ", "/app/imagej-1/ij.jar");
+    cheerpjRunStaticMethod(threads[0], "java/lang/System", cjSystemSetProperty, "user.dir", "/files");
+    cheerpjRunStaticMethod(threads[0], "java/lang/System", cjSystemSetProperty, "plugins.dir", "/app/imagej-1");
+    cheerpjRunMain("ij.ImageJ", "/app/imagej-1/ij.jar:/app/imagej-1/plugins/Thunder_STORM.jar");
 
     const ij = await getImageJInstance()
+    
     window.imagej = {
         doCommand: await cjResolveCall("ij.IJ", "doCommand", ["java.lang.String"]),
         runCommand: await cjResolveCall("ij.IJ", "run", ["java.lang.String"]),
@@ -15,9 +18,15 @@ async function startImageJ() {
         showMessage: await cjResolveCall("ij.IJ", "showMessage", ["java.lang.String", "java.lang.String"]),
         runPlugIn: await cjResolveCall("ij.IJ", "runPlugIn", ["java.lang.String", "java.lang.String"]),
         openFile: await cjResolveCall("ij.IJ", "open", ["java.lang.String"]),
+        installPlugin: await cjResolveCall("ij.Menus", "installPlugin", null),
+        getPlugins: await cjResolveCall("ij.Menus", "getPlugins", []),
+        getPlugInsPath: await cjResolveCall("ij.Menus", "getPlugInsPath", []),
+        // setProperty: await cjResolveCall("java.lang.System", "setProperty", ["java.lang.String", "java.lang.String"]),
+        // getProperty: await cjResolveCall("java.lang.System", "getProperty", ["java.lang.String"]),
+        // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
+        // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
     }
     imagej.showStatus("imagej.js loaded!")
-
 }
 
 async function openJSFile(file) {
