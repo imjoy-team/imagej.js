@@ -28,5 +28,7 @@ cd dist
     # compile ij.jar and we should get
     cd imagej-1
     ${CHEERPJ_DIR}/cheerpjfy.py ij.jar
+    python build_plugins.py
+    ${CHEERPJ_DIR}/cheerpjfy.py plugins.jar
 }
 
