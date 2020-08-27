@@ -296,6 +296,6 @@ startImageJ().then((imagej) => {
 
     // if inside an iframe, setup ImJoy
     if (window.self !== window.top) {
-        setupImJoyAPI(imagej, getImageData);
+        setupImJoyAPI(imagej, getImageData, saveFileToBytes);
     }
 })

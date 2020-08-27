@@ -47,6 +47,11 @@ export async function setupImJoyAPI(imagej, getImageData) {
       }
 
     },
+    async getSelection() {
+      const imp = await imagej.getImage();
+      const bytes = await saveFileToBytes(imagej, imp, 'selection', 'tmp')
+      return bytes
+    },
     async getImage() {
 
       const data = await getImageData(imagej);
