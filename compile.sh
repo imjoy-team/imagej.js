@@ -12,9 +12,9 @@ mkdir -p dist
 cd dist
 
 { # try to download from github release
-    wget https://github.com/imjoy-team/imagej.js/releases/download/0.1.x/imagej-1.zip
-    unzip -q -o imagej-1.zip
-    rm imagej-1.zip
+    wget https://github.com/imjoy-team/imagej.js/releases/download/0.1.x/imagej-1-packed.zip
+    unzip -q -o imagej-1-packed.zip
+    rm imagej-1-packed.zip
 } || { # if failed then compile
     wget https://d3415aa6bfa4.leaningtech.com/cheerpj_linux_2.1.tar.gz
     tar -xvf cheerpj_linux_2.1.tar.gz
