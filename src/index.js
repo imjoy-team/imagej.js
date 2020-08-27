@@ -1,3 +1,7 @@
+import {
+    setupImJoyAPI
+} from "./imjoyAPI.js";
+
 async function startImageJ() {
     cheerpjInit({
         enableInputMethods: true,
@@ -10,8 +14,10 @@ async function startImageJ() {
     cheerpjRunMain("ij.ImageJ", "/app/imagej-1/ij.jar:/app/imagej-1/plugins/Thunder_STORM.jar");
 
     const ij = await getImageJInstance()
-    
-    window.imagej = {
+    // turn on debug mode
+    // cjCall("ij.IJ", "setDebugMode", true)
+
+    return {
         doCommand: await cjResolveCall("ij.IJ", "doCommand", ["java.lang.String"]),
         runCommand: await cjResolveCall("ij.IJ", "run", ["java.lang.String"]),
         showStatus: await cjResolveCall("ij.IJ", "showStatus", ["java.lang.String"]),
@@ -21,22 +27,20 @@ async function startImageJ() {
         installPlugin: await cjResolveCall("ij.Menus", "installPlugin", null),
         getPlugins: await cjResolveCall("ij.Menus", "getPlugins", []),
         getPlugInsPath: await cjResolveCall("ij.Menus", "getPlugInsPath", []),
-        // setProperty: await cjResolveCall("java.lang.System", "setProperty", ["java.lang.String", "java.lang.String"]),
-        // getProperty: await cjResolveCall("java.lang.System", "getProperty", ["java.lang.String"]),
+        getImage: await cjResolveCall("ij.IJ", "getImage", []),
         // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
         // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
     }
-    imagej.showStatus("imagej.js loaded!")
 }
 
-async function openJSFile(file) {
+async function mountFile(file) {
     const filepath = "/str/" + file.name
     const bytes = await readFile(file)
     cheerpjAddStringFile(filepath, bytes);
-    await imagej.openFile(filepath)
+    return filepath;
 }
 
-function setupDragAndDrop() {
+function setupDragAndDrop(imagej) {
     const appContainer = document.getElementById('app-container');
     const dragOverlay = document.getElementById("drag-overlay");
 
@@ -70,7 +74,9 @@ function setupDragAndDrop() {
             const data = e.dataTransfer,
                 files = data.files;
             for (let i = 0, len = files.length; i < len; i++) {
-                openJSFile(files[i]);
+                mountFile(files[i]).then((filepath) => {
+                    imagej.openFile(filepath)
+                })
             }
             dragOverlay.style.display = "none";
         }
@@ -138,6 +144,10 @@ function registerServiceWorker() {
 
 registerServiceWorker();
 fixHeight();
-startImageJ().then(() => {
-    setupDragAndDrop();
+startImageJ().then((imagej) => {
+    setupDragAndDrop(imagej);
+    // if inside an iframe, setup ImJoy
+    if (window.self !== window.top) {
+        setupImJoyAPI(imagej);
+    }
 })
