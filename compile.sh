@@ -59,9 +59,9 @@ then
 else
 
     # try to download from github release
-    curl https://github.com/imjoy-team/imagej.js/releases/download/0.1.x/imagej-1-packed.zip -LO
-    unzip -q -o imagej-1-packed.zip
-    rm imagej-1-packed.zip
+    curl https://github.com/imjoy-team/imagej.js/releases/download/0.1.x/ij153.zip -LO
+    unzip -q -o ij153.zip
+    rm ij153.zip
 
 fi
 
