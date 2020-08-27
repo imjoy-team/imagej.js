@@ -74,6 +74,16 @@
     .window>div>div {
       width: 100% !important;
       background-color: transparent !important;
+      min-height: 20px;
+    }
+
+    /* fix search dialog */
+    .window>div>div>div>div {
+      width: 100% !important;
+    }
+
+    .window>div>input {
+      height: 15px !important;
     }
 
     #drag-overlay {
@@ -99,6 +109,7 @@
 
 <body>
   <div id="drag-overlay">
+    <input type="file" id="open-file" style="display: none;">
     <span>Drop file here to open</span>
   </div>
   <div class="container" id="app-container">
