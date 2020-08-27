@@ -49,9 +49,9 @@ then
     mv ij-packed.jar ij.jar
     rm plugins/Thunder_STORM.jar
     mv plugins/Thunder_STORM-packed.jar plugins/Thunder_STORM.jar
-    rm ImageJ.app
     rm ImageJ.exe
     rm run
+    rm -rf ImageJ.app
 
     # python build_plugins.py
     # ${CHEERPJ_DIR}/cheerpjfy.py --pack-jar=plugins-packed.jar plugins.jar
