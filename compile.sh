@@ -18,11 +18,16 @@ if [ "$COMPILE" = "1" ]
 then
     # compile from scratch
 
-    if test -z CHEERPJ_DIR
+    if [ -z ${CHEERPJ_DIR+x} ]
     then
-        curl https://d3415aa6bfa4.leaningtech.com/cheerpj_linux_2.1.tar.gz -LO
-        tar -xvf cheerpj_linux_2.1.tar.gz
-        export CHEERPJ_DIR=$(pwd)/cheerpj_2.1
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            curl https://d3415aa6bfa4.leaningtech.com/cheerpj_linux_2.1.tar.gz -LO
+            tar -xvf cheerpj_linux_2.1.tar.gz
+            export CHEERPJ_DIR=$(pwd)/cheerpj_2.1
+        else
+            echo "Please download cheerpj from https://www.leaningtech.com/pages/cheerpj.html#Download and set the CHEERPJ_DIR env variable "
+            exit 1
+        fi
     fi
     
     # # download ij153 from imagej.net
@@ -53,8 +58,7 @@ then
     rm run
     rm -rf ImageJ.app
 
-    # python build_plugins.py
-    # ${CHEERPJ_DIR}/cheerpjfy.py --pack-jar=plugins-packed.jar plugins.jar
+    python ../../build_plugins.py
 
 else
 
