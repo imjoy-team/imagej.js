@@ -44,13 +44,14 @@ async function mountFile(file) {
 
 async function getImageData(imagej) {
     const imp = await imagej.getImage();
+    const name = cjStringJavaToJs(await cjCall(imp, "getTitle"))
     const width = await cjCall(imp, "getWidth")
     const height = await cjCall(imp, "getHeight")
     const slices = await cjCall(imp, "getNSlices")
     const channels = await cjCall(imp, "getNChannels")
     const frames = await cjCall(imp, "getNFrames")
     const type = await cjCall(imp, "getType")
-    const bytes = await saveFileToBytes(imagej, imp, 'raw', 'tmp')
+    const bytes = await saveFileToBytes(imagej, imp, 'raw', name)
     return {
         type: type.value0,
         shape: [height.value0, width.value0, channels.value0, slices.value0, frames.value0],
