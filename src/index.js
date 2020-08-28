@@ -10,7 +10,7 @@ async function startImageJ() {
     const appContainer = document.getElementById('app-container');
     cheerpjCreateDisplay(-1, -1, appContainer);
     cheerpjRunStaticMethod(threads[0], "java/lang/System", cjSystemSetProperty, "user.dir", "/files");
-    cheerpjRunStaticMethod(threads[0], "java/lang/System", cjSystemSetProperty, "plugins.dir", "/app/imagej-1");
+    cheerpjRunStaticMethod(threads[0], "java/lang/System", cjSystemSetProperty, "plugins.dir", "/app/ij153");
     cheerpjRunMain("ij.ImageJ", "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar");
 
     const ij = await getImageJInstance()

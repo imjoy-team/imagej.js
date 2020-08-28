@@ -25,7 +25,7 @@ then
         export CHEERPJ_DIR=$(pwd)/cheerpj_2.1
     fi
     
-    # # download imagej-1 from imagej.net
+    # # download ij153 from imagej.net
     export IJ1_VERSION=ij153
     curl http://wsr.imagej.net/distros/cross-platform/${IJ1_VERSION}.zip -LO
     unzip -q -o ${IJ1_VERSION}.zip

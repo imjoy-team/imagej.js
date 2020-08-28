@@ -2,8 +2,8 @@ import os
 from shutil import copyfile
 from zipfile import ZipFile
 
-plugins_dir = "dist/imagej-1/plugins"
-ij_path = "dist/imagej-1/ij.jar"
+plugins_dir = "dist/ij153/plugins"
+ij_path = "dist/ij153/ij.jar"
 
 MANIFEST = '''Manifest-Version: 1.0
 Ant-Version: Apache Ant 1.10.1
