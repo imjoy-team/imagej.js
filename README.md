@@ -38,6 +38,10 @@ ij = await api.createWindow(src="https://ij.imjoy.io")
 img = await ij.getImage()
 
 ```
+### getSelection()
+Get the ROI selection in the current image.
+
+The returned roi is a encoded byte string, to parse it, you can use https://github.com/hadim/read-roi/.
 
 ### addMenuItem(config)
 Add a menu item to the `Plugins` menu.
