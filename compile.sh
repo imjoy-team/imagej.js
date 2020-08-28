@@ -14,7 +14,7 @@
 mkdir -p dist
 cd dist
 
-if [ "$COMPILE" -eq "1" ]
+if [ "$COMPILE" = "1" ]
 then
     # compile from scratch
 
