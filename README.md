@@ -12,7 +12,7 @@ You can use ImageJ.JS as an ImJoy plugin, the most common use case is to use it 
 
 Try an online demo: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imjoy-team/imagej.js/master?filepath=examples%2Fgetting-started.ipynb)
 
-### addImage(img_array)
+### viewImage(img_array)
 Load an image into ImageJ.JS. For example, you can pass images from Python with numpy arrays. The shape can have the following format:
  * [height, width]
  * [height, width, 1]
@@ -26,7 +26,7 @@ import imageio
 image = imageio.imread("https://images.proteinatlas.org/115/672_E2_1_blue_red_green.jpg")
 
 ij = await api.createWindow(src="https://ij.imjoy.io")
-await ij.addImage(image)
+await ij.viewImage(image)
 
 ```
 

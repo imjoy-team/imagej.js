@@ -23,7 +23,7 @@ export async function setupImJoyAPI(
       if (ctx.data && ctx.data.images) {
         //TODO: load images
         for (let img of ctx.data.images) {
-          this.addImage(img);
+          this.viewImage(img);
         }
       }
     },
@@ -39,7 +39,7 @@ export async function setupImJoyAPI(
     runPlugIn(className, args) {
       imagej.runPlugIn(className, args || "");
     },
-    async addImage(img, options) {
+    async viewImage(img, options) {
       options = options || {};
       options.name = options.name || "tmp";
       const filepath = "/str/" + options.name;
