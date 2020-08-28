@@ -63,7 +63,7 @@ const config = (env, argv) => ({
       skipWaiting: true,
       runtimeCaching: [{
           urlPattern: new RegExp('https://cjrtnc.leaningtech.com/.*'),
-          handler: 'StaleWhileRevalidate'
+          handler: 'CacheOnly'
         },
         {
           urlPattern: new RegExp('https://static.imjoy.io/.*'),
