@@ -20,8 +20,7 @@
       property="og:description"
       content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images"
     />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ImageJ.JS</title>
     <script src="https://cjrtnc.leaningtech.com/2.1/loader.js"></script>
     <style>
@@ -74,9 +73,13 @@
 
       /* fix text label display in window */
       .window > div > div {
-        width: 100% !important;
+        min-width: 60%;
         background-color: transparent !important;
         min-height: 20px;
+      }
+      /* fix search */
+      .window > div > div > div > div {
+        min-width: 75%;
       }
 
       .window > div > input {

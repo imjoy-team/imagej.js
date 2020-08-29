@@ -1,10 +1,34 @@
 import { setupImJoyAPI } from "./imjoyAPI.js";
+import Snackbar from "node-snackbar/dist/snackbar";
+import "node-snackbar/dist/snackbar.css";
+
+// setup a hook for fixing mobile touch event
+const _createElement = document.createElement;
+document.createElement = function (type){
+    const elm = _createElement.call(document, type);
+    elm.addEventListener("touchstart", (ev)=>{
+        elm.click();
+        ev.preventDefault();
+    }, false);
+    return elm
+}
+
+window.onSaveFileSelected = (name)=>{
+    debugger
+}
+
+window.openURL = (url) =>{
+    window.open(url);
+}
+
+const writingQueue = {};
 
 async function startImageJ() {
   cheerpjInit({
     enableInputMethods: true,
     clipboardMode: "system"
   });
+  
   const appContainer = document.getElementById("app-container");
   cheerpjCreateDisplay(-1, -1, appContainer);
   cheerpjRunStaticMethod(
@@ -19,18 +43,41 @@ async function startImageJ() {
     "java/lang/System",
     cjSystemSetProperty,
     "plugins.dir",
-    "/app/ij153"
+    "/app/ij153/plugins"
   );
   cheerpjRunMain(
     "ij.ImageJ",
-    "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar"
+    "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar",
   );
 
   const ij = await getImageJInstance();
   // turn on debug mode
   // cjCall("ij.IJ", "setDebugMode", true)
-
-  return {
+    // setup file saving hook
+    Snackbar.show({text:"ImageJ.JS is ready.", pos: 'bottom-left'}); 
+    const _cheerpjWriteAsync = window.cheerpjWriteAsync
+    window.cheerpjWriteAsync = function (fds, fd, buf, off, len, p){
+        writingQueue[fd] = 1;
+        return _cheerpjWriteAsync.apply(null, arguments);
+    }
+    const _cheerpjCloseAsync = window.cheerpjCloseAsync;
+    window.cheerpjCloseAsync = function (fds, fd, p){
+        if(writingQueue[fd]){
+            delete writingQueue[fd];
+            const fdObj = fds[fd];
+            const fileData = fdObj.fileData;
+            const tmp =fileData.path.split('/');
+            const filename = tmp[tmp.length-1];
+            downloadBytesFile(fileData.chunks, filename)
+            _cheerpjCloseAsync.apply(null, arguments);
+            // remove the file after downloading
+            // cheerpOSUnlinkAsync(fileData.path, p)
+        }
+        else{
+          _cheerpjCloseAsync.apply(null, arguments);
+        }
+    }
+    const imagej_api = {
     run: await cjResolveCall("ij.IJ", "run", [
       "java.lang.String",
       "java.lang.String"
@@ -67,10 +114,26 @@ async function startImageJ() {
     getString: await cjResolveCall("ij.IJ", "getString", [
       "java.lang.String",
       "java.lang.String"
-    ])
+    ]),
+    listDir: await cjResolveCall("ij.IJ", "listDir", [
+      "java.lang.String"
+    ]),
+    removeFile: await cjResolveCall("ij.IJ", "removeFile", [
+      "java.lang.String"
+    ]),
+    openAsBytes: await cjResolveCall("ij.IJ", "openAsBytes", [
+      "java.lang.String"
+    ]),
+    saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null),
     // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
   };
+  return imagej_api;
+}
+
+async function listFiles(imagej, path){
+  const files = await imagej.listDir(path)
+  return files.map(cjStringJavaToJs);
 }
 
 async function mountFile(file) {
@@ -144,20 +207,24 @@ async function saveImage(imagej, filename, format, ext) {
     );
   if (filename) {
     const fileBytes = await saveFileToBytes(imagej, imp, format, filename);
-    const blob = new Blob([fileBytes.buffer], {
-      type: "application/octet-stream"
-    });
+    downloadBytesFile([fileBytes.buffer], filename)
+  }
+}
 
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveBlob(blob, filename);
-    } else {
-      const elem = window.document.createElement("a");
-      elem.href = window.URL.createObjectURL(blob);
-      elem.download = filename;
-      document.body.appendChild(elem);
-      elem.click();
-      document.body.removeChild(elem);
-    }
+function downloadBytesFile(fileByteArray, filename){
+  const blob = new Blob(fileByteArray, {
+    type: "application/octet-stream"
+  });
+
+  if (window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveBlob(blob, filename);
+  } else {
+    const elem = window.document.createElement("a");
+    elem.href = window.URL.createObjectURL(blob);
+    elem.download = filename;
+    document.body.appendChild(elem);
+    elem.click();
+    document.body.removeChild(elem);
   }
 }
 
@@ -169,14 +236,27 @@ function openImage(imagej, path) {
   fileInput.onchange = () => {
     const files = fileInput.files;
     for (let i = 0, len = files.length; i < len; i++) {
-      mountFile(files[i]).then(filepath => {
-        imagej.open(filepath);
-      });
+      if(files[i].name.endsWith('.jar') || files[i].name.endsWith('.jar.js')){
+        saveFileToFS(imagej, files[i]);
+      }
+      else{
+        mountFile(files[i]).then(filepath => {
+          imagej.open(filepath);
+        });
+      }
+
     }
     fileInput.value = "";
   };
   fileInput.click();
 }
+
+async function saveFileToFS(imagej, file){
+  const bytes = await readFile(file);
+  await imagej.saveBytes(bytes, '/files/plugins/'+file.name);
+  // console.log('==========', await listFiles(imagej, '/files/plugins/'));
+}
+
 async function fixMenu(imagej) {
   const removes = [
     "Open Next",
@@ -307,9 +387,15 @@ function setupDragAndDrop(imagej) {
         const data = e.dataTransfer,
           files = data.files;
         for (let i = 0, len = files.length; i < len; i++) {
-          mountFile(files[i]).then(filepath => {
-            imagej.open(filepath);
-          });
+          if(files[i].name.endsWith('.jar') || files[i].name.endsWith('.jar.js')){
+            saveFileToFS(imagej, files[i]);
+          }
+          else{
+            mountFile(files[i]).then(filepath => {
+              imagej.open(filepath);
+            });
+          }
+
         }
         dragOverlay.style.display = "none";
       }
@@ -383,9 +469,9 @@ registerServiceWorker();
 fixHeight();
 startImageJ().then(imagej => {
   setupDragAndDrop(imagej);
-  setTimeout(() => {
-    fixMenu(imagej);
-  }, 2000);
+//   setTimeout(() => {
+//     fixMenu(imagej);
+//   }, 2000);
 
   // if inside an iframe, setup ImJoy
   if (window.self !== window.top) {

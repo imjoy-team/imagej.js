@@ -23,6 +23,7 @@ const config = (env, argv) => ({
     contentBase: path.resolve(__dirname, 'dist'),
     publicPath: '/',
     port: 9090,
+    host: '0.0.0.0',
     hot: true,
     headers: {
       "Access-Control-Allow-Origin": "*",

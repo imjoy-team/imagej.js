@@ -36,7 +36,8 @@
   "homepage": "https://github.com/imjoy-team/imagej.js#readme",
   "dependencies": {
     "@jupyterlab/services": "^4.2.0",
-    "imjoy-rpc": "^0.2.22"
+    "imjoy-rpc": "^0.2.22",
+    "node-snackbar": "^0.1.16"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.39",
