@@ -254,21 +254,15 @@ function openImage(imagej, path) {
 async function saveFileToFS(imagej, file){
   const bytes = await readFile(file);
   await imagej.saveBytes(bytes, '/files/plugins/'+file.name);
-  // console.log('==========', await listFiles(imagej, '/files/plugins/'));
+  console.log(await listFiles(imagej, '/files/plugins/'));
 }
 
 async function fixMenu(imagej) {
   const removes = [
-    "Open Next",
     "Open Samples",
-    "Open Recent",
     "Show Folder",
     "Copy to System",
-    "Import",
-    "Revert",
     "Install...",
-    "Run...",
-    "Edit...",
     "Compile and Run...",
     "Capture Screen",
     "Capture Delayed...",
@@ -284,59 +278,15 @@ async function fixMenu(imagej) {
       const el = it.parentNode;
       el.parentNode.removeChild(el);
     } else if (it.text === "Open...") {
-      const openMenu = it.parentNode;
-
+      const openNode = it.parentNode;
+      const openMenu = openNode.cloneNode(true);
+      it.text = "Open Internal"
       openMenu.onclick = e => {
         e.stopPropagation();
         openImage(imagej);
       };
-    } else {
-      function fixSaveMenu(format, ext) {
-        const saveMenu = it.parentNode;
-        saveMenu.onclick = e => {
-          e.stopPropagation();
-          saveImage(imagej, null, format, ext);
-        };
-      }
-      if (it.text === "Save" || it.text === "Tiff...") {
-        fixSaveMenu("tiff", ".tif");
-      } else if (it.text === "Gif...") {
-        fixSaveMenu("gif", ".gif");
-      } else if (it.text === "Jpeg...") {
-        fixSaveMenu("jpeg", ".jpg");
-      } else if (it.text === "Text Image...") {
-        fixSaveMenu("text image", ".txt");
-      } else if (it.text === "ZIP...") {
-        fixSaveMenu("zip", ".zip");
-      } else if (it.text === "Raw Data...") {
-        fixSaveMenu("raw", ".raw");
-      } else if (it.text === "Raw Data...") {
-        fixSaveMenu("raw", ".raw");
-      } else if (it.text === "Image Sequence...") {
-        // remove li
-        const el = it.parentNode;
-        el.parentNode.removeChild(el);
-      } else if (it.text === "AVI...") {
-        fixSaveMenu("avi", ".avi");
-      } else if (it.text === "BMP...") {
-        fixSaveMenu("bmp", ".bmp");
-      } else if (it.text === "PNG...") {
-        fixSaveMenu("png", ".png");
-      } else if (it.text === "PGM...") {
-        fixSaveMenu("pgm", ".pgm");
-      } else if (it.text === "FITS...") {
-        fixSaveMenu("fits", ".fits");
-      } else if (it.text === "LUT...") {
-        fixSaveMenu("lut", ".lut");
-      } else if (it.text === "Selection...") {
-        fixSaveMenu("selection", ".roi");
-      } else if (it.text === "XY Coordinates...") {
-        fixSaveMenu("xy Coordinates", ".txt");
-      } else if (it.text === "Results...") {
-        fixSaveMenu("measurements", ".csv");
-      } else if (it.text === "Text...") {
-        fixSaveMenu("text", ".txt");
-      }
+      openNode.parentNode.insertBefore(openMenu, openNode)
+      
     }
   }
 }
@@ -469,9 +419,9 @@ registerServiceWorker();
 fixHeight();
 startImageJ().then(imagej => {
   setupDragAndDrop(imagej);
-//   setTimeout(() => {
-//     fixMenu(imagej);
-//   }, 2000);
+  setTimeout(() => {
+    fixMenu(imagej);
+  }, 2000);
 
   // if inside an iframe, setup ImJoy
   if (window.self !== window.top) {
