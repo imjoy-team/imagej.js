@@ -19,144 +19,8 @@
     content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>ImageJ.JS</title>
-  <link rel="stylesheet" href="/assets/css/micromodal.css">
+  <link rel="stylesheet" href="/style.css">
   <script src="https://cjrtnc.leaningtech.com/2.1/loader.js"></script>
-  <style>
-    body {
-      width: 100vw;
-      height: 100vh;
-      margin: 0px;
-    }
-
-    #app {
-      width: 100%;
-      height: 100%;
-    }
-
-    
-    .container {
-      width: calc(100vw);
-      height: calc(100vh);
-      box-shadow: none;
-      overflow: hidden;
-    }
-
-    #cheerpjDisplay {
-      box-shadow: none;
-    }
-
-    /* make menu always on top of window */
-    .menuItem:hover>* {
-      z-index: 9999;
-    }
-
-
-
-    .cheerpjLoading:before {
-      background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
-      background-size: 300px !important;
-      max-width: 300px !important;
-    }
-
-    .container:not(.cheerpjLoading) {
-      background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
-      background-size: 300px !important;
-    }
-
-    div#cheerpjDisplay.status:after {
-      outline: none !important;
-      position: absolute !important;
-      border: 0px solid rgb(63, 107, 240);
-      border-radius: 5px;
-      bottom: 10px;
-      margin-left: auto;
-      margin-right: auto;
-      transform: translate(-50%, 0);
-    }
-
-    input[type=button] {
-      border-width: 0;
-      outline: none;
-      border-radius: 2px;
-      top: 1px !important;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
-    }
-
-    input[type=button]:focus,  input[type=button]:hover {
-      color: #0662d6;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, .8);
-    }
-
-    /* fix text label display in window */
-    .window>div>div {
-      min-width: 70%;
-      background-color: transparent !important;
-      min-height: 20px;
-    }
-
-    /* fix the play button */
-    .window>div>div>div>div>canvas{
-      top:5px!important;
-    }
-
-    .titleBar {
-      background-color: #448aff !important;
-      color: white !important;
-      border-radius: 4px 4px 0px 0px;
-    }
-
-    .titleBar>a:first-child {
-      font-size: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      position: absolute;
-      white-space: nowrap;
-      overflow: hidden; 
-      text-overflow: ellipsis;
-    }
-
-    #cheerpjDisplay>div.bordered {
-      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3) !important;
-      border-radius: 0 0 4px 4px;
-    }
-
-    #cheerpjDisplay>div.window:hover {
-      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.4) !important;
-    }
-
-    #cheerpjDisplay>div.window>canvas {
-      border-radius: 0 0 4px 4px;
-    }
-
-
-    .window>div>input {
-      height: 15px !important;
-      z-index: 1;
-    }
-
-    .window>div>select {
-      z-index: 1;
-    }
-
-    #drag-overlay {
-      position: absolute;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(126, 126, 126, 0.255);
-      display: none;
-      text-align: center;
-      z-index: -1;
-    }
-
-    #drag-overlay>span {
-      position: relative;
-      top: 30%;
-      transform: translateY(-30%);
-      line-height: 90px;
-      font-size: 20px;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-  </style>
 </head>
 
 <body>
@@ -166,27 +30,23 @@
     <input type="file" id="open-file" style="display: none;" />
     <span>Drop file here to open</span>
   </div>
-  <div class="modal micromodal-slide" id="open-file-modal" aria-hidden="true">
-    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="open-file-modal-title">
-        <header class="modal__header">
-          <h2 class="modal__title" id="open-file-modal-title">
-            Open file
-          </h2>
-          <!-- <button class="modal__close" aria-label="Close modal" data-micromodal-close></button> -->
-        </header>
-        <main class="modal__content" id="open-file-modal-content">
-          <p>
-            You can either select a file from your local file system or cached files in the browser.
-          </p>
-        </main>
-        <footer class="modal__footer">
-          <button id="open-file-modal-select" class="modal__btn modal__btn-primary" data-micromodal-close>Select Local File</button>
-          <button id="open-file-modal-internal" class="modal__btn" data-micromodal-close>Select Cached File</button>
-          <button id="open-file-modal-cancel" class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Cancel</button>
-        </footer>
+
+  <div class="dialog" id="open-file-dialog">
+    <div class="dialog-overlay" tabindex="-1" data-a11y-dialog-hide></div>
+    <dialog class="dialog-content" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
+      <button data-a11y-dialog-hide class="dialog-close" aria-label="Close this dialog window">&times;</button>
+
+      <h1 id="dialogTitle">Open File</h1>
+
+      <p id="dialogDescription">You can either select a file from your local file system or cached files in the browser.
+      </p>
+
+      <div class="dialog-button-group">
+        <button aria-label="Select a local file" id="open-file-modal-select">Select Local File</button>
+        <button aria-label="Select a cached file" id="open-file-modal-internal">Select Cached File</button>
+        <button aria-label="Cancel the selection" id="open-file-modal-cancel" data-a11y-dialog-hide>Cancel</button>
       </div>
-    </div>
+    </dialog>
   </div>
 </body>
 

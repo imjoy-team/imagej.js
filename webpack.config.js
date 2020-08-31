@@ -41,6 +41,9 @@ const config = (env, argv) => ({
         from: path.resolve(__dirname, 'src', 'CNAME')
       },
       {
+        from: path.resolve(__dirname, 'src', 'style.css')
+      },
+      {
         from: path.resolve(__dirname, 'src', 'manifest.webmanifest')
       }
     ]),
