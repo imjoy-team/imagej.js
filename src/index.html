@@ -1,117 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="ResourceLoaderDynamicStyles" content="" />
-    <meta name="generator" content="MediaWiki 1.28.0" />
-    <meta
-      name="description"
-      content="ImageJ is an open source image processing program designed for scientific multidimensional images."
-    />
-    <link rel="shortcut icon" href="assets/img/ij2.ico" />
-    <meta property="og:type" content="website" />
 
-    <meta property="og:title" content="ImageJ.JS" />
+<head>
+  <meta charset="utf-8" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="ResourceLoaderDynamicStyles" content="" />
+  <meta name="generator" content="MediaWiki 1.28.0" />
+  <meta name="description"
+    content="ImageJ is an open source image processing program designed for scientific multidimensional images." />
+  <link rel="shortcut icon" href="assets/img/ij2.ico" />
+  <meta property="og:type" content="website" />
 
-    <meta property="og:image" content="assets/img/imagej-js-splash.png" />
+  <meta property="og:title" content="ImageJ.JS" />
 
-    <meta
-      property="og:description"
-      content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images"
-    />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>ImageJ.JS</title>
-    <script src="https://cjrtnc.leaningtech.com/2.1/loader.js"></script>
-    <style>
-      body {
-        width: 100vw;
-        height: 100vh;
-        margin: 0px;
-      }
+  <meta property="og:image" content="assets/img/imagej-js-splash.png" />
 
-      .container {
-        width: calc(100vw - 20px);
-        height: calc(100vh - 20px);
-        box-shadow: none;
-      }
+  <meta property="og:description"
+    content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ImageJ.JS</title>
+  <link rel="stylesheet" href="/assets/css/micromodal.css">
+  <script src="https://cjrtnc.leaningtech.com/2.1/loader.js"></script>
+  <style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0px;
+    }
 
-      #cheerpjDisplay {
-        box-shadow: none;
-      }
+    #app {
+      width: 100%;
+      height: 100%;
+    }
 
-      /* make menu always on top of window */
-      .menuItem:hover > * {
-        z-index: 9999;
-      }
+    
+    .container {
+      width: calc(100vw);
+      height: calc(100vh);
+      box-shadow: none;
+      overflow: hidden;
+    }
 
-      .bordered {
-        border-radius: 2px;
-      }
+    #cheerpjDisplay {
+      box-shadow: none;
+    }
 
-      .cheerpjLoading:before {
-        background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
-        background-size: 300px !important;
-        max-width: 300px !important;
-      }
+    /* make menu always on top of window */
+    .menuItem:hover>* {
+      z-index: 9999;
+    }
 
-      .container:not(.cheerpjLoading) {
-        background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
-        background-size: 300px !important;
-      }
 
-      div#cheerpjDisplay.status:after {
-        outline: none !important;
-        position: absolute !important;
-        border: 0px solid rgb(63, 107, 240);
-        border-radius: 5px;
-        bottom: 10px;
-        margin-left: auto;
-        margin-right: auto;
-        transform: translate(-50%, 0);
-      }
 
-      /* fix text label display in window */
-      .window > div > div {
-        min-width: 70%;
-        background-color: transparent !important;
-        min-height: 20px;
-      }
-      /* fix search */
-      .window > div > div > div > div {
-        width: fit-content!important;
-      }
+    .cheerpjLoading:before {
+      background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
+      background-size: 300px !important;
+      max-width: 300px !important;
+    }
 
-      .window > div > input {
-        height: 15px !important;
-      }
+    .container:not(.cheerpjLoading) {
+      background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
+      background-size: 300px !important;
+    }
 
-      #drag-overlay {
-        position: absolute;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(126, 126, 126, 0.255);
-        display: none;
-        text-align: center;
-        z-index: -1;
-      }
+    div#cheerpjDisplay.status:after {
+      outline: none !important;
+      position: absolute !important;
+      border: 0px solid rgb(63, 107, 240);
+      border-radius: 5px;
+      bottom: 10px;
+      margin-left: auto;
+      margin-right: auto;
+      transform: translate(-50%, 0);
+    }
 
-      #drag-overlay > span {
-        position: relative;
-        top: 30%;
-        transform: translateY(-30%);
-        line-height: 90px;
-        font-size: 20px;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-    </style>
-  </head>
+    input[type=button] {
+      border-width: 0;
+      outline: none;
+      border-radius: 2px;
+      top: 1px !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
+    }
 
-  <body>
-    <div id="drag-overlay">
-      <input type="file" id="open-file" style="display: none;" />
-      <span>Drop file here to open</span>
+    input[type=button]:focus {
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .8);
+    }
+
+    /* fix text label display in window */
+    .window>div>div {
+      min-width: 70%;
+      background-color: transparent !important;
+      min-height: 20px;
+    }
+
+    .titleBar {
+      background-color: #448aff !important;
+      color: white !important;
+      border-radius: 4px 4px 0px 0px;
+    }
+
+    .titleBar>a:first-child {
+      font-size: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      position: absolute;
+      white-space: nowrap;
+      overflow: hidden; 
+      text-overflow: ellipsis;
+    }
+
+    #cheerpjDisplay>div.bordered {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3) !important;
+      border-radius: 0 0 4px 4px;
+    }
+
+    #cheerpjDisplay>div.window:hover {
+      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.4) !important;
+    }
+
+    #cheerpjDisplay>div.window>canvas {
+      border-radius: 0 0 4px 4px;
+    }
+
+
+    .window>div>input {
+      height: 15px !important;
+      z-index: 1;
+    }
+
+    .window>div>select {
+      z-index: 1;
+    }
+
+    #drag-overlay {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(126, 126, 126, 0.255);
+      display: none;
+      text-align: center;
+      z-index: -1;
+    }
+
+    #drag-overlay>span {
+      position: relative;
+      top: 30%;
+      transform: translateY(-30%);
+      line-height: 90px;
+      font-size: 20px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container" id="imagej-container"></div>
+  <div id="drag-overlay">
+    <input type="file" id="open-file" style="display: none;" />
+    <span>Drop file here to open</span>
+  </div>
+  <div class="modal micromodal-slide" id="open-file-modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="open-file-modal-title">
+        <header class="modal__header">
+          <h2 class="modal__title" id="open-file-modal-title">
+            Open file
+          </h2>
+          <!-- <button class="modal__close" aria-label="Close modal" data-micromodal-close></button> -->
+        </header>
+        <main class="modal__content" id="open-file-modal-content">
+          <p>
+            You can either select a file from your local file system or cached files in the browser.
+          </p>
+        </main>
+        <footer class="modal__footer">
+          <button id="open-file-modal-select" class="modal__btn modal__btn-primary" data-micromodal-close>Select Local File</button>
+          <button id="open-file-modal-internal" class="modal__btn" data-micromodal-close>Select Cached File</button>
+          <button id="open-file-modal-cancel" class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Cancel</button>
+        </footer>
+      </div>
     </div>
-    <div class="container" id="app-container"></div>
-  </body>
+  </div>
+</body>
+
 </html>

@@ -1,15 +1,19 @@
 import { setupImJoyAPI } from "./imjoyAPI.js";
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
+import MicroModal from 'micromodal';
 
 // setup a hook for fixing mobile touch event
 const _createElement = document.createElement;
+function touchClick(ev){
+    ev.target.click();
+    ev.preventDefault();
+    if(["UL", 'LI', "BUTTON", "INPUT", "A"].includes(ev.target.tagName))
+    ev.stopPropagation();
+}
 document.createElement = function (type){
     const elm = _createElement.call(document, type);
-    elm.addEventListener("touchstart", (ev)=>{
-        elm.click();
-        ev.preventDefault();
-    }, false);
+    elm.addEventListener("touchstart", touchClick, false);
     return elm
 }
 
@@ -17,7 +21,51 @@ window.onSaveFileSelected = (name)=>{
     debugger
 }
 
-window.openURL = (url) =>{
+window.debug = async (message)=>{
+  console.log(message);
+  debugger;
+}
+
+
+MicroModal.init();
+
+window.openFileDialogJS = async (title, initPath, selectionMode, promise)=>{
+  MicroModal.show('open-file-modal');
+  document.getElementById("open-file-modal-cancel").onclick = ()=>{
+    cjCall(promise, "reject", "cancelled");
+  }
+  document.getElementById("open-file-modal-select").onclick = ()=>{
+    const fileInput = document.getElementById("open-file");
+    fileInput.onchange = () => {
+      const files = fileInput.files;
+      mountFile(files[0]).then(filepath => {
+        cjCall(promise, "resolve", filepath);
+      }).catch((e)=>{
+        cjCall(promise, "reject", String(e));
+      })
+      fileInput.value = "";
+    };
+    fileInput.click();
+    
+  }
+  document.getElementById("open-file-modal-internal").onclick = ()=>{
+    cjCall(promise, "resolve", "");
+  }
+}
+
+window.saveFileDialogJS = async (title, initPath, selectionMode, promise)=>{
+  // by pass the selection
+  const savePath = prompt(
+      title || "Saving file as ",
+      initPath
+  )
+  debugger
+  writingQueue["/" + savePath] = 1;
+  await cjCall(promise, "resolve", savePath);
+  
+}
+
+window.openURL =async  (url) =>{
     window.open(url);
 }
 
@@ -29,7 +77,7 @@ async function startImageJ() {
     clipboardMode: "system"
   });
   
-  const appContainer = document.getElementById("app-container");
+  const appContainer = document.getElementById("imagej-container");
   cheerpjCreateDisplay(-1, -1, appContainer);
   cheerpjRunStaticMethod(
     threads[0],
@@ -54,18 +102,19 @@ async function startImageJ() {
   // turn on debug mode
   // cjCall("ij.IJ", "setDebugMode", true)
     // setup file saving hook
-    Snackbar.show({text:"ImageJ.JS is ready.", pos: 'bottom-left'}); 
-    const _cheerpjWriteAsync = window.cheerpjWriteAsync
-    window.cheerpjWriteAsync = function (fds, fd, buf, off, len, p){
-        writingQueue[fd] = 1;
-        return _cheerpjWriteAsync.apply(null, arguments);
-    }
+    // Snackbar.show({text:"ImageJ.JS is ready.", pos: 'bottom-left'}); 
+    // const _cheerpjWriteAsync = window.cheerpjWriteAsync
+    // window.cheerpjWriteAsync = function (fds, fd, buf, off, len, p){
+    //     writingQueue[fd] = 1;
+    //     return _cheerpjWriteAsync.apply(null, arguments);
+    // }
     const _cheerpjCloseAsync = window.cheerpjCloseAsync;
     window.cheerpjCloseAsync = function (fds, fd, p){
-        if(writingQueue[fd]){
-            delete writingQueue[fd];
-            const fdObj = fds[fd];
-            const fileData = fdObj.fileData;
+        const fdObj = fds[fd];
+        const fileData = fdObj.fileData;
+        
+        if(writingQueue[fileData.path]){
+            delete writingQueue[fileData.path];
             const tmp =fileData.path.split('/');
             const filename = tmp[tmp.length-1];
             downloadBytesFile(fileData.chunks, filename)
@@ -128,6 +177,7 @@ async function startImageJ() {
     // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
   };
+  window.ij = imagej_api;
   return imagej_api;
 }
 
@@ -253,16 +303,14 @@ function openImage(imagej, path) {
 
 async function saveFileToFS(imagej, file){
   const bytes = await readFile(file);
-  await imagej.saveBytes(bytes, '/files/plugins/'+file.name);
-  console.log(await listFiles(imagej, '/files/plugins/'));
+  await imagej.saveBytes(cjTypedArrayToJava(bytes), '/files/'+file.name);
+  console.log(await listFiles(imagej, '/files/'));
 }
 
 async function fixMenu(imagej) {
   const removes = [
     "Open Samples",
     "Show Folder",
-    "Copy to System",
-    "Install...",
     "Compile and Run...",
     "Capture Screen",
     "Capture Delayed...",
@@ -277,22 +325,32 @@ async function fixMenu(imagej) {
       // remove li
       const el = it.parentNode;
       el.parentNode.removeChild(el);
-    } else if (it.text === "Open...") {
-      const openNode = it.parentNode;
-      const openMenu = openNode.cloneNode(true);
-      it.text = "Open Internal"
-      openMenu.onclick = e => {
-        e.stopPropagation();
-        openImage(imagej);
-      };
-      openNode.parentNode.insertBefore(openMenu, openNode)
-      
-    }
+    } 
+    // else if (it.text === "Open...") {
+    //   const openNode = it.parentNode;
+    //   const openMenu = openNode.cloneNode(true);
+    //   it.text = "Open Internal"
+    //   openMenu.onclick = e => {
+    //     e.stopPropagation();
+    //     openImage(imagej);
+    //   };
+    //   openNode.parentNode.insertBefore(openMenu, openNode)
+    // }
   }
+
+  addMenuItem({label: "Debug", async callback(){
+    debugger
+    const bytesIn = new Int8Array(new ArrayBuffer(30));
+    bytesIn[0] = 33;
+    bytesIn[2] = 99;
+    await imagej.saveBytes(cjTypedArrayToJava(bytesIn), "/files/test.bin");
+    const bytesOut = await imagej.openAsBytes('/files/test.bin')
+    debugger
+  }})
 }
 
 function setupDragAndDrop(imagej) {
-  const appContainer = document.getElementById("app-container");
+  const appContainer = document.getElementById("imagej-container");
   const dragOverlay = document.getElementById("drag-overlay");
 
   appContainer.addEventListener(
@@ -395,6 +453,23 @@ function fixHeight() {
   resetHeight();
 }
 
+function addMenuItem(config){
+  // find the plugin menu
+  const pluginMenu = document.querySelector(
+    "#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(6)>ul"
+  );
+  const newMenu = document.createElement("li");
+  newMenu.classList.add("menuItem");
+  newMenu.classList.add("subMenuItem");
+  const button = document.createElement("a");
+  button.innerHTML = config.label;
+  newMenu.appendChild(button);
+  newMenu.onclick = () => {
+    config.callback();
+  };
+  pluginMenu.appendChild(newMenu);
+}
+
 function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function() {
@@ -425,6 +500,6 @@ startImageJ().then(imagej => {
 
   // if inside an iframe, setup ImJoy
   if (window.self !== window.top) {
-    setupImJoyAPI(imagej, getImageData, saveFileToBytes, saveImage, openImage);
+    setupImJoyAPI(imagej, getImageData, saveFileToBytes, saveImage, openImage, addMenuItem);
   }
 });
