@@ -6,7 +6,7 @@ import { imjoyRPC } from "imjoy-rpc/dist/imjoy-rpc";
 export async function setupImJoyAPI(
   imagej,
   getImageData,
-  saveFileToBytes,
+  javaBytesToArrayBuffer,
   saveImage,
   openImage,
   addMenuItem
@@ -87,23 +87,16 @@ export async function setupImJoyAPI(
     },
     async getSelection() {
       const imp = await imagej.getImage();
-      const bytes = await saveFileToBytes(imagej, imp, "selection", "tmp");
+      const bytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, "selection"));
       return bytes;
     },
     async getImage() {
       const data = await getImageData(imagej);
-      const types = {
-        0: "uint8", //GRAY8
-        1: "int16", //GRAY16
-        2: "uint16", //	GRAY16_UNSIGNED
-        3: "uint8", //RGB
-        4: "float32" //GRAY32_FLOAT
-      };
       return {
         _rtype: "ndarray",
         _rvalue: data.bytes,
         _rshape: data.shape,
-        _rdtype: types[data.type]
+        _rdtype: data.type
       };
     }
   };

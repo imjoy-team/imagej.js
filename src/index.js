@@ -17,10 +17,6 @@ document.createElement = function (type){
     return elm
 }
 
-window.onSaveFileSelected = (name)=>{
-    debugger
-}
-
 window.debug = async (message)=>{
   console.log(message);
   debugger;
@@ -59,17 +55,15 @@ window.saveFileDialogJS = async (title, initPath, selectionMode, promise)=>{
       title || "Saving file as ",
       initPath
   )
-  debugger
-  writingQueue["/" + savePath] = 1;
-  await cjCall(promise, "resolve", savePath);
-  
+  downloadQueue[savePath] = 1;
+  await cjCall(promise, "resolve", "/files/" + savePath);
 }
 
 window.openURL =async  (url) =>{
     window.open(url);
 }
 
-const writingQueue = {};
+const downloadQueue = {};
 
 async function startImageJ() {
   cheerpjInit({
@@ -105,22 +99,22 @@ async function startImageJ() {
     // Snackbar.show({text:"ImageJ.JS is ready.", pos: 'bottom-left'}); 
     // const _cheerpjWriteAsync = window.cheerpjWriteAsync
     // window.cheerpjWriteAsync = function (fds, fd, buf, off, len, p){
-    //     writingQueue[fd] = 1;
+    //     downloadQueue[fd] = 1;
     //     return _cheerpjWriteAsync.apply(null, arguments);
     // }
     const _cheerpjCloseAsync = window.cheerpjCloseAsync;
     window.cheerpjCloseAsync = function (fds, fd, p){
         const fdObj = fds[fd];
         const fileData = fdObj.fileData;
-        
-        if(writingQueue[fileData.path]){
-            delete writingQueue[fileData.path];
-            const tmp =fileData.path.split('/');
-            const filename = tmp[tmp.length-1];
+        const tmp =fileData.path.split('/');
+        const filename = tmp[tmp.length-1];
+        if(downloadQueue[filename]){
+            delete downloadQueue[fileData.path];
+            
             downloadBytesFile(fileData.chunks, filename)
             _cheerpjCloseAsync.apply(null, arguments);
             // remove the file after downloading
-            // cheerpOSUnlinkAsync(fileData.path, p)
+            window.ij.removeFile("/files/"+filename);
         }
         else{
           _cheerpjCloseAsync.apply(null, arguments);
@@ -155,9 +149,8 @@ async function startImageJ() {
       "ij.ImagePlus",
       "java.lang.String"
     ]),
-    saveAs: await cjResolveCall("ij.IJ", "saveAs", [
+    saveAsBytes: await cjResolveCall("ij.IJ", "saveAsBytes", [
       "ij.ImagePlus",
-      "java.lang.String",
       "java.lang.String"
     ]),
     getString: await cjResolveCall("ij.IJ", "getString", [
@@ -202,7 +195,7 @@ async function getImageData(imagej) {
   const channels = await cjCall(imp, "getNChannels");
   const frames = await cjCall(imp, "getNFrames");
   const type = await cjCall(imp, "getType");
-  const bytes = await saveFileToBytes(imagej, imp, "raw", name);
+  const bytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, "raw"));
   const shape = [height.value0, width.value0, channels.value0];
   if (slices.value0 && slices.value0 !== 1) {
     shape.push(slices.value0);
@@ -210,37 +203,24 @@ async function getImageData(imagej) {
   if (frames.value0 && frames.value0 !== 1) {
     shape.push(frames.value0);
   }
+  const typeMapping = {
+    0: "uint8", //GRAY8 8-bit grayscale (unsigned)
+    1: "uint16", //GRAY16 16-bit grayscale (unsigned)
+    2: "float32", //	GRAY32 32-bit floating-point grayscale
+    3: "uint8", // COLOR_256 8-bit indexed color
+    4: "uint8" // COLOR_RGB 32-bit RGB color
+  };
+
+  // calculate the actual channel number, e.g. for RGB image
+  shape[2] = bytes.byteLength/(shape[0]*shape[1]*(shape[3]||1)*(shape[4]||1));
+
   return {
-    type: type.value0,
+    type: typeMapping[type.value0],
     shape: shape,
     bytes
   };
 }
 
-function saveFileToBytes(imagej, imp, format, filename) {
-  return new Promise(async (resolve, reject) => {
-    await imagej.saveAs(imp, format, "/files/" + filename);
-    const request = indexedDB.open("cjFS_/files/");
-    request.onerror = function(event) {
-      console.error("Failed to read file", event);
-      reject("Failed to open file system");
-    };
-    request.onsuccess = function(event) {
-      const db = event.target.result;
-      var transaction = db.transaction(["files"], "readwrite");
-      var objectStore = transaction.objectStore("files");
-      const req = objectStore.get("/" + filename);
-      req.onsuccess = e => {
-        const fileBytes = e.target.result.contents;
-        objectStore.delete("/" + filename);
-        resolve(fileBytes);
-      };
-      req.onerror = () => {
-        reject("Failed to read file: " + filename);
-      };
-    };
-  });
-}
 
 async function saveImage(imagej, filename, format, ext) {
   format = format || "tiff";
@@ -256,7 +236,7 @@ async function saveImage(imagej, filename, format, ext) {
       )
     );
   if (filename) {
-    const fileBytes = await saveFileToBytes(imagej, imp, format, filename);
+    const fileBytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, format));
     downloadBytesFile([fileBytes.buffer], filename)
   }
 }
@@ -301,6 +281,10 @@ function openImage(imagej, path) {
   fileInput.click();
 }
 
+function javaBytesToArrayBuffer(bytes){
+  return bytes.slice(1).buffer;
+}
+
 async function saveFileToFS(imagej, file){
   const bytes = await readFile(file);
   await imagej.saveBytes(cjTypedArrayToJava(bytes), '/files/'+file.name);
@@ -339,13 +323,14 @@ async function fixMenu(imagej) {
   }
 
   addMenuItem({label: "Debug", async callback(){
-    debugger
-    const bytesIn = new Int8Array(new ArrayBuffer(30));
-    bytesIn[0] = 33;
-    bytesIn[2] = 99;
-    await imagej.saveBytes(cjTypedArrayToJava(bytesIn), "/files/test.bin");
-    const bytesOut = await imagej.openAsBytes('/files/test.bin')
-    debugger
+    // debugger
+    // const bytesIn = new Int8Array(new ArrayBuffer(30));
+    // bytesIn[0] = 33;
+    // bytesIn[2] = 99;
+    // await imagej.saveBytes(cjTypedArrayToJava(bytesIn), "/files/test.bin");
+    // const bytesOut = await imagej.openAsBytes('/files/test.bin')
+    // debugger
+    await saveImage(window.ij,"test", "tiff")
   }})
 }
 
@@ -500,6 +485,6 @@ startImageJ().then(imagej => {
 
   // if inside an iframe, setup ImJoy
   if (window.self !== window.top) {
-    setupImJoyAPI(imagej, getImageData, saveFileToBytes, saveImage, openImage, addMenuItem);
+    setupImJoyAPI(imagej, getImageData, javaBytesToArrayBuffer, saveImage, openImage, addMenuItem);
   }
 });
