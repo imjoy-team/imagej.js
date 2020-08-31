@@ -322,7 +322,7 @@ async function fixMenu(imagej) {
     // }
   }
 
-  addMenuItem({label: "Debug", async callback(){
+  // addMenuItem({label: "Debug", async callback(){
     // debugger
     // const bytesIn = new Int8Array(new ArrayBuffer(30));
     // bytesIn[0] = 33;
@@ -330,8 +330,8 @@ async function fixMenu(imagej) {
     // await imagej.saveBytes(cjTypedArrayToJava(bytesIn), "/files/test.bin");
     // const bytesOut = await imagej.openAsBytes('/files/test.bin')
     // debugger
-    await saveImage(window.ij,"test", "tiff")
-  }})
+
+  // }})
 }
 
 function setupDragAndDrop(imagej) {
