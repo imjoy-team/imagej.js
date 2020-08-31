@@ -1,0 +1,294 @@
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+}
+
+
+.container {
+    width: calc(100vw);
+    height: calc(100vh);
+    box-shadow: none;
+    overflow: hidden;
+}
+
+#cheerpjDisplay {
+    box-shadow: none;
+}
+
+/* make menu always on top of window */
+.menuItem:hover>* {
+    z-index: 9999;
+}
+
+
+
+.cheerpjLoading:before {
+    background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
+    background-size: 300px !important;
+    max-width: 300px !important;
+}
+
+.container:not(.cheerpjLoading) {
+    background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
+    background-size: 300px !important;
+}
+
+div#cheerpjDisplay.status:after {
+    outline: none !important;
+    position: absolute !important;
+    border: 0px solid rgb(63, 107, 240);
+    border-radius: 5px;
+    bottom: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    transform: translate(-50%, 0);
+}
+
+input[type=button] {
+    border-width: 0;
+    outline: none;
+    border-radius: 2px;
+    top: 1px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
+}
+
+input[type=button]:focus,
+input[type=button]:hover {
+    color: #0662d6;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .8);
+}
+
+/* fix text label display in window */
+.window>div>div {
+    min-width: 70%;
+    background-color: transparent !important;
+    min-height: 20px;
+}
+
+/* fix the play button */
+.window>div>div>div>div>canvas {
+    top: 5px !important;
+}
+
+.titleBar {
+    background-color: #448aff !important;
+    color: white !important;
+    border-radius: 4px 4px 0px 0px;
+}
+
+.titleBar>a:first-child {
+    font-size: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    position: absolute;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#cheerpjDisplay>div.bordered {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3) !important;
+    border-radius: 0 0 4px 4px;
+}
+
+#cheerpjDisplay>div.window:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+#cheerpjDisplay>div.window>canvas {
+    border-radius: 0 0 4px 4px;
+}
+
+
+.window>div>input {
+    height: 15px !important;
+    z-index: 1;
+}
+
+.window>div>select {
+    z-index: 1;
+}
+
+#drag-overlay {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(126, 126, 126, 0.255);
+    display: none;
+    text-align: center;
+    z-index: -1;
+}
+
+#drag-overlay>span {
+    position: relative;
+    top: 30%;
+    transform: translateY(-30%);
+    line-height: 90px;
+    font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+
+
+/* -------------------------------------------------------------------------- *\
+ * Necessary styling for the dialog to work
+ * -------------------------------------------------------------------------- */
+
+/**
+ * When `<dialog>` is properly supported, the overlay is implied and can be
+ * styled with `::backdrop`, which means the DOM one should be removed.
+ */
+[data-a11y-dialog-native] .dialog-overlay {
+    display: none;
+}
+
+/**
+   * When `<dialog>` is not supported, its default display is `inline` which can
+   * cause layout issues.
+   */
+dialog[open] {
+    display: block;
+}
+
+.dialog[aria-hidden="true"] {
+    display: none;
+}
+
+/* -------------------------------------------------------------------------- *\
+   * Styling to make the dialog look like a dialog
+   * -------------------------------------------------------------------------- */
+
+.dialog-overlay {
+    z-index: 2;
+    background-color: rgba(0, 0, 0, 0.66);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.66);
+}
+
+.dialog-content {
+    background-color: rgb(255, 255, 255);
+    z-index: 3;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+/* -------------------------------------------------------------------------- *\
+   * Extra dialog styling to make it shiny
+   * -------------------------------------------------------------------------- */
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes appear {
+    from {
+        transform: translate(-50%, -40%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
+}
+
+.dialog:not([aria-hidden='true'])>.dialog-overlay {
+    animation: fade-in 200ms 1 both;
+}
+
+.dialog:not([aria-hidden='true'])>.dialog-content {
+    animation: appear 400ms 150ms 1 both;
+}
+
+.dialog-content {
+    padding: 1em;
+    max-width: 90%;
+    width: 600px;
+    border-radius: 2px;
+}
+
+
+@media screen and (min-width: 700px) {
+    .dialog-content {
+        padding: 2em;
+    }
+}
+
+.dialog-overlay {
+    background-color: rgba(43, 46, 56, 0.9);
+}
+
+.dialog h1 {
+    margin: 0;
+    font-size: 1.25em;
+}
+
+.dialog-close {
+    color: black;
+    position: absolute;
+    top: 0.5em;
+    right: 0.5em;
+    border: 0;
+    padding: 0;
+    background-color: transparent;
+    font-weight: bold;
+    font-size: 1.25em;
+    width: 1.2em;
+    height: 1.2em;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.15s;
+}
+
+@media screen and (min-width: 700px) {
+    .dialog-close {
+        top: 1em;
+        right: 1em;
+    }
+}
+
+
+.dialog-button-group>button {
+    background-color: #448aff;
+    color: rgb(240, 238, 238);
+    border: 0;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: 0.15s;
+    display: inline-block;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .5);
+}
+
+.dialog-button-group>button:hover,
+.dialog-button-group>button:active {
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .8);
+}
