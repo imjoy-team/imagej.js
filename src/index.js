@@ -33,6 +33,7 @@ const el = document.getElementById('open-file-dialog');
 const fileDialog = new A11yDialog(el);
 
 window.openFileDialogJS = async (title, initPath, selectionMode, promise) => {
+  document.getElementById("dialogTitle").innerHTML = title || "Open File";
   fileDialog.show();
   let closed = false;
   fileDialog.on('hide', function (dialogEl, event) {
@@ -339,13 +340,11 @@ async function fixMenu(imagej) {
   }
 
   // addMenuItem({label: "Debug", async callback(){
-  // debugger
   // const bytesIn = new Int8Array(new ArrayBuffer(30));
   // bytesIn[0] = 33;
   // bytesIn[2] = 99;
   // await imagej.saveBytes(cjTypedArrayToJava(bytesIn), "/files/test.bin");
   // const bytesOut = await imagej.openAsBytes('/files/test.bin')
-  // debugger
 
   // }})
 }
