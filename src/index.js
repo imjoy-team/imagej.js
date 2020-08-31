@@ -1,11 +1,96 @@
-import { setupImJoyAPI } from "./imjoyAPI.js";
+import {
+  setupImJoyAPI
+} from "./imjoyAPI.js";
+import Snackbar from "node-snackbar/dist/snackbar";
+import "node-snackbar/dist/snackbar.css";
+import A11yDialog from "a11y-dialog";
+
+// setup a hook for fixing mobile touch event
+const _createElement = document.createElement;
+
+function touchClick(ev) {
+  ev.target.click();
+  ev.preventDefault();
+  if (["UL", 'LI', "BUTTON", "INPUT", "A"].includes(ev.target.tagName))
+    ev.stopPropagation();
+}
+document.createElement = function (type) {
+  const elm = _createElement.call(document, type);
+  elm.addEventListener("touchstart", touchClick, false);
+  return elm
+}
+
+window.debug = async (message) => {
+  console.log(message);
+  debugger;
+}
+
+
+// Get the dialog element (with the accessor method you want)
+const el = document.getElementById('open-file-dialog');
+
+// Instantiate a new A11yDialog module
+const fileDialog = new A11yDialog(el);
+
+window.openFileDialogJS = async (title, initPath, selectionMode, promise) => {
+  document.getElementById("dialogTitle").innerHTML = title || "Open File";
+  fileDialog.show();
+  let closed = false;
+  fileDialog.on('hide', function (dialogEl, event) {
+    if (!closed) {
+      closed = true;
+      cjCall(promise, "reject", "cancelled");
+    }
+  });
+  document.getElementById("open-file-modal-select").onclick = () => {
+    if (!closed) {
+      closed = true;
+      const fileInput = document.getElementById("open-file");
+      fileInput.onchange = () => {
+        const files = fileInput.files;
+        mountFile(files[0]).then(filepath => {
+          cjCall(promise, "resolve", filepath);
+        }).catch((e) => {
+          cjCall(promise, "reject", String(e));
+        })
+        fileInput.value = "";
+      };
+      fileInput.click();
+    }
+    fileDialog.hide();
+  }
+  document.getElementById("open-file-modal-internal").onclick = () => {
+    if (!closed) {
+      closed = true;
+      cjCall(promise, "resolve", "");
+    }
+    fileDialog.hide();
+  }
+}
+
+window.saveFileDialogJS = async (title, initPath, selectionMode, promise) => {
+  // by pass the selection
+  const savePath = prompt(
+    title || "Saving file as ",
+    initPath
+  )
+  downloadQueue[savePath] = 1;
+  await cjCall(promise, "resolve", "/files/" + savePath);
+}
+
+window.openURL = async (url) => {
+  window.open(url);
+}
+
+const downloadQueue = {};
 
 async function startImageJ() {
   cheerpjInit({
     enableInputMethods: true,
     clipboardMode: "system"
   });
-  const appContainer = document.getElementById("app-container");
+
+  const appContainer = document.getElementById("imagej-container");
   cheerpjCreateDisplay(-1, -1, appContainer);
   cheerpjRunStaticMethod(
     threads[0],
@@ -19,18 +104,41 @@ async function startImageJ() {
     "java/lang/System",
     cjSystemSetProperty,
     "plugins.dir",
-    "/app/ij153"
+    "/app/ij153/plugins"
   );
   cheerpjRunMain(
     "ij.ImageJ",
-    "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar"
+    "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar",
   );
 
   const ij = await getImageJInstance();
   // turn on debug mode
   // cjCall("ij.IJ", "setDebugMode", true)
+  // setup file saving hook
+  // Snackbar.show({text:"ImageJ.JS is ready.", pos: 'bottom-left'}); 
+  // const _cheerpjWriteAsync = window.cheerpjWriteAsync
+  // window.cheerpjWriteAsync = function (fds, fd, buf, off, len, p){
+  //     downloadQueue[fd] = 1;
+  //     return _cheerpjWriteAsync.apply(null, arguments);
+  // }
+  const _cheerpjCloseAsync = window.cheerpjCloseAsync;
+  window.cheerpjCloseAsync = function (fds, fd, p) {
+    const fdObj = fds[fd];
+    const fileData = fdObj.fileData;
+    const tmp = fileData.path.split('/');
+    const filename = tmp[tmp.length - 1];
+    if (downloadQueue[filename]) {
+      delete downloadQueue[fileData.path];
 
-  return {
+      downloadBytesFile(fileData.chunks, filename)
+      _cheerpjCloseAsync.apply(null, arguments);
+      // remove the file after downloading
+      window.ij.removeFile("/files/" + filename);
+    } else {
+      _cheerpjCloseAsync.apply(null, arguments);
+    }
+  }
+  const imagej_api = {
     run: await cjResolveCall("ij.IJ", "run", [
       "java.lang.String",
       "java.lang.String"
@@ -59,18 +167,34 @@ async function startImageJ() {
       "ij.ImagePlus",
       "java.lang.String"
     ]),
-    saveAs: await cjResolveCall("ij.IJ", "saveAs", [
+    saveAsBytes: await cjResolveCall("ij.IJ", "saveAsBytes", [
       "ij.ImagePlus",
-      "java.lang.String",
       "java.lang.String"
     ]),
     getString: await cjResolveCall("ij.IJ", "getString", [
       "java.lang.String",
       "java.lang.String"
-    ])
+    ]),
+    listDir: await cjResolveCall("ij.IJ", "listDir", [
+      "java.lang.String"
+    ]),
+    removeFile: await cjResolveCall("ij.IJ", "removeFile", [
+      "java.lang.String"
+    ]),
+    openAsBytes: await cjResolveCall("ij.IJ", "openAsBytes", [
+      "java.lang.String"
+    ]),
+    saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null),
     // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
   };
+  window.ij = imagej_api;
+  return imagej_api;
+}
+
+async function listFiles(imagej, path) {
+  const files = await imagej.listDir(path)
+  return files.map(cjStringJavaToJs);
 }
 
 async function mountFile(file) {
@@ -89,7 +213,7 @@ async function getImageData(imagej) {
   const channels = await cjCall(imp, "getNChannels");
   const frames = await cjCall(imp, "getNFrames");
   const type = await cjCall(imp, "getType");
-  const bytes = await saveFileToBytes(imagej, imp, "raw", name);
+  const bytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, "raw"));
   const shape = [height.value0, width.value0, channels.value0];
   if (slices.value0 && slices.value0 !== 1) {
     shape.push(slices.value0);
@@ -97,37 +221,24 @@ async function getImageData(imagej) {
   if (frames.value0 && frames.value0 !== 1) {
     shape.push(frames.value0);
   }
+  const typeMapping = {
+    0: "uint8", //GRAY8 8-bit grayscale (unsigned)
+    1: "uint16", //GRAY16 16-bit grayscale (unsigned)
+    2: "float32", //	GRAY32 32-bit floating-point grayscale
+    3: "uint8", // COLOR_256 8-bit indexed color
+    4: "uint8" // COLOR_RGB 32-bit RGB color
+  };
+
+  // calculate the actual channel number, e.g. for RGB image
+  shape[2] = bytes.byteLength / (shape[0] * shape[1] * (shape[3] || 1) * (shape[4] || 1));
+
   return {
-    type: type.value0,
+    type: typeMapping[type.value0],
     shape: shape,
     bytes
   };
 }
 
-function saveFileToBytes(imagej, imp, format, filename) {
-  return new Promise(async (resolve, reject) => {
-    await imagej.saveAs(imp, format, "/files/" + filename);
-    const request = indexedDB.open("cjFS_/files/");
-    request.onerror = function(event) {
-      console.error("Failed to read file", event);
-      reject("Failed to open file system");
-    };
-    request.onsuccess = function(event) {
-      const db = event.target.result;
-      var transaction = db.transaction(["files"], "readwrite");
-      var objectStore = transaction.objectStore("files");
-      const req = objectStore.get("/" + filename);
-      req.onsuccess = e => {
-        const fileBytes = e.target.result.contents;
-        objectStore.delete("/" + filename);
-        resolve(fileBytes);
-      };
-      req.onerror = () => {
-        reject("Failed to read file: " + filename);
-      };
-    };
-  });
-}
 
 async function saveImage(imagej, filename, format, ext) {
   format = format || "tiff";
@@ -143,21 +254,25 @@ async function saveImage(imagej, filename, format, ext) {
       )
     );
   if (filename) {
-    const fileBytes = await saveFileToBytes(imagej, imp, format, filename);
-    const blob = new Blob([fileBytes.buffer], {
-      type: "application/octet-stream"
-    });
+    const fileBytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, format));
+    downloadBytesFile([fileBytes.buffer], filename)
+  }
+}
 
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveBlob(blob, filename);
-    } else {
-      const elem = window.document.createElement("a");
-      elem.href = window.URL.createObjectURL(blob);
-      elem.download = filename;
-      document.body.appendChild(elem);
-      elem.click();
-      document.body.removeChild(elem);
-    }
+function downloadBytesFile(fileByteArray, filename) {
+  const blob = new Blob(fileByteArray, {
+    type: "application/octet-stream"
+  });
+
+  if (window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveBlob(blob, filename);
+  } else {
+    const elem = window.document.createElement("a");
+    elem.href = window.URL.createObjectURL(blob);
+    elem.download = filename;
+    document.body.appendChild(elem);
+    elem.click();
+    document.body.removeChild(elem);
   }
 }
 
@@ -169,26 +284,34 @@ function openImage(imagej, path) {
   fileInput.onchange = () => {
     const files = fileInput.files;
     for (let i = 0, len = files.length; i < len; i++) {
-      mountFile(files[i]).then(filepath => {
-        imagej.open(filepath);
-      });
+      if (files[i].name.endsWith('.jar') || files[i].name.endsWith('.jar.js')) {
+        saveFileToFS(imagej, files[i]);
+      } else {
+        mountFile(files[i]).then(filepath => {
+          imagej.open(filepath);
+        });
+      }
+
     }
     fileInput.value = "";
   };
   fileInput.click();
 }
+
+function javaBytesToArrayBuffer(bytes) {
+  return bytes.slice(1).buffer;
+}
+
+async function saveFileToFS(imagej, file) {
+  const bytes = await readFile(file);
+  await imagej.saveBytes(cjTypedArrayToJava(bytes), '/files/' + file.name);
+  console.log(await listFiles(imagej, '/files/'));
+}
+
 async function fixMenu(imagej) {
   const removes = [
-    "Open Next",
     "Open Samples",
-    "Open Recent",
     "Show Folder",
-    "Copy to System",
-    "Import",
-    "Revert",
-    "Install...",
-    "Run...",
-    "Edit...",
     "Compile and Run...",
     "Capture Screen",
     "Capture Delayed...",
@@ -203,66 +326,31 @@ async function fixMenu(imagej) {
       // remove li
       const el = it.parentNode;
       el.parentNode.removeChild(el);
-    } else if (it.text === "Open...") {
-      const openMenu = it.parentNode;
-
-      openMenu.onclick = e => {
-        e.stopPropagation();
-        openImage(imagej);
-      };
-    } else {
-      function fixSaveMenu(format, ext) {
-        const saveMenu = it.parentNode;
-        saveMenu.onclick = e => {
-          e.stopPropagation();
-          saveImage(imagej, null, format, ext);
-        };
-      }
-      if (it.text === "Save" || it.text === "Tiff...") {
-        fixSaveMenu("tiff", ".tif");
-      } else if (it.text === "Gif...") {
-        fixSaveMenu("gif", ".gif");
-      } else if (it.text === "Jpeg...") {
-        fixSaveMenu("jpeg", ".jpg");
-      } else if (it.text === "Text Image...") {
-        fixSaveMenu("text image", ".txt");
-      } else if (it.text === "ZIP...") {
-        fixSaveMenu("zip", ".zip");
-      } else if (it.text === "Raw Data...") {
-        fixSaveMenu("raw", ".raw");
-      } else if (it.text === "Raw Data...") {
-        fixSaveMenu("raw", ".raw");
-      } else if (it.text === "Image Sequence...") {
-        // remove li
-        const el = it.parentNode;
-        el.parentNode.removeChild(el);
-      } else if (it.text === "AVI...") {
-        fixSaveMenu("avi", ".avi");
-      } else if (it.text === "BMP...") {
-        fixSaveMenu("bmp", ".bmp");
-      } else if (it.text === "PNG...") {
-        fixSaveMenu("png", ".png");
-      } else if (it.text === "PGM...") {
-        fixSaveMenu("pgm", ".pgm");
-      } else if (it.text === "FITS...") {
-        fixSaveMenu("fits", ".fits");
-      } else if (it.text === "LUT...") {
-        fixSaveMenu("lut", ".lut");
-      } else if (it.text === "Selection...") {
-        fixSaveMenu("selection", ".roi");
-      } else if (it.text === "XY Coordinates...") {
-        fixSaveMenu("xy Coordinates", ".txt");
-      } else if (it.text === "Results...") {
-        fixSaveMenu("measurements", ".csv");
-      } else if (it.text === "Text...") {
-        fixSaveMenu("text", ".txt");
-      }
     }
+    // else if (it.text === "Open...") {
+    //   const openNode = it.parentNode;
+    //   const openMenu = openNode.cloneNode(true);
+    //   it.text = "Open Internal"
+    //   openMenu.onclick = e => {
+    //     e.stopPropagation();
+    //     openImage(imagej);
+    //   };
+    //   openNode.parentNode.insertBefore(openMenu, openNode)
+    // }
   }
+
+  // addMenuItem({label: "Debug", async callback(){
+  // const bytesIn = new Int8Array(new ArrayBuffer(30));
+  // bytesIn[0] = 33;
+  // bytesIn[2] = 99;
+  // await imagej.saveBytes(cjTypedArrayToJava(bytesIn), "/files/test.bin");
+  // const bytesOut = await imagej.openAsBytes('/files/test.bin')
+
+  // }})
 }
 
 function setupDragAndDrop(imagej) {
-  const appContainer = document.getElementById("app-container");
+  const appContainer = document.getElementById("imagej-container");
   const dragOverlay = document.getElementById("drag-overlay");
 
   appContainer.addEventListener(
@@ -307,9 +395,14 @@ function setupDragAndDrop(imagej) {
         const data = e.dataTransfer,
           files = data.files;
         for (let i = 0, len = files.length; i < len; i++) {
-          mountFile(files[i]).then(filepath => {
-            imagej.open(filepath);
-          });
+          if (files[i].name.endsWith('.jar') || files[i].name.endsWith('.jar.js')) {
+            saveFileToFS(imagej, files[i]);
+          } else {
+            mountFile(files[i]).then(filepath => {
+              imagej.open(filepath);
+            });
+          }
+
         }
         dragOverlay.style.display = "none";
       }
@@ -336,12 +429,12 @@ function readFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
-    reader.onload = function() {
+    reader.onload = function () {
       const arrayBuffer = reader.result;
       const bytes = new Uint8Array(arrayBuffer);
       resolve(bytes);
     };
-    reader.onerror = function(e) {
+    reader.onerror = function (e) {
       reject(e);
     };
   });
@@ -359,18 +452,35 @@ function fixHeight() {
   resetHeight();
 }
 
+function addMenuItem(config) {
+  // find the plugin menu
+  const pluginMenu = document.querySelector(
+    "#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(6)>ul"
+  );
+  const newMenu = document.createElement("li");
+  newMenu.classList.add("menuItem");
+  newMenu.classList.add("subMenuItem");
+  const button = document.createElement("a");
+  button.innerHTML = config.label;
+  newMenu.appendChild(button);
+  newMenu.onclick = () => {
+    config.callback();
+  };
+  pluginMenu.appendChild(newMenu);
+}
+
 function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function() {
+    window.addEventListener("load", function () {
       navigator.serviceWorker.register("/service-worker.js").then(
-        function(registration) {
+        function (registration) {
           // Registration was successful
           console.log(
             "ServiceWorker registration successful with scope: ",
             registration.scope
           );
         },
-        function(err) {
+        function (err) {
           // registration failed :(
           console.log("ServiceWorker registration failed: ", err);
         }
@@ -389,6 +499,6 @@ startImageJ().then(imagej => {
 
   // if inside an iframe, setup ImJoy
   if (window.self !== window.top) {
-    setupImJoyAPI(imagej, getImageData, saveFileToBytes, saveImage, openImage);
+    setupImJoyAPI(imagej, getImageData, javaBytesToArrayBuffer, saveImage, openImage, addMenuItem);
   }
 });

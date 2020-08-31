@@ -1,114 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="ResourceLoaderDynamicStyles" content="" />
-    <meta name="generator" content="MediaWiki 1.28.0" />
-    <meta
-      name="description"
-      content="ImageJ is an open source image processing program designed for scientific multidimensional images."
-    />
-    <link rel="shortcut icon" href="assets/img/ij2.ico" />
-    <meta property="og:type" content="website" />
 
-    <meta property="og:title" content="ImageJ.JS" />
+<head>
+  <meta charset="utf-8" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="ResourceLoaderDynamicStyles" content="" />
+  <meta name="generator" content="MediaWiki 1.28.0" />
+  <meta name="description"
+    content="ImageJ is an open source image processing program designed for scientific multidimensional images." />
+  <link rel="shortcut icon" href="assets/img/ij2.ico" />
+  <meta property="og:type" content="website" />
 
-    <meta property="og:image" content="assets/img/imagej-js-splash.png" />
+  <meta property="og:title" content="ImageJ.JS" />
 
-    <meta
-      property="og:description"
-      content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images"
-    />
+  <meta property="og:image" content="assets/img/imagej-js-splash.png" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ImageJ.JS</title>
-    <script src="https://cjrtnc.leaningtech.com/2.1/loader.js"></script>
-    <style>
-      body {
-        width: 100vw;
-        height: 100vh;
-        margin: 0px;
-      }
+  <meta property="og:description"
+    content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ImageJ.JS</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://cjrtnc.leaningtech.com/2.1/loader.js"></script>
+</head>
 
-      .container {
-        width: calc(100vw - 20px);
-        height: calc(100vh - 20px);
-        box-shadow: none;
-      }
+<body>
 
-      #cheerpjDisplay {
-        box-shadow: none;
-      }
+  <div class="container" id="imagej-container"></div>
+  <div id="drag-overlay">
+    <input type="file" id="open-file" style="display: none;" />
+    <span>Drop file here to open</span>
+  </div>
 
-      /* make menu always on top of window */
-      .menuItem:hover > * {
-        z-index: 9999;
-      }
+  <div class="dialog" id="open-file-dialog">
+    <div class="dialog-overlay" tabindex="-1" data-a11y-dialog-hide></div>
+    <dialog class="dialog-content" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
+      <button data-a11y-dialog-hide class="dialog-close" aria-label="Close this dialog window">&times;</button>
 
-      .bordered {
-        border-radius: 2px;
-      }
+      <h1 id="dialogTitle">Open File</h1>
 
-      .cheerpjLoading:before {
-        background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
-        background-size: 300px !important;
-        max-width: 300px !important;
-      }
+      <p id="dialogDescription">You can either select a file from your local file system or cached files in the browser.
+      </p>
 
-      .container:not(.cheerpjLoading) {
-        background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
-        background-size: 300px !important;
-      }
+      <div class="dialog-button-group">
+        <button aria-label="Select a local file" id="open-file-modal-select">Select Local File</button>
+        <button aria-label="Select a cached file" id="open-file-modal-internal">Select Cached File</button>
+        <button aria-label="Cancel the selection" id="open-file-modal-cancel" data-a11y-dialog-hide>Cancel</button>
+      </div>
+    </dialog>
+  </div>
+</body>
 
-      div#cheerpjDisplay.status:after {
-        outline: none !important;
-        position: absolute !important;
-        border: 0px solid rgb(63, 107, 240);
-        border-radius: 5px;
-        bottom: 10px;
-        margin-left: auto;
-        margin-right: auto;
-        transform: translate(-50%, 0);
-      }
-
-      /* fix text label display in window */
-      .window > div > div {
-        width: 100% !important;
-        background-color: transparent !important;
-        min-height: 20px;
-      }
-
-      .window > div > input {
-        height: 15px !important;
-      }
-
-      #drag-overlay {
-        position: absolute;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(126, 126, 126, 0.255);
-        display: none;
-        text-align: center;
-        z-index: -1;
-      }
-
-      #drag-overlay > span {
-        position: relative;
-        top: 30%;
-        transform: translateY(-30%);
-        line-height: 90px;
-        font-size: 20px;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div id="drag-overlay">
-      <input type="file" id="open-file" style="display: none;" />
-      <span>Drop file here to open</span>
-    </div>
-    <div class="container" id="app-container"></div>
-  </body>
 </html>

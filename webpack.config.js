@@ -23,6 +23,7 @@ const config = (env, argv) => ({
     contentBase: path.resolve(__dirname, 'dist'),
     publicPath: '/',
     port: 9090,
+    host: '0.0.0.0',
     hot: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -38,6 +39,9 @@ const config = (env, argv) => ({
       },
       {
         from: path.resolve(__dirname, 'src', 'CNAME')
+      },
+      {
+        from: path.resolve(__dirname, 'src', 'style.css')
       },
       {
         from: path.resolve(__dirname, 'src', 'manifest.webmanifest')

@@ -1,13 +1,15 @@
 import { setupRPC } from "imjoy-rpc";
 
 import { version, description } from "../package.json";
+import { imjoyRPC } from "imjoy-rpc/dist/imjoy-rpc";
 
 export async function setupImJoyAPI(
   imagej,
   getImageData,
-  saveFileToBytes,
+  javaBytesToArrayBuffer,
   saveImage,
-  openImage
+  openImage,
+  addMenuItem
 ) {
   const api = await setupRPC({
     name: "ImageJ.JS",
@@ -27,6 +29,7 @@ export async function setupImJoyAPI(
         }
       }
     },
+    addMenuItem,
     open(path) {
       openImage(imagej, path);
     },
@@ -84,39 +87,16 @@ export async function setupImJoyAPI(
     },
     async getSelection() {
       const imp = await imagej.getImage();
-      const bytes = await saveFileToBytes(imagej, imp, "selection", "tmp");
+      const bytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, "selection"));
       return bytes;
-    },
-    async addMenuItem(config) {
-      // find the plugin menu
-      const pluginMenu = document.querySelector(
-        "#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(6)>ul"
-      );
-      const newMenu = document.createElement("li");
-      newMenu.classList.add("menuItem");
-      newMenu.classList.add("subMenuItem");
-      const button = document.createElement("a");
-      button.innerHTML = config.label;
-      newMenu.appendChild(button);
-      newMenu.onclick = () => {
-        config.callback();
-      };
-      pluginMenu.appendChild(newMenu);
     },
     async getImage() {
       const data = await getImageData(imagej);
-      const types = {
-        0: "uint8", //GRAY8
-        1: "int16", //GRAY16
-        2: "uint16", //	GRAY16_UNSIGNED
-        3: "uint8", //RGB
-        4: "float32" //GRAY32_FLOAT
-      };
       return {
         _rtype: "ndarray",
         _rvalue: data.bytes,
         _rshape: data.shape,
-        _rdtype: types[data.type]
+        _rdtype: data.type
       };
     }
   };
