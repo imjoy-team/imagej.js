@@ -1,19 +1,19 @@
 # ImageJ running in the browser
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imjoy-team/imagej.js/master?filepath=examples%2Fgetting-started.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imjoy-team/imagejs/master?filepath=examples%2Fgetting-started.ipynb)
 [![launch ImJoy](https://imjoy.io/static/badge/launch-imjoy-badge.svg)](https://imjoy.io/#/app?workspace=imagej&plugin=https://ij.imjoy.io)
-<!-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/imjoy-team/imagej.js/blob/master/examples/getting-started.ipynb) -->
+<!-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/imjoy-team/imagejs/blob/master/examples/getting-started.ipynb) -->
 
 
 Start here: https://ij.imjoy.io
 
 
 ## ImJoy API
-You can use ImageJ.JS as an ImJoy plugin, the most common use case is to use it with Python, e.g. in a Jupyter notebook or in ImJoy.
+You can use ImageJS as an ImJoy plugin, the most common use case is to use it with Python, e.g. in a Jupyter notebook or in ImJoy.
 
-Try an online demo: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imjoy-team/imagej.js/master?filepath=examples%2Fgetting-started.ipynb)
+Try an online demo: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imjoy-team/imagejs/master?filepath=examples%2Fgetting-started.ipynb)
 
 ### viewImage(img_array)
-Load an image into ImageJ.JS. For example, you can pass images from Python with numpy arrays. The shape can have the following format:
+Load an image into ImageJS. For example, you can pass images from Python with numpy arrays. The shape can have the following format:
  * [height, width]
  * [height, width, 1]
  * [height, width, 3] (will show as RGB image)
@@ -69,7 +69,7 @@ Run plugin by its class name with an optional arguments.
 ### open()
 Open an image. 
 
-Note, you can also pass an optional path, but since ImageJ.JS won't be able to access your file system, so most cases, you can just skip the `path` and it will popup a dialog to ask the user to select.
+Note, you can also pass an optional path, but since ImageJS won't be able to access your file system, so most cases, you can just skip the `path` and it will popup a dialog to ask the user to select.
 
 ### save()
 Save the current image.
