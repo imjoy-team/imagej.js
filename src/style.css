@@ -39,13 +39,13 @@ body {
 
 
 .cheerpjLoading:before {
-    background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
+    background: url(assets/img/imagejs-loading.gif) no-repeat center !important;
     background-size: 300px !important;
     max-width: 300px !important;
 }
 
 .container:not(.cheerpjLoading) {
-    background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
+    background: url(assets/img/imagejs-splash.png) no-repeat center !important;
     background-size: 300px !important;
 }
 
