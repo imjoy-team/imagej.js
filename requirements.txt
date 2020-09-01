@@ -1,0 +1,7 @@
+numpy
+scipy
+scikit-image
+imageio
+imjoy>=0.10.8
+imjoy-rpc>=0.2.25
+zarr
