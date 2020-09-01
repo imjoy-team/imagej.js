@@ -521,13 +521,11 @@ function registerServiceWorker() {
 
 registerServiceWorker();
 fixHeight();
-setupImJoyApp();
 startImageJ().then(imagej => {
   setupDragAndDrop(imagej);
   setTimeout(() => {
     fixMenu(imagej);
   }, 2000);
-
   // if inside an iframe, setup ImJoy
   if (window.self !== window.top) {
     setupImJoyAPI(
@@ -538,5 +536,8 @@ startImageJ().then(imagej => {
       openImage,
       addMenuItem
     );
+  }
+  else{
+    setupImJoyApp();
   }
 });
