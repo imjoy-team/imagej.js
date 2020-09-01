@@ -38,7 +38,9 @@ body {
     z-index: 9999;
 }
 
-
+div.menuBar{
+    max-width: 100%!important;
+}
 
 .cheerpjLoading:before {
     background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
