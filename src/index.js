@@ -82,15 +82,17 @@ window.openURL = async (url) => {
   window.open(url);
 }
 
-window.getBytesFromUrl = async (url, promise)=>{
-  url = "https://cors-anywhere.herokuapp.com/" + url.replace("http://", "https://");
+window.getBytesFromUrl = async (originalUrl, promise)=>{
   try{
+    const url = "https://cors-anywhere.herokuapp.com/" + originalUrl.replace("http://", "https://");
+    Snackbar.show({text:"Fetching data from: " + originalUrl, pos: 'bottom-left'}); 
     const blob = await fetch(url).then(r => r.blob());
     const buffer = await blob.arrayBuffer();
     await cjCall(promise, "resolve", cjTypedArrayToJava(new Uint8Array(buffer)));
   }
   catch(e){
-    console.error("Failed to get data from " + url, e);
+    console.error("Failed to get data from " + originalUrl, e);
+    Snackbar.show({text:"Failed to fetch data from: " + originalUrl, pos: 'bottom-left'}); 
     await cjCall(promise, "reject", e.toString());
   }
 }
