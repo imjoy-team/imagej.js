@@ -12,10 +12,12 @@ body {
 
 ::-webkit-scrollbar {
     -webkit-appearance: none;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, .1);
 }
 
 ::-webkit-scrollbar-thumb {
-    border-radius: 4px;
+    border-radius: 6px;
     background-color: rgba(0, 0, 0, .25);
     -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
 }
@@ -64,13 +66,13 @@ input[type=button] {
     border-width: 0;
     outline: none;
     border-radius: 2px;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, .6);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
 }
 
 
 input[type=button]:hover {
     color: #0662d6;
-    box-shadow: 0 2px 3px rgba(0, 0, 0, .8);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, .5);
 }
 
 input[type=button]:focus {
