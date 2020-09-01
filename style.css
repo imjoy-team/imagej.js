@@ -311,8 +311,8 @@ dialog::backdrop {
     width: 100%;
     position: absolute;
     bottom: 0px;
-    left: 50%;
-    transform: translate(-50%, 0);
+    text-align: center;
+    width: 100%;
 }
 .lds-ellipsis {
     display: inline-block;
