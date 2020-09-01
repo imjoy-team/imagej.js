@@ -130,7 +130,7 @@ async function startImageJ() {
   // turn on debug mode
   // cjCall("ij.IJ", "setDebugMode", true)
   // setup file saving hook
-  // Snackbar.show({text:"ImageJS is ready.", pos: 'bottom-left'}); 
+  // Snackbar.show({text:"ImageJ.JS is ready.", pos: 'bottom-left'}); 
   // const _cheerpjWriteAsync = window.cheerpjWriteAsync
   // window.cheerpjWriteAsync = function (fds, fd, buf, off, len, p){
   //     downloadQueue[fd] = 1;
