@@ -1,7 +1,5 @@
 import { setupRPC } from "imjoy-rpc";
-
 import { version, description } from "../package.json";
-import { imjoyRPC } from "imjoy-rpc/dist/imjoy-rpc";
 
 export async function setupImJoyAPI(
   imagej,
@@ -87,7 +85,9 @@ export async function setupImJoyAPI(
     },
     async getSelection() {
       const imp = await imagej.getImage();
-      const bytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, "selection"));
+      const bytes = javaBytesToArrayBuffer(
+        await imagej.saveAsBytes(imp, "selection")
+      );
       return bytes;
     },
     async getImage() {
