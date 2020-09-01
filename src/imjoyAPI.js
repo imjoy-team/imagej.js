@@ -85,7 +85,9 @@ export async function setupImJoyAPI(
     },
     async getSelection() {
       const imp = await imagej.getImage();
-      const bytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, "selection"));
+      const bytes = javaBytesToArrayBuffer(
+        await imagej.saveAsBytes(imp, "selection")
+      );
       return bytes;
     },
     async getImage() {
