@@ -1,0 +1,308 @@
+import Snackbar from "node-snackbar/dist/snackbar";
+
+async function startImJoy(app, imjoy) {
+    await imjoy.start()
+    imjoy.event_bus.on("show_message", msg => {
+        Snackbar.show({
+            text: msg,
+            pos: 'bottom-left'
+        });
+    });
+    imjoy.event_bus.on("close_window", w => {
+        const idx = app.dialogWindows.indexOf(w)
+        if (idx >= 0)
+            app.dialogWindows.splice(idx, 1)
+        app.$forceUpdate()
+    })
+    imjoy.event_bus.on("add_window", w => {
+        if (document.getElementById(w.window_id)) return;
+        if (!w.dialog && app.active_plugin) {
+            if (document.getElementById(app.active_plugin.id)) {
+                const elem = document.createElement("div");
+                elem.id = w.window_id;
+                elem.classList.add("imjoy-inline-window")
+                document.getElementById(app.active_plugin.id).appendChild(elem)
+                return
+            }
+        }
+        app.dialogWindows.push(w)
+        app.selected_dialog_window = w;
+        if (w.fullscreen || w.standalone)
+            app.fullscreen = true;
+        else
+            app.fullscreen = false;
+        app.$modal.show("window-modal-dialog");
+        app.$forceUpdate()
+        w.api.show = w.show = () => {
+            app.selected_dialog_window = w;
+            app.$modal.show("window-modal-dialog");
+            imjoy.wm.selectWindow(w);
+            w.api.emit("show");
+        };
+
+        w.api.hide = w.hide = () => {
+            if (app.selected_dialog_window === w) {
+                app.$modal.hide("window-modal-dialog");
+            }
+            w.api.emit("hide");
+        };
+
+        setTimeout(() => {
+            try {
+                w.show();
+            } catch (e) {
+                console.error(e);
+            }
+        }, 500);
+    });
+}
+
+
+
+const CSStyle = `
+<style>
+.vm--modal{
+  max-height: 100%!important;
+  max-width: 100%!important;
+}
+.imjoy-inline-window{
+  width: 100%;
+  height: 600px;
+}
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.dialog-control{
+  height: 16px;
+  border:0px;
+  font-size:1rem;
+  position:absolute;
+  color:white;
+  top:1px; 
+}
+.dialog-control:focus {
+  outline: none;
+}
+</style>`
+
+
+
+const APP_TEMPLATE = `
+
+
+<div style="padding-left: 5px;">
+<div class="dropdown">
+  <button class="dropbtn"><img src="https://imjoy.io/static/img/imjoy-icon.svg" style="height: 30px;"></button>
+  <div class="dropdown-content">
+    <a href="#" v-for="(p, name) in plugins" :key="p.id" :title="p.config.description" :style="{color: p.api.run?'#0456ef':'gray'}" @click="run(p)">{{p.name}}</a>
+    <hr class="solid"  v-if="plugins&&Object.keys(plugins).length>0">
+    <a href="#" title="Load a new plugin" @click="loadPlugin()"><i class="fa-plus fa"></i>&nbsp;Load Plugin</a>
+    <a href="#" title="Show ImJoy API documentation" @click="loadImJoyApp()"><i class="fa-rocket fa"></i>&nbsp;ImJoy App</a>
+    <a title="Show ImJoy API documentation" href="#" @click="showAPIDocs()"><i class="fa-book fa"></i>&nbsp;API Docs</a>
+    <a title="About ImJoy" href="#" @click="aboutImJoy()"><i class="fa-info-circle fa"></i>&nbsp;About ImJoy</a>
+    <a v-for="wdialog in dialogWindows" :title="wdialog.name" class="btn btn-default" @click="showWindow(wdialog)">{{wdialog.name}}</a>
+    <hr class="solid">
+    <a class="badge" href="https://github.com/imjoy-team/imagej.js" target="_blank"><img src="https://img.shields.io/badge/Github-ImageJ.JS-blue" alt="Github"></img></a> 
+    <a class="badge" href="https://imjoy.io" target="_blank"><img src="https://imjoy.io/static/badge/powered-by-imjoy-badge.svg" alt="Powered by ImJoy" height="20"></a>
+  </div>
+</div>
+
+<modal name="window-modal-dialog" height="500px" style="max-height: 100%; max-width: 100%" :fullscreen="fullscreen" :resizable="true" draggable=".drag-handle" :scrollable="true">
+    <div v-if="selected_dialog_window" @dblclick="maximizeWindow()" class="navbar-collapse collapse drag-handle" style="cursor:move; background-color: #448aff; color: white; text-align: center;">
+      <span class="noselect">{{ selected_dialog_window.name}}</span>
+      <button @click="closeWindow(selected_dialog_window)" class="noselect dialog-control" style="background:#ff0000c4;left:1px;">
+        X
+      </button>
+      <button @click="minimizeWindow()"  class="noselect dialog-control" style="background:#00cdff61;left:25px;">
+        -
+      </button>
+      <button @click="maximizeWindow()" class="noselect dialog-control" style="background:#00cdff61;left:45px;">
+        {{fullscreen?'=': '+'}}
+      </button>
+    </div>
+  <template v-for="wdialog in dialogWindows">
+    <div
+      :key="wdialog.window_id"
+      v-show="wdialog === selected_dialog_window"
+      style="height: calc(100% - 18px);"
+    >
+      <div :id="wdialog.window_id" style="width: 100%;height: 100%;"></div>
+    </div>
+  </template>
+</modal>
+</div>
+`
+
+export async function setupImJoyApp() {
+    const vue = await import("vue/dist/vue.common")
+    const vuejsmodal = await import("vue-js-modal");
+    const imjoyCore = await import("imjoy-core");
+    const Vue = vue.default;
+    Vue.use(vuejsmodal.default);
+    var elem = document.createElement("div");
+    elem.id = "imjoy-menu";
+    elem.style.position = "absolute"
+    elem.style.top = "0px"
+    elem.style.left = "0px"
+    elem.style.display = "inline-block"
+    elem.innerHTML = APP_TEMPLATE;
+    document.body.appendChild(elem);
+    document.head.insertAdjacentHTML("beforeend", CSStyle)
+    const app = new Vue({
+        el: "#imjoy-menu",
+        data: {
+            dialogWindows: [],
+            selected_dialog_window: null,
+            plugins: {},
+            fullscreen: false,
+            imjoy: null,
+            active_plugin: null,
+        },
+        mounted() {
+            window.dispatchEvent(new Event('resize'));
+            console.log(`ImJoy Core (v${imjoyCore.VERSION}) loaded.`)
+            const imjoy = new imjoyCore.ImJoy({
+                imjoy_api: {
+                    async showMessage(_plugin, msg, duration) {
+                        duration = duration || 5
+                        Snackbar.show({
+                            text: msg,
+                            pos: 'bottom-left'
+                        });
+                    },
+                    async showDialog(_plugin, config) {
+                        config.dialog = true;
+                        return await imjoy.pm.createWindow(_plugin, config)
+                    }
+                }
+            });
+            this.imjoy = imjoy;
+            startImJoy(this, this.imjoy)
+        },
+        methods: {
+            loadImJoyApp() {
+                this.imjoy.pm.imjoy_api.showDialog(null, {
+                    src: 'https://imjoy.io/#/app',
+                    fullscreen: true,
+                    passive: true,
+                })
+            },
+            aboutImJoy() {
+                this.imjoy.pm.imjoy_api.showDialog(null, {
+                    src: 'https://imjoy.io/#/about',
+                    passive: true,
+                })
+            },
+            showAPIDocs() {
+                this.imjoy.pm.imjoy_api.showDialog(null, {
+                    src: 'https://imjoy.io/docs/#/api',
+                    passive: true,
+                })
+            },
+            async connectPlugin() {
+                const plugin = await this.imjoy.pm
+                    .connectPlugin(new Connection())
+                this.plugins[plugin.name] = plugin
+                this.active_plugin = plugin;
+                this.$forceUpdate()
+            },
+            async runNotebookPlugin() {
+                try {
+                    const plugin = this.active_plugin;
+                    if (plugin.api.run) {
+                        let config = {};
+                        if (plugin.config.ui && plugin.config.ui.indexOf("{") > -1) {
+                            config = await this.imjoy.pm.imjoy_api.showDialog(
+                                plugin,
+                                plugin.config
+                            );
+                        }
+                        await plugin.api.run({
+                            config: config,
+                            data: {}
+                        });
+                    }
+                } catch (e) {
+                    console.error(e);
+                    this.showMessage(`Failed to load the plugin, error: ${e}`);
+                }
+            },
+            async run(plugin) {
+                let config = {};
+                if (plugin.config.ui && plugin.config.ui.indexOf("{") > -1) {
+                    config = await this.imjoy.pm.imjoy_api.showDialog(
+                        plugin,
+                        plugin.config
+                    );
+                }
+                await plugin.api.run({
+                    config: config,
+                    data: {}
+                });
+            },
+            showMessage(msg, duration) {
+                duration = duration || 5
+                Snackbar.show({
+                    text: msg,
+                    pos: 'bottom-left'
+                });
+            },
+            loadPlugin() {
+                const p = prompt(
+                    `Please type a ImJoy plugin URL`,
+                    "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
+                );
+                this.imjoy.pm
+                    .reloadPluginRecursively({
+                        uri: p
+                    })
+                    .then(async plugin => {
+                        this.plugins[plugin.name] = plugin
+                        this.showMessage(`Plugin ${plugin.name} successfully loaded into the workspace.`)
+                        this.$forceUpdate()
+                    })
+                    .catch(e => {
+                        console.error(e);
+                        this.showMessage(`Failed to load the plugin, error: ${e}`);
+                    });
+            },
+            showWindow(w) {
+                if (w.fullscreen || w.standalone)
+                    this.fullscreen = true
+                else
+                    this.fullscreen = false
+                if (w) this.selected_dialog_window = w;
+                this.$modal.show("window-modal-dialog");
+            },
+            closeWindow(w) {
+                this.selected_dialog_window = null;
+                this.$modal.hide("window-modal-dialog");
+                const idx = this.dialogWindows.indexOf(w)
+                if (idx >= 0)
+                    this.dialogWindows.splice(idx, 1)
+            },
+            minimizeWindow() {
+                this.$modal.hide("window-modal-dialog");
+            },
+            maximizeWindow() {
+                this.fullscreen = !this.fullscreen;
+            }
+        }
+    });
+    window.connectPlugin = async function () {
+        await app.connectPlugin()
+        await app.runNotebookPlugin()
+    }
+    window._connectPlugin = async function () {
+        await app.connectPlugin()
+    }
+    window._runPluginOnly = async function () {
+        await app.runNotebookPlugin()
+    }
+
+}

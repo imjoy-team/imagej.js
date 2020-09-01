@@ -1,6 +1,7 @@
 import {
   setupImJoyAPI
 } from "./imjoyAPI.js";
+import {setupImJoyApp} from "./imjoyApp.js";
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
@@ -514,6 +515,7 @@ function registerServiceWorker() {
 
 registerServiceWorker();
 fixHeight();
+setupImJoyApp();
 startImageJ().then(imagej => {
   setupDragAndDrop(imagej);
   setTimeout(() => {

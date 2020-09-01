@@ -1,7 +1,5 @@
 import { setupRPC } from "imjoy-rpc";
-
 import { version, description } from "../package.json";
-import { imjoyRPC } from "imjoy-rpc/dist/imjoy-rpc";
 
 export async function setupImJoyAPI(
   imagej,
