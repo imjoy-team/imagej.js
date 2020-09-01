@@ -12,14 +12,14 @@ export async function setupImJoyAPI(
   addMenuItem
 ) {
   const api = await setupRPC({
-    name: "ImageJS",
+    name: "ImageJ.JS",
     version: version,
     description: description,
     type: "rpc-window"
   });
   const service_api = {
     setup() {
-      api.log("ImageJS loaded successfully.");
+      api.log("ImageJ.JS loaded successfully.");
     },
     async run(ctx) {
       if (ctx.data && ctx.data.images) {

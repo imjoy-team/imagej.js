@@ -26,7 +26,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
     - run: npm run build
-    - name: Get compiled imagejs
+    - name: Get compiled imagej.js
       run: bash get-imagej.sh
     - name: Save build output
       uses: actions/upload-artifact@v1
