@@ -56,7 +56,7 @@ div#cheerpjDisplay.status:after {
     position: absolute !important;
     border: 0px solid rgb(63, 107, 240);
     border-radius: 5px;
-    bottom: 10px;
+    bottom: 40px;
     margin-left: auto;
     margin-right: auto;
     transform: translate(-50%, 0);
@@ -310,7 +310,8 @@ dialog::backdrop {
 .footer{
     position: absolute;
     bottom: 0px;
-    left: 0px;
+    left: 50%;
+    transform: translate(-50%, 0);
 }
 .lds-ellipsis {
     display: inline-block;
