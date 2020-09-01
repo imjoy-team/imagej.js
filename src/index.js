@@ -75,6 +75,7 @@ window.saveFileDialogJS = async (title, initPath, selectionMode, promise) => {
     initPath
   )
   downloadQueue[savePath] = 1;
+  loader.style.display = "block";
   await cjCall(promise, "resolve", "/files/" + savePath);
 }
 
@@ -82,8 +83,11 @@ window.openURL = async (url) => {
   window.open(url);
 }
 
+const loader = document.getElementById("loader")
+loader.style.display = "none";
 window.getBytesFromUrl = async (originalUrl, promise)=>{
   try{
+    loader.style.display = "block";
     const url = "https://cors-anywhere.herokuapp.com/" + originalUrl.replace("http://", "https://");
     Snackbar.show({text:"Fetching data from: " + originalUrl, pos: 'bottom-left'}); 
     const blob = await fetch(url).then(r => r.blob());
@@ -95,6 +99,9 @@ window.getBytesFromUrl = async (originalUrl, promise)=>{
     Snackbar.show({text:"Failed to fetch data from: " + originalUrl, pos: 'bottom-left'}); 
     await cjCall(promise, "reject", e.toString());
   }
+  finally{
+    loader.style.display = "none";
+  }
 }
 
 const downloadQueue = {};
@@ -104,7 +111,6 @@ async function startImageJ() {
     enableInputMethods: true,
     clipboardMode: "system"
   });
-
   const appContainer = document.getElementById("imagej-container");
   cheerpjCreateDisplay(-1, -1, appContainer);
   cheerpjRunStaticMethod(
@@ -125,6 +131,7 @@ async function startImageJ() {
     "ij.ImageJ",
     "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar",
   );
+  
 
   const ij = await getImageJInstance();
   // turn on debug mode
@@ -144,11 +151,11 @@ async function startImageJ() {
     const filename = tmp[tmp.length - 1];
     if (downloadQueue[filename]) {
       delete downloadQueue[fileData.path];
-
       downloadBytesFile(fileData.chunks, filename)
       _cheerpjCloseAsync.apply(null, arguments);
       // remove the file after downloading
       window.ij.removeFile("/files/" + filename);
+      loader.style.display = "none";
     } else {
       _cheerpjCloseAsync.apply(null, arguments);
     }
