@@ -82,6 +82,19 @@ window.openURL = async (url) => {
   window.open(url);
 }
 
+window.getBytesFromUrl = async (url, promise)=>{
+  url = "https://cors-anywhere.herokuapp.com/" + url.replace("http://", "https://");
+  try{
+    const blob = await fetch(url).then(r => r.blob());
+    const buffer = await blob.arrayBuffer();
+    await cjCall(promise, "resolve", cjTypedArrayToJava(new Uint8Array(buffer)));
+  }
+  catch(e){
+    console.error("Failed to get data from " + url, e);
+    await cjCall(promise, "reject", e.toString());
+  }
+}
+
 const downloadQueue = {};
 
 async function startImageJ() {
@@ -191,6 +204,7 @@ async function startImageJ() {
   window.ij = imagej_api;
   return imagej_api;
 }
+
 
 async function listFiles(imagej, path) {
   const files = await imagej.listDir(path)
@@ -310,8 +324,8 @@ async function saveFileToFS(imagej, file) {
 
 async function fixMenu(imagej) {
   const removes = [
-    "Open Samples",
     "Show Folder",
+    "Update ImageJ...",
     "Compile and Run...",
     "Capture Screen",
     "Capture Delayed...",
