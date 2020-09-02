@@ -24,7 +24,7 @@ body {
 
 .container {
   width: calc(100vw);
-  height: calc(300vh);
+  height: calc(100vh);
   box-shadow: none;
   overflow: hidden;
 }
