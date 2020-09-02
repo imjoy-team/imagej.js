@@ -9,6 +9,10 @@ You can run ImageJ with all mainstream browsers with one click, no installation 
 
 Try ImageJ.JS here: https://ij.imjoy.io
 
+![](src/assets/img/screenshot-1.png)
+
+
+
 This project is currently under development, please expect frequent changes.
 
 ## ImJoy API
