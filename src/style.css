@@ -404,7 +404,7 @@ dialog::backdrop {
 }
 
 .dropbtn {
-  border-radius: 10px;
+  border-radius: 6px;
   height: 35px;
 }
 
