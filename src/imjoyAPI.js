@@ -1,7 +1,13 @@
-import { setupRPC } from "imjoy-rpc";
-import { version, description } from "../package.json";
+import {
+  setupRPC
+} from "imjoy-rpc";
+import {
+  version,
+  description
+} from "../package.json";
 
 export async function setupImJoyAPI(
+  api,
   imagej,
   getImageData,
   javaBytesToArrayBuffer,
@@ -9,12 +15,13 @@ export async function setupImJoyAPI(
   openImage,
   addMenuItem
 ) {
-  const api = await setupRPC({
-    name: "ImageJ.JS",
-    version: version,
-    description: description,
-    type: "rpc-window"
-  });
+  if (!api)
+    api = await setupRPC({
+      name: "ImageJ.JS",
+      version: version,
+      description: description,
+      type: "rpc-window"
+    });
   const service_api = {
     setup() {
       api.log("ImageJ.JS loaded successfully.");

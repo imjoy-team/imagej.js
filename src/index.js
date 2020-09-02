@@ -1,9 +1,10 @@
 import {
-  setupImJoyAPI
-} from "./imjoyAPI.js";
-import {
   setupImJoyApp
 } from "./imjoyApp.js";
+import {
+  setupImJoyAPI
+} from "./imjoyAPI.js";
+
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
@@ -106,7 +107,7 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
   } catch (e) {
     console.error("Failed to get data from " + originalUrl, e);
     Snackbar.show({
-      text: "Failed to fetch data from: " + originalUrl+": " + e.toString(),
+      text: "Failed to fetch data from: " + originalUrl + ": " + e.toString(),
       pos: "bottom-left"
     });
     await cjCall(promise, "reject", e.toString());
@@ -517,9 +518,9 @@ window.onImageJInitialized = async () => {
 
   fixMenu(imagej);
 
-  // if inside an iframe, setup ImJoy
-  if (window.self !== window.top) {
+  function setAPI(core_api) {
     setupImJoyAPI(
+      core_api,
       imagej,
       getImageData,
       javaBytesToArrayBuffer,
@@ -527,10 +528,12 @@ window.onImageJInitialized = async () => {
       openImage,
       addMenuItem
     );
+  }
+  // if inside an iframe, setup ImJoy
+  if (window.self !== window.top) {
+    setAPI(null);
   } else {
-
-    setupImJoyApp();
-
+    setupImJoyApp(setAPI);
   }
 }
 startImageJ();
