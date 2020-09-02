@@ -1,5 +1,9 @@
-import { setupImJoyAPI } from "./imjoyAPI.js";
-import { setupImJoyApp } from "./imjoyApp.js";
+import {
+  setupImJoyAPI
+} from "./imjoyAPI.js";
+import {
+  setupImJoyApp
+} from "./imjoyApp.js";
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
@@ -13,7 +17,7 @@ function touchClick(ev) {
   if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName))
     ev.stopPropagation();
 }
-document.createElement = function(type) {
+document.createElement = function (type) {
   const elm = _createElement.call(document, type);
   elm.addEventListener("touchstart", touchClick, false);
   return elm;
@@ -34,7 +38,7 @@ window.openFileDialogJS = async (title, initPath, selectionMode, promise) => {
   document.getElementById("dialogTitle").innerHTML = title || "Open File";
   fileDialog.show();
   let closed = false;
-  fileDialog.on("hide", function(dialogEl, event) {
+  fileDialog.on("hide", function (dialogEl, event) {
     if (!closed) {
       closed = true;
       cjCall(promise, "reject", "cancelled");
@@ -93,7 +97,7 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
       pos: "bottom-left"
     });
     const blob = await fetch(url).then(r => r.blob());
-    const buffer = await blob.arrayBuffer();
+    const buffer = await new Response(blob).arrayBuffer();
     await cjCall(
       promise,
       "resolve",
@@ -102,7 +106,7 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
   } catch (e) {
     console.error("Failed to get data from " + originalUrl, e);
     Snackbar.show({
-      text: "Failed to fetch data from: " + originalUrl,
+      text: "Failed to fetch data from: " + originalUrl+": " + e.toString(),
       pos: "bottom-left"
     });
     await cjCall(promise, "reject", e.toString());
@@ -138,84 +142,6 @@ async function startImageJ() {
     "ij.ImageJ",
     "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar"
   );
-
-  const ij = await getImageJInstance();
-  // turn on debug mode
-  // cjCall("ij.IJ", "setDebugMode", true)
-  // setup file saving hook
-  // Snackbar.show({text:"ImageJ.JS is ready.", pos: 'bottom-left'});
-  // const _cheerpjWriteAsync = window.cheerpjWriteAsync
-  // window.cheerpjWriteAsync = function (fds, fd, buf, off, len, p){
-  //     downloadQueue[fd] = 1;
-  //     return _cheerpjWriteAsync.apply(null, arguments);
-  // }
-  const _cheerpjCloseAsync = window.cheerpjCloseAsync;
-  window.cheerpjCloseAsync = function(fds, fd, p) {
-    const fdObj = fds[fd];
-    const fileData = fdObj.fileData;
-    const tmp = fileData.path.split("/");
-    const filename = tmp[tmp.length - 1];
-    if (downloadQueue[filename]) {
-      delete downloadQueue[fileData.path];
-      downloadBytesFile(fileData.chunks, filename);
-      _cheerpjCloseAsync.apply(null, arguments);
-      // remove the file after downloading
-      window.ij.removeFile("/files/" + filename);
-      loader.style.display = "none";
-    } else {
-      _cheerpjCloseAsync.apply(null, arguments);
-    }
-  };
-  const imagej_api = {
-    run: await cjResolveCall("ij.IJ", "run", [
-      "java.lang.String",
-      "java.lang.String"
-    ]),
-    showStatus: await cjResolveCall("ij.IJ", "showStatus", [
-      "java.lang.String"
-    ]),
-    showMessage: await cjResolveCall("ij.IJ", "showMessage", [
-      "java.lang.String",
-      "java.lang.String"
-    ]),
-    runPlugIn: await cjResolveCall("ij.IJ", "runPlugIn", [
-      "java.lang.String",
-      "java.lang.String"
-    ]),
-    runMacro: await cjResolveCall("ij.IJ", "runMacro", [
-      "java.lang.String",
-      "java.lang.String"
-    ]),
-    open: await cjResolveCall("ij.IJ", "open", ["java.lang.String"]),
-    installPlugin: await cjResolveCall("ij.Menus", "installPlugin", null),
-    getPlugins: await cjResolveCall("ij.Menus", "getPlugins", []),
-    getPlugInsPath: await cjResolveCall("ij.Menus", "getPlugInsPath", []),
-    getImage: await cjResolveCall("ij.IJ", "getImage", []),
-    save: await cjResolveCall("ij.IJ", "save", [
-      "ij.ImagePlus",
-      "java.lang.String"
-    ]),
-    saveAsBytes: await cjResolveCall("ij.IJ", "saveAsBytes", [
-      "ij.ImagePlus",
-      "java.lang.String"
-    ]),
-    getString: await cjResolveCall("ij.IJ", "getString", [
-      "java.lang.String",
-      "java.lang.String"
-    ]),
-    listDir: await cjResolveCall("ij.IJ", "listDir", ["java.lang.String"]),
-    removeFile: await cjResolveCall("ij.IJ", "removeFile", [
-      "java.lang.String"
-    ]),
-    openAsBytes: await cjResolveCall("ij.IJ", "openAsBytes", [
-      "java.lang.String"
-    ]),
-    saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null)
-    // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
-    // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
-  };
-  window.ij = imagej_api;
-  return imagej_api;
 }
 
 async function listFiles(imagej, path) {
@@ -441,30 +367,16 @@ function setupDragAndDrop(imagej) {
   );
 }
 
-function getImageJInstance() {
-  return new Promise(resolve => {
-    async function tryIJ() {
-      const ij = await cjCall("ij.IJ", "getInstance");
-      if (!ij) {
-        setTimeout(tryIJ, 500);
-      } else {
-        resolve(ij);
-      }
-    }
-    tryIJ();
-  });
-}
-
 function readFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
-    reader.onload = function() {
+    reader.onload = function () {
       const arrayBuffer = reader.result;
       const bytes = new Uint8Array(arrayBuffer);
       resolve(bytes);
     };
-    reader.onerror = function(e) {
+    reader.onerror = function (e) {
       reject(e);
     };
   });
@@ -501,16 +413,16 @@ function addMenuItem(config) {
 
 function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function() {
+    window.addEventListener("load", function () {
       navigator.serviceWorker.register("/service-worker.js").then(
-        function(registration) {
+        function (registration) {
           // Registration was successful
           console.log(
             "ServiceWorker registration successful with scope: ",
             registration.scope
           );
         },
-        function(err) {
+        function (err) {
           // registration failed :(
           console.log("ServiceWorker registration failed: ", err);
         }
@@ -521,11 +433,90 @@ function registerServiceWorker() {
 
 registerServiceWorker();
 fixHeight();
-startImageJ().then(imagej => {
+
+window.onImageJInitialized = async () => {
+
+  // const ij = await cjCall("ij.IJ", "getInstance");
+  // turn on debug mode
+  // cjCall("ij.IJ", "setDebugMode", true)
+  // setup file saving hook
+  // Snackbar.show({text:"ImageJ.JS is ready.", pos: 'bottom-left'});
+  // const _cheerpjWriteAsync = window.cheerpjWriteAsync
+  // window.cheerpjWriteAsync = function (fds, fd, buf, off, len, p){
+  //     downloadQueue[fd] = 1;
+  //     return _cheerpjWriteAsync.apply(null, arguments);
+  // }
+
+  const _cheerpjCloseAsync = window.cheerpjCloseAsync;
+  window.cheerpjCloseAsync = function (fds, fd, p) {
+    const fdObj = fds[fd];
+    const fileData = fdObj.fileData;
+    const tmp = fileData.path.split("/");
+    const filename = tmp[tmp.length - 1];
+    if (downloadQueue[filename]) {
+      delete downloadQueue[fileData.path];
+      downloadBytesFile(fileData.chunks, filename);
+      _cheerpjCloseAsync.apply(null, arguments);
+      // remove the file after downloading
+      window.ij.removeFile("/files/" + filename);
+      loader.style.display = "none";
+    } else {
+      _cheerpjCloseAsync.apply(null, arguments);
+    }
+  };
+  const imagej = {
+    run: await cjResolveCall("ij.IJ", "run", [
+      "java.lang.String",
+      "java.lang.String"
+    ]),
+    showStatus: await cjResolveCall("ij.IJ", "showStatus", [
+      "java.lang.String"
+    ]),
+    showMessage: await cjResolveCall("ij.IJ", "showMessage", [
+      "java.lang.String",
+      "java.lang.String"
+    ]),
+    runPlugIn: await cjResolveCall("ij.IJ", "runPlugIn", [
+      "java.lang.String",
+      "java.lang.String"
+    ]),
+    runMacro: await cjResolveCall("ij.IJ", "runMacro", [
+      "java.lang.String",
+      "java.lang.String"
+    ]),
+    open: await cjResolveCall("ij.IJ", "open", ["java.lang.String"]),
+    installPlugin: await cjResolveCall("ij.Menus", "installPlugin", null),
+    getPlugins: await cjResolveCall("ij.Menus", "getPlugins", []),
+    getPlugInsPath: await cjResolveCall("ij.Menus", "getPlugInsPath", []),
+    getImage: await cjResolveCall("ij.IJ", "getImage", []),
+    save: await cjResolveCall("ij.IJ", "save", [
+      "ij.ImagePlus",
+      "java.lang.String"
+    ]),
+    saveAsBytes: await cjResolveCall("ij.IJ", "saveAsBytes", [
+      "ij.ImagePlus",
+      "java.lang.String"
+    ]),
+    getString: await cjResolveCall("ij.IJ", "getString", [
+      "java.lang.String",
+      "java.lang.String"
+    ]),
+    listDir: await cjResolveCall("ij.IJ", "listDir", ["java.lang.String"]),
+    removeFile: await cjResolveCall("ij.IJ", "removeFile", [
+      "java.lang.String"
+    ]),
+    openAsBytes: await cjResolveCall("ij.IJ", "openAsBytes", [
+      "java.lang.String"
+    ]),
+    saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null)
+    // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
+    // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
+  };
+  window.ij = imagej;
   setupDragAndDrop(imagej);
-  setTimeout(() => {
-    fixMenu(imagej);
-  }, 2000);
+
+  fixMenu(imagej);
+
   // if inside an iframe, setup ImJoy
   if (window.self !== window.top) {
     setupImJoyAPI(
@@ -536,8 +527,10 @@ startImageJ().then(imagej => {
       openImage,
       addMenuItem
     );
-  }
-  else{
+  } else {
+
     setupImJoyApp();
+
   }
-});
+}
+startImageJ();
