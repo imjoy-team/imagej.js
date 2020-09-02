@@ -13,6 +13,9 @@ async function startImJoy(app, imjoy) {
     if (idx >= 0) app.dialogWindows.splice(idx, 1);
     app.$forceUpdate();
   });
+  imjoy.event_bus.on("plugin_loaded", p => {
+    app.showMenu();
+  });
   imjoy.event_bus.on("add_window", w => {
     if (document.getElementById(w.window_id)) return;
     if (!w.dialog && app.active_plugin) {
@@ -73,12 +76,15 @@ const CSStyle = `
   user-select: none;
 }
 .dialog-control{
+  font-family: monospace;
+  margin-left: 2px;
+  width: 18px!important;
   height: 16px;
   border:0px;
   font-size:1rem;
-  position:absolute;
+  position: relative;
   color:white;
-  top:1px; 
+  top:1px;
 }
 .dialog-control:focus {
   outline: none;
@@ -91,6 +97,7 @@ const APP_TEMPLATE = `
 <div style="padding-left: 5px;">
 <div class="dropdown">
   <img class="dropbtn" src="https://imjoy.io/static/img/imjoy-icon-white.svg">
+  <span class="dropbtn dropbtn-ext">ImJoy</span>
   <div class="dropdown-content">
     <a href="#" v-for="(p, name) in plugins" :key="p.id" :title="p.config.description" :style="{color: p.api.run?'#0456ef':'gray'}" @click="run(p)">{{p.name}}</a>
     <hr class="solid"  v-if="plugins&&Object.keys(plugins).length>0">
@@ -106,16 +113,19 @@ const APP_TEMPLATE = `
 
 <modal name="window-modal-dialog" height="500px" style="max-height: 100%; max-width: 100%" :fullscreen="fullscreen" :resizable="true" draggable=".drag-handle" :scrollable="true">
     <div v-if="selected_dialog_window" @dblclick="maximizeWindow()" class="navbar-collapse collapse drag-handle" style="cursor:move; background-color: #448aff; color: white; text-align: center;">
-      <span class="noselect">{{ selected_dialog_window.name}}</span>
-      <button @click="closeWindow(selected_dialog_window)" class="noselect dialog-control" style="background:#ff0000c4;left:1px;">
+    <div style="position: absolute; left:2px; margin-top: -1px;">
+      <button @click="closeWindow(selected_dialog_window)" class="noselect dialog-control" style="background:#ff0000c4;">
         X
       </button>
-      <button @click="minimizeWindow()"  class="noselect dialog-control" style="background:#00cdff61;left:25px;">
+      <button @click="minimizeWindow()"  class="noselect dialog-control" style="background:#00cdff61;">
         -
       </button>
-      <button @click="maximizeWindow()" class="noselect dialog-control" style="background:#00cdff61;left:45px;">
+      <button @click="maximizeWindow()" class="noselect dialog-control" style="background:#00cdff61;">
         {{fullscreen?'=': '+'}}
       </button>
+    </div>
+      <span class="noselect">{{ selected_dialog_window.name}}</span>
+      
     </div>
   <template v-for="wdialog in dialogWindows">
     <div
@@ -216,6 +226,15 @@ export async function setupImJoyApp(setAPI) {
       startImJoy(this, this.imjoy);
     },
     methods: {
+      showMenu() {
+        const dm = document.querySelector(
+          "#imjoy-menu>div>.dropdown>.dropdown-content"
+        );
+        dm.style.display = "block";
+        setTimeout(() => {
+          dm.style.display = "";
+        }, 3000);
+      },
       loadImJoyApp() {
         this.imjoy.pm.imjoy_api.showDialog(null, {
           src: "https://imjoy.io/#/app",

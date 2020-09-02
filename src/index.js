@@ -43,7 +43,6 @@ window.openFileDialogJS = async (title, initPath, selectionMode, promise) => {
   });
   document.getElementById("open-file-modal-select").onclick = () => {
     if (!closed) {
-      closed = true;
       const fileInput = document.getElementById("open-file");
       fileInput.onchange = () => {
         const files = fileInput.files;
@@ -55,10 +54,11 @@ window.openFileDialogJS = async (title, initPath, selectionMode, promise) => {
             cjCall(promise, "reject", String(e));
           });
         fileInput.value = "";
+        closed = true;
+        fileDialog.hide();
       };
       fileInput.click();
     }
-    fileDialog.hide();
   };
   document.getElementById("open-file-modal-internal").onclick = () => {
     if (!closed) {
@@ -428,9 +428,103 @@ function registerServiceWorker() {
   }
 }
 
+function iOS() {
+  return (
+    [
+      "iPad Simulator",
+      "iPhone Simulator",
+      "iPod Simulator",
+      "iPad",
+      "iPhone",
+      "iPod"
+    ].includes(navigator.platform) ||
+    // iPad on iOS 13 detection
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+  );
+}
+
+function fixStyle() {
+  if (iOS()) {
+    // Create our stylesheet
+    var style = document.createElement("style");
+    style.innerHTML = `.titleBar>.controls {
+      margin-top: -5px;
+      color: white !important;
+    }
+
+    #imjoy-menu {
+      top: -1px !important;
+    }
+    `;
+    // Get the first script tag
+    var ref = document.querySelector("script");
+
+    // Insert our new styles before the first script tag
+    ref.parentNode.insertBefore(style, ref);
+  }
+}
+
+function touchHandler(event) {
+  var touches = event.changedTouches,
+    first = touches[0],
+    type = "";
+  switch (event.type) {
+    case "touchstart":
+      type = "mousedown";
+      break;
+    case "touchmove":
+      type = "mousemove";
+      break;
+    case "touchend":
+      type = "mouseup";
+      break;
+    default:
+      return;
+  }
+
+  // initMouseEvent(type, canBubble, cancelable, view, clickCount,
+  //                screenX, screenY, clientX, clientY, ctrlKey,
+  //                altKey, shiftKey, metaKey, button, relatedTarget);
+
+  var simulatedEvent = document.createEvent("MouseEvent");
+  simulatedEvent.initMouseEvent(
+    type,
+    true,
+    true,
+    window,
+    1,
+    first.screenX,
+    first.screenY,
+    first.clientX,
+    first.clientY,
+    false,
+    false,
+    false,
+    false,
+    0 /*left*/,
+    null
+  );
+
+  first.target.dispatchEvent(simulatedEvent);
+  event.preventDefault();
+}
+
+function fixTouch() {
+  const titleBar = document.querySelector(".titleBar");
+  titleBar.addEventListener("touchstart", touchHandler, true);
+  titleBar.addEventListener("touchmove", touchHandler, true);
+  titleBar.addEventListener("touchend", touchHandler, true);
+  titleBar.addEventListener("touchcancel", touchHandler, true);
+
+  const menus = document.querySelectorAll(".subMenuItem");
+  for (let menu of menus) {
+    menu.removeEventListener("touchstart", touchClick);
+  }
+}
+
 registerServiceWorker();
 fixHeight();
-
+fixStyle();
 window.onImageJInitialized = async () => {
   // const ij = await cjCall("ij.IJ", "getInstance");
   // turn on debug mode
@@ -512,6 +606,7 @@ window.onImageJInitialized = async () => {
   setupDragAndDrop(imagej);
 
   fixMenu(imagej);
+  fixTouch();
 
   function setAPI(core_api) {
     setupImJoyAPI(
