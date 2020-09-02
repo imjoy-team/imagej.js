@@ -294,7 +294,7 @@ export async function setupImJoyApp(setAPI) {
           .then(async plugin => {
             this.plugins[plugin.name] = plugin;
             this.showMessage(
-              `Plugin ${plugin.name} successfully loaded into the workspace.`
+              `Plugin ${plugin.name} successfully loaded, you can now run it from the ImJoy plugin menu.`
             );
             this.$forceUpdate();
           })
