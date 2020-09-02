@@ -372,7 +372,7 @@ dialog::backdrop {
 
 /* Dropdown Button */
 .dropbtn {
-  background-color: white;
+  background-color: transparent;
   color: black;
   padding: 3px;
   font-size: 16px;
@@ -429,4 +429,18 @@ hr.solid {
 /* Change the background color of the dropdown button when the dropdown content is shown */
 .dropdown:hover .dropbtn {
   background-color: #bababa;
+}
+
+#imjoy-menu{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  display: inline-block;
+}
+
+@media screen and (max-width: 700px) {
+  #imjoy-menu {
+    top: 105px;
+    left: 0px;
+  }
 }

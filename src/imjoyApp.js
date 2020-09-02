@@ -90,7 +90,7 @@ const APP_TEMPLATE = `
 
 <div style="padding-left: 5px;">
 <div class="dropdown">
-  <button class="dropbtn"><img src="https://imjoy.io/static/img/imjoy-icon.svg" style="height: 30px;"></button>
+  <button class="dropbtn"><img src="https://imjoy.io/static/img/imjoy-icon-white.svg" style="height: 30px;"></button>
   <div class="dropdown-content">
     <a href="#" v-for="(p, name) in plugins" :key="p.id" :title="p.config.description" :style="{color: p.api.run?'#0456ef':'gray'}" @click="run(p)">{{p.name}}</a>
     <hr class="solid"  v-if="plugins&&Object.keys(plugins).length>0">
@@ -138,10 +138,6 @@ export async function setupImJoyApp() {
   Vue.use(vuejsmodal.default);
   var elem = document.createElement("div");
   elem.id = "imjoy-menu";
-  elem.style.position = "absolute";
-  elem.style.top = "0px";
-  elem.style.left = "0px";
-  elem.style.display = "inline-block";
   elem.innerHTML = APP_TEMPLATE;
   document.body.appendChild(elem);
   document.head.insertAdjacentHTML("beforeend", CSStyle);
