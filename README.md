@@ -1,11 +1,15 @@
-# ImageJ running in the browser
+# ImageJ.JS: ImageJ running in the browser
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imjoy-team/imagej.js/master?filepath=examples%2Fgetting-started.ipynb)
 [![launch ImJoy](https://imjoy.io/static/badge/launch-imjoy-badge.svg)](https://imjoy.io/#/app?workspace=imagej&plugin=https://ij.imjoy.io)
 <!-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/imjoy-team/imagej.js/blob/master/examples/getting-started.ipynb) -->
 
+[ImageJ](https://imagej.nih.gov/ij/) is an open source image processing program designed for scientific multidimensional images. It was originally written in Java and available mainly on desktop computers. We compiled it into [WebAssembly](https://webassembly.org/) and Javascript with a tool called [CheerpJ](https://www.leaningtech.com/pages/cheerpj.html) with adding features to connect it with the ImJoy plugin ecosystem.
 
-Start here: https://ij.imjoy.io
+You can run ImageJ with all mainstream browsers with one click, no installation and no Java runtime environment needed. It also works on mobile devices.
 
+Try ImageJ.JS here: https://ij.imjoy.io
+
+This project is currently under development, please expect frequent changes.
 
 ## ImJoy API
 You can use ImageJ.JS as an ImJoy plugin, the most common use case is to use it with Python, e.g. in a Jupyter notebook or in ImJoy.
