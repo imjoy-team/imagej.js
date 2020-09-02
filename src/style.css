@@ -24,7 +24,7 @@ body {
 
 .container {
   width: calc(100vw);
-  height: calc(100vh);
+  height: calc(300vh);
   box-shadow: none;
   overflow: hidden;
 }
@@ -430,7 +430,7 @@ hr.solid {
   background-color: #bababa;
 }
 
-#imjoy-menu{
+#imjoy-menu {
   position: absolute;
   top: 1px;
   left: -4px;

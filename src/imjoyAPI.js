@@ -1,10 +1,5 @@
-import {
-  setupRPC
-} from "imjoy-rpc";
-import {
-  version,
-  description
-} from "../package.json";
+import { setupRPC } from "imjoy-rpc";
+import { version, description } from "../package.json";
 
 export async function setupImJoyAPI(
   api,

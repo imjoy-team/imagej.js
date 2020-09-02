@@ -23,7 +23,7 @@ In the standalone mode (simply go to https://ij.imjoy.io), you will have acess t
 
 For example, the following code shows how to call ImageJ.JS api from an ImJoy plugin:
 ```javascript
-const ij = await api.getPlugin("ImageJ.JS")
+const ij = await api.getWindow("ImageJ.JS")
 ...
 // assuming we have an input image to be processed
 await ij.viewImage(inputImage)

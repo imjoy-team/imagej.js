@@ -1,57 +1,57 @@
 import Snackbar from "node-snackbar/dist/snackbar";
 
 async function startImJoy(app, imjoy) {
-    await imjoy.start();
-    imjoy.event_bus.on("show_message", msg => {
-        Snackbar.show({
-            text: msg,
-            pos: "bottom-left"
-        });
+  await imjoy.start();
+  imjoy.event_bus.on("show_message", msg => {
+    Snackbar.show({
+      text: msg,
+      pos: "bottom-left"
     });
-    imjoy.event_bus.on("close_window", w => {
-        const idx = app.dialogWindows.indexOf(w);
-        if (idx >= 0) app.dialogWindows.splice(idx, 1);
-        app.$forceUpdate();
-    });
-    imjoy.event_bus.on("add_window", w => {
-        if (document.getElementById(w.window_id)) return;
-        if (!w.dialog && app.active_plugin) {
-            if (document.getElementById(app.active_plugin.id)) {
-                const elem = document.createElement("div");
-                elem.id = w.window_id;
-                elem.classList.add("imjoy-inline-window");
-                document.getElementById(app.active_plugin.id).appendChild(elem);
-                return;
-            }
-        }
-        app.dialogWindows.push(w);
-        app.selected_dialog_window = w;
-        if (w.fullscreen || w.standalone) app.fullscreen = true;
-        else app.fullscreen = false;
-        app.$modal.show("window-modal-dialog");
-        app.$forceUpdate();
-        w.api.show = w.show = () => {
-            app.selected_dialog_window = w;
-            app.$modal.show("window-modal-dialog");
-            imjoy.wm.selectWindow(w);
-            w.api.emit("show");
-        };
+  });
+  imjoy.event_bus.on("close_window", w => {
+    const idx = app.dialogWindows.indexOf(w);
+    if (idx >= 0) app.dialogWindows.splice(idx, 1);
+    app.$forceUpdate();
+  });
+  imjoy.event_bus.on("add_window", w => {
+    if (document.getElementById(w.window_id)) return;
+    if (!w.dialog && app.active_plugin) {
+      if (document.getElementById(app.active_plugin.id)) {
+        const elem = document.createElement("div");
+        elem.id = w.window_id;
+        elem.classList.add("imjoy-inline-window");
+        document.getElementById(app.active_plugin.id).appendChild(elem);
+        return;
+      }
+    }
+    app.dialogWindows.push(w);
+    app.selected_dialog_window = w;
+    if (w.fullscreen || w.standalone) app.fullscreen = true;
+    else app.fullscreen = false;
+    app.$modal.show("window-modal-dialog");
+    app.$forceUpdate();
+    w.api.show = w.show = () => {
+      app.selected_dialog_window = w;
+      app.$modal.show("window-modal-dialog");
+      imjoy.wm.selectWindow(w);
+      w.api.emit("show");
+    };
 
-        w.api.hide = w.hide = () => {
-            if (app.selected_dialog_window === w) {
-                app.$modal.hide("window-modal-dialog");
-            }
-            w.api.emit("hide");
-        };
+    w.api.hide = w.hide = () => {
+      if (app.selected_dialog_window === w) {
+        app.$modal.hide("window-modal-dialog");
+      }
+      w.api.emit("hide");
+    };
 
-        setTimeout(() => {
-            try {
-                w.show();
-            } catch (e) {
-                console.error(e);
-            }
-        }, 500);
-    });
+    setTimeout(() => {
+      try {
+        w.show();
+      } catch (e) {
+        console.error(e);
+      }
+    }, 500);
+  });
 }
 
 const CSStyle = `
@@ -131,200 +131,206 @@ const APP_TEMPLATE = `
 `;
 
 function promisify_functions(obj) {
-    const ret = {}
-    for (let k in obj) {
-        if (typeof obj[k] === "function") {
-            // make sure it returns a promise
-            const func = obj[k];
-            if (func.constructor.name !== "AsyncFunction") {
-                ret[k] = function (...args) {
-                    return Promise.resolve(func(...args));
-                };
-            } else {
-                ret[k] = func
-            }
-        } else {
-            ret[k] = obj[k]
-        }
+  const ret = {};
+  for (let k in obj) {
+    if (typeof obj[k] === "function") {
+      // make sure it returns a promise
+      const func = obj[k];
+      if (func.constructor.name !== "AsyncFunction") {
+        ret[k] = function(...args) {
+          return Promise.resolve(func(...args));
+        };
+      } else {
+        ret[k] = func;
+      }
+    } else {
+      ret[k] = obj[k];
     }
-    return ret;
+  }
+  return ret;
 }
 
 export async function setupImJoyApp(setAPI) {
-    const vue = await import("vue/dist/vue.common");
-    const vuejsmodal = await import("vue-js-modal");
-    const imjoyCore = await import("imjoy-core");
-    const Vue = vue.default;
-    Vue.use(vuejsmodal.default);
-    var elem = document.createElement("div");
-    elem.id = "imjoy-menu";
-    elem.innerHTML = APP_TEMPLATE;
-    document.querySelector(".titleBar").appendChild(elem);
-    document.head.insertAdjacentHTML("beforeend", CSStyle);
-    const app = new Vue({
-        el: "#imjoy-menu",
-        data: {
-            dialogWindows: [],
-            selected_dialog_window: null,
-            plugins: {},
-            fullscreen: false,
-            imjoy: null,
-            active_plugin: null
-        },
-        mounted() {
-            window.dispatchEvent(new Event("resize"));
-            console.log(`ImJoy Core (v${imjoyCore.VERSION}) loaded.`);
-            const imjoy = new imjoyCore.ImJoy({
-                imjoy_api: {
-                    getPlugin(_plugin, src) {
-                        return new Promise((resolve, reject) => {
-                            if (src === "ImageJ.JS") {
-                                const api = Object.assign({}, imjoy.pm.imjoy_api)
-                                api.export = (service_api) => {
-                                    resolve(promisify_functions(service_api))
-                                }
-                                api.registerCodec = () => {
-                                    throw "register codec is not implemented yet."
-                                }
-                                setAPI(promisify_functions(api))
-                            } else {
-                                imjoy.pm.getPlugin(_plugin, src).then(resolve).catch(reject)
-                            }
-                        })
-
-                    },
-                    async showMessage(_plugin, msg, duration) {
-                        duration = duration || 5;
-                        Snackbar.show({
-                            text: msg,
-                            pos: "bottom-left"
-                        });
-                    },
-                    async showDialog(_plugin, config) {
-                        config.dialog = true;
-                        return await imjoy.pm.createWindow(_plugin, config);
-                    }
-                }
+  const vue = await import("vue/dist/vue.common");
+  const vuejsmodal = await import("vue-js-modal");
+  const imjoyCore = await import("imjoy-core");
+  const Vue = vue.default;
+  Vue.use(vuejsmodal.default);
+  var elem = document.createElement("div");
+  elem.id = "imjoy-menu";
+  elem.innerHTML = APP_TEMPLATE;
+  document.querySelector(".titleBar").appendChild(elem);
+  document.head.insertAdjacentHTML("beforeend", CSStyle);
+  const app = new Vue({
+    el: "#imjoy-menu",
+    data: {
+      dialogWindows: [],
+      selected_dialog_window: null,
+      plugins: {},
+      fullscreen: false,
+      imjoy: null,
+      active_plugin: null
+    },
+    mounted() {
+      window.dispatchEvent(new Event("resize"));
+      console.log(`ImJoy Core (v${imjoyCore.VERSION}) loaded.`);
+      const imjoy = new imjoyCore.ImJoy({
+        imjoy_api: {
+          getWindow(_plugin, config) {
+            return new Promise((resolve, reject) => {
+              if (
+                config === "ImageJ.JS" ||
+                config.name === "ImageJ.JS" ||
+                config.type === "ImageJ.JS"
+              ) {
+                const api = Object.assign({}, imjoy.pm.imjoy_api);
+                api.export = service_api => {
+                  resolve(promisify_functions(service_api));
+                };
+                api.registerCodec = () => {
+                  throw "register codec is not implemented yet.";
+                };
+                setAPI(promisify_functions(api));
+              } else {
+                imjoy.pm
+                  .getWindow(_plugin, config)
+                  .then(resolve)
+                  .catch(reject);
+              }
             });
-            this.imjoy = imjoy;
-            startImJoy(this, this.imjoy);
-        },
-        methods: {
-            loadImJoyApp() {
-                this.imjoy.pm.imjoy_api.showDialog(null, {
-                    src: "https://imjoy.io/#/app",
-                    fullscreen: true,
-                    passive: true
-                });
-            },
-            aboutImJoy() {
-                this.imjoy.pm.imjoy_api.showDialog(null, {
-                    src: "https://imjoy.io/#/about",
-                    passive: true
-                });
-            },
-            showAPIDocs() {
-                this.imjoy.pm.imjoy_api.showDialog(null, {
-                    src: "https://imjoy.io/docs/#/api",
-                    passive: true
-                });
-            },
-            async connectPlugin() {
-                const plugin = await this.imjoy.pm.connectPlugin(new Connection());
-                this.plugins[plugin.name] = plugin;
-                this.active_plugin = plugin;
-                this.$forceUpdate();
-            },
-            async runNotebookPlugin() {
-                try {
-                    const plugin = this.active_plugin;
-                    if (plugin.api.run) {
-                        let config = {};
-                        if (plugin.config.ui && plugin.config.ui.indexOf("{") > -1) {
-                            config = await this.imjoy.pm.imjoy_api.showDialog(
-                                plugin,
-                                plugin.config
-                            );
-                        }
-                        await plugin.api.run({
-                            config: config,
-                            data: {}
-                        });
-                    }
-                } catch (e) {
-                    console.error(e);
-                    this.showMessage(`Failed to load the plugin, error: ${e}`);
-                }
-            },
-            async run(plugin) {
-                let config = {};
-                if (plugin.config.ui && plugin.config.ui.indexOf("{") > -1) {
-                    config = await this.imjoy.pm.imjoy_api.showDialog(
-                        plugin,
-                        plugin.config
-                    );
-                }
-                await plugin.api.run({
-                    config: config,
-                    data: {}
-                });
-            },
-            showMessage(msg, duration) {
-                duration = duration || 5;
-                Snackbar.show({
-                    text: msg,
-                    pos: "bottom-left"
-                });
-            },
-            loadPlugin() {
-                const p = prompt(
-                    `Please type a ImJoy plugin URL`,
-                    "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
-                );
-                this.imjoy.pm
-                    .reloadPluginRecursively({
-                        uri: p
-                    })
-                    .then(async plugin => {
-                        this.plugins[plugin.name] = plugin;
-                        this.showMessage(
-                            `Plugin ${plugin.name} successfully loaded into the workspace.`
-                        );
-                        this.$forceUpdate();
-                    })
-                    .catch(e => {
-                        console.error(e);
-                        this.showMessage(`Failed to load the plugin, error: ${e}`);
-                    });
-            },
-            showWindow(w) {
-                if (w.fullscreen || w.standalone) this.fullscreen = true;
-                else this.fullscreen = false;
-                if (w) this.selected_dialog_window = w;
-                this.$modal.show("window-modal-dialog");
-            },
-            closeWindow(w) {
-                this.selected_dialog_window = null;
-                this.$modal.hide("window-modal-dialog");
-                const idx = this.dialogWindows.indexOf(w);
-                if (idx >= 0) this.dialogWindows.splice(idx, 1);
-            },
-            minimizeWindow() {
-                this.$modal.hide("window-modal-dialog");
-            },
-            maximizeWindow() {
-                this.fullscreen = !this.fullscreen;
-            }
+          },
+          async showMessage(_plugin, msg, duration) {
+            duration = duration || 5;
+            Snackbar.show({
+              text: msg,
+              pos: "bottom-left"
+            });
+          },
+          async showDialog(_plugin, config) {
+            config.dialog = true;
+            return await imjoy.pm.createWindow(_plugin, config);
+          }
         }
-    });
-    window.connectPlugin = async function () {
-        await app.connectPlugin();
-        await app.runNotebookPlugin();
-    };
-    window._connectPlugin = async function () {
-        await app.connectPlugin();
-    };
-    window._runPluginOnly = async function () {
-        await app.runNotebookPlugin();
-    };
+      });
+      this.imjoy = imjoy;
+      startImJoy(this, this.imjoy);
+    },
+    methods: {
+      loadImJoyApp() {
+        this.imjoy.pm.imjoy_api.showDialog(null, {
+          src: "https://imjoy.io/#/app",
+          fullscreen: true,
+          passive: true
+        });
+      },
+      aboutImJoy() {
+        this.imjoy.pm.imjoy_api.showDialog(null, {
+          src: "https://imjoy.io/#/about",
+          passive: true
+        });
+      },
+      showAPIDocs() {
+        this.imjoy.pm.imjoy_api.showDialog(null, {
+          src: "https://imjoy.io/docs/#/api",
+          passive: true
+        });
+      },
+      async connectPlugin() {
+        const plugin = await this.imjoy.pm.connectPlugin(new Connection());
+        this.plugins[plugin.name] = plugin;
+        this.active_plugin = plugin;
+        this.$forceUpdate();
+      },
+      async runNotebookPlugin() {
+        try {
+          const plugin = this.active_plugin;
+          if (plugin.api.run) {
+            let config = {};
+            if (plugin.config.ui && plugin.config.ui.indexOf("{") > -1) {
+              config = await this.imjoy.pm.imjoy_api.showDialog(
+                plugin,
+                plugin.config
+              );
+            }
+            await plugin.api.run({
+              config: config,
+              data: {}
+            });
+          }
+        } catch (e) {
+          console.error(e);
+          this.showMessage(`Failed to load the plugin, error: ${e}`);
+        }
+      },
+      async run(plugin) {
+        let config = {};
+        if (plugin.config.ui && plugin.config.ui.indexOf("{") > -1) {
+          config = await this.imjoy.pm.imjoy_api.showDialog(
+            plugin,
+            plugin.config
+          );
+        }
+        await plugin.api.run({
+          config: config,
+          data: {}
+        });
+      },
+      showMessage(msg, duration) {
+        duration = duration || 5;
+        Snackbar.show({
+          text: msg,
+          pos: "bottom-left"
+        });
+      },
+      loadPlugin() {
+        const p = prompt(
+          `Please type a ImJoy plugin URL`,
+          "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
+        );
+        this.imjoy.pm
+          .reloadPluginRecursively({
+            uri: p
+          })
+          .then(async plugin => {
+            this.plugins[plugin.name] = plugin;
+            this.showMessage(
+              `Plugin ${plugin.name} successfully loaded into the workspace.`
+            );
+            this.$forceUpdate();
+          })
+          .catch(e => {
+            console.error(e);
+            this.showMessage(`Failed to load the plugin, error: ${e}`);
+          });
+      },
+      showWindow(w) {
+        if (w.fullscreen || w.standalone) this.fullscreen = true;
+        else this.fullscreen = false;
+        if (w) this.selected_dialog_window = w;
+        this.$modal.show("window-modal-dialog");
+      },
+      closeWindow(w) {
+        this.selected_dialog_window = null;
+        this.$modal.hide("window-modal-dialog");
+        const idx = this.dialogWindows.indexOf(w);
+        if (idx >= 0) this.dialogWindows.splice(idx, 1);
+      },
+      minimizeWindow() {
+        this.$modal.hide("window-modal-dialog");
+      },
+      maximizeWindow() {
+        this.fullscreen = !this.fullscreen;
+      }
+    }
+  });
+  window.connectPlugin = async function() {
+    await app.connectPlugin();
+    await app.runNotebookPlugin();
+  };
+  window._connectPlugin = async function() {
+    await app.connectPlugin();
+  };
+  window._runPluginOnly = async function() {
+    await app.runNotebookPlugin();
+  };
 }
