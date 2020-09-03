@@ -229,7 +229,7 @@ function downloadBytesFile(fileByteArray, filename) {
 
 function openImage(imagej, path) {
   if (path) {
-    return imagej.open(filepath);
+    return imagej.open(path);
   }
   return new Promise((resolve, reject) => {
     const fileInput = document.getElementById("open-file");
