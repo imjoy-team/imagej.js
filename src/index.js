@@ -117,24 +117,12 @@ const downloadQueue = {};
 async function startImageJ() {
   cheerpjInit({
     enableInputMethods: true,
-    clipboardMode: "system"
+    clipboardMode: "system",
+    enablePreciseClassLoaders: true,
+    javaProperties: ["user.dir=/files", "plugins.dir=/app/ij153/plugins"]
   });
   const appContainer = document.getElementById("imagej-container");
   cheerpjCreateDisplay(-1, -1, appContainer);
-  cheerpjRunStaticMethod(
-    threads[0],
-    "java/lang/System",
-    cjSystemSetProperty,
-    "user.dir",
-    "/files"
-  );
-  cheerpjRunStaticMethod(
-    threads[0],
-    "java/lang/System",
-    cjSystemSetProperty,
-    "plugins.dir",
-    "/app/ij153/plugins"
-  );
   cheerpjRunMain(
     "ij.ImageJ",
     "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar"
