@@ -72,7 +72,12 @@ const config = (env, argv) => ({
         {
           urlPattern: new RegExp('https://static.imjoy.io/.*'),
           handler: 'StaleWhileRevalidate'
-        }
+        },
+        {
+          // You can use a RegExp as the pattern:
+          urlPattern: new RegExp('\.(jar|jar\.js|js)$'),
+          handler: 'StaleWhileRevalidate',
+        },
       ]
     }),
     // new WriteFilePlugin(),
