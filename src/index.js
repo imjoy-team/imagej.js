@@ -1,9 +1,5 @@
-import {
-  setupImJoyApp
-} from "./imjoyApp.js";
-import {
-  setupImJoyAPI
-} from "./imjoyAPI.js";
+import { setupImJoyApp } from "./imjoyApp.js";
+import { setupImJoyAPI } from "./imjoyAPI.js";
 
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
@@ -18,7 +14,7 @@ function touchClick(ev) {
   if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName))
     ev.stopPropagation();
 }
-document.createElement = function (type) {
+document.createElement = function(type) {
   const elm = _createElement.call(document, type);
   elm.addEventListener("touchstart", touchClick, false);
   return elm;
@@ -39,7 +35,7 @@ window.openFileDialogJS = async (title, initPath, selectionMode, promise) => {
   document.getElementById("dialogTitle").innerHTML = title || "Open File";
   fileDialog.show();
   let closed = false;
-  fileDialog.on("hide", function (dialogEl, event) {
+  fileDialog.on("hide", function(dialogEl, event) {
     if (!closed) {
       closed = true;
       cjCall(promise, "reject", "cancelled");
@@ -82,15 +78,15 @@ window.saveFileDialogJS = async (title, initPath, selectionMode, promise) => {
   await cjCall(promise, "resolve", "/files/" + savePath);
 };
 
-window.onFileOpened = (path, error)=>{
-  if(error){
+window.onFileOpened = (path, error) => {
+  if (error) {
     Snackbar.show({
       text: "Failed to load file from " + path,
       pos: "bottom-left"
     });
   }
-  cheerpjRemoveStringFile(path)
-}
+  cheerpjRemoveStringFile(path);
+};
 
 window.openURL = async url => {
   window.open(url);
@@ -235,23 +231,36 @@ function openImage(imagej, path) {
   if (path) {
     return imagej.open(filepath);
   }
-  const fileInput = document.getElementById("open-file");
-  fileInput.onchange = () => {
-    const files = fileInput.files;
-    for (let i = 0, len = files.length; i < len; i++) {
-      if (files[i].name.endsWith(".jar") || files[i].name.endsWith(".jar.js")) {
-        saveFileToFS(imagej, files[i]);
-      } else {
-        mountFile(files[i]).then(filepath => {
-          imagej.open(filepath).finally(() => {
-            cheerpjRemoveStringFile(filepath)
-          })
-        });
+  return new Promise((resolve, reject) => {
+    const fileInput = document.getElementById("open-file");
+    fileInput.onchange = () => {
+      const files = fileInput.files;
+      for (let i = 0, len = files.length; i < len; i++) {
+        if (
+          files[i].name.endsWith(".jar") ||
+          files[i].name.endsWith(".jar.js")
+        ) {
+          saveFileToFS(imagej, files[i])
+            .then(resolve)
+            .catch(reject);
+        } else {
+          mountFile(files[i])
+            .then(filepath => {
+              imagej
+                .open(filepath)
+                .then(resolve)
+                .catch(reject)
+                .finally(() => {
+                  cheerpjRemoveStringFile(filepath);
+                });
+            })
+            .catch(reject);
+        }
       }
-    }
-    fileInput.value = "";
-  };
-  fileInput.click();
+      fileInput.value = "";
+    };
+    fileInput.click();
+  });
 }
 
 function javaBytesToArrayBuffer(bytes) {
@@ -359,8 +368,8 @@ function setupDragAndDrop(imagej) {
           } else {
             mountFile(files[i]).then(filepath => {
               imagej.open(filepath).finally(() => {
-                cheerpjRemoveStringFile(filepath)
-              })
+                cheerpjRemoveStringFile(filepath);
+              });
             });
           }
         }
@@ -375,12 +384,12 @@ function readFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
-    reader.onload = function () {
+    reader.onload = function() {
       const arrayBuffer = reader.result;
       const bytes = new Uint8Array(arrayBuffer);
       resolve(bytes);
     };
-    reader.onerror = function (e) {
+    reader.onerror = function(e) {
       reject(e);
     };
   });
@@ -417,16 +426,16 @@ function addMenuItem(config) {
 
 function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
+    window.addEventListener("load", function() {
       navigator.serviceWorker.register("/service-worker.js").then(
-        function (registration) {
+        function(registration) {
           // Registration was successful
           console.log(
             "ServiceWorker registration successful with scope: ",
             registration.scope
           );
         },
-        function (err) {
+        function(err) {
           // registration failed :(
           console.log("ServiceWorker registration failed: ", err);
         }
@@ -508,7 +517,7 @@ function touchHandler(event) {
     false,
     false,
     false,
-    0 /*left*/ ,
+    0 /*left*/,
     null
   );
 
@@ -536,13 +545,13 @@ fixStyle();
 function cheerpjRemoveStringFile(name) {
   var mount = cheerpjGetFSMountForPath(name);
   assert(mount instanceof CheerpJDataFolder);
-  delete mount.files[name.substr(mount.mountPoint.length - 1)]
+  delete mount.files[name.substr(mount.mountPoint.length - 1)];
   delete cjFileCache[name];
 }
 
 window.onImageJInitialized = async () => {
   const _cheerpjCloseAsync = window.cheerpjCloseAsync;
-  window.cheerpjCloseAsync = function (fds, fd, p) {
+  window.cheerpjCloseAsync = function(fds, fd, p) {
     const fdObj = fds[fd];
     const fileData = fdObj.fileData;
     const tmp = fileData.path.split("/");
@@ -616,6 +625,7 @@ window.onImageJInitialized = async () => {
     setupImJoyAPI(
       core_api,
       imagej,
+      loader,
       getImageData,
       javaBytesToArrayBuffer,
       saveImage,
