@@ -97,9 +97,12 @@ loader.style.display = "none";
 window.getBytesFromUrl = async (originalUrl, promise) => {
   try {
     loader.style.display = "block";
-    const url =
-      "https://cors-anywhere.herokuapp.com/" +
-      originalUrl.replace("http://", "https://");
+    let url = originalUrl.replace("http://", "https://");
+    // use proxy for imagej.net for now
+    // TODO: fix this when imagej.net supports CORS
+    if(url.includes("wsr.imagej.net")){
+      url = "https://cors-anywhere.herokuapp.com/" + url
+    }
     Snackbar.show({
       text: "Fetching data from: " + originalUrl,
       pos: "bottom-left"
