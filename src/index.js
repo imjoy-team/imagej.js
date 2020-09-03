@@ -428,9 +428,16 @@ function addMenuItem(config) {
     "Help": 8
   }
   const index = menuIndexs[config.group || "Plugins"]
-  document.querySelector(
+
+  const targetMenu = document.querySelector(
     `#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(${index})>ul`
-  ).appendChild(newMenu);
+  )
+  if(config.position){
+    targetMenu.insertBefore(newMenu, targetMenu.children[config.position]);
+  }
+  else{
+    targetMenu.appendChild(newMenu);
+  }
 }
 
 function registerServiceWorker() {
