@@ -107,3 +107,19 @@ Note, you can also pass an optional path, but since ImageJ.JS won't be able to a
 ### save()
 Save the current image.
 
+
+## Benchmark
+We did a preliminary benchmark to check the performance, and it seems ImageJ.JS is ~6x slower than the native.
+
+We ran the following macro on both ImageJ.JS and the native Java version on MacOS.
+
+```javascript
+run("AuPbSn 40");
+for(i=0; i<60; i++){
+  run("Fast Filters", "link filter=mean x=5 y=5 preprocessing=none offset=128");
+}
+print("done")
+```
+
+ImageJ.JS takes 14.20s, ImageJ takes 2.40s.
+
