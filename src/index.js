@@ -408,10 +408,6 @@ function fixHeight() {
 }
 
 function addMenuItem(config) {
-  // find the plugin menu
-  const pluginMenu = document.querySelector(
-    "#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(6)>ul"
-  );
   const newMenu = document.createElement("li");
   newMenu.classList.add("menuItem");
   newMenu.classList.add("subMenuItem");
@@ -421,7 +417,20 @@ function addMenuItem(config) {
   newMenu.onclick = () => {
     config.callback();
   };
-  pluginMenu.appendChild(newMenu);
+  const menuIndexs = {
+    "File": 1,
+    "Edit": 2,
+    "Image": 3,
+    "Process": 4,
+    "Analyze": 5,
+    "Plugins": 6,
+    "Window": 7,
+    "Help": 8
+  }
+  const index = menuIndexs[config.group || "Plugins"]
+  document.querySelector(
+    `#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(${index})>ul`
+  ).appendChild(newMenu);
 }
 
 function registerServiceWorker() {
