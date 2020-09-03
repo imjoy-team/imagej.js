@@ -16,7 +16,8 @@ export async function setupImJoyAPI(
       name: "ImageJ.JS",
       version: version,
       description: description,
-      type: "rpc-window"
+      type: "rpc-window",
+      defaults: {"fullscreen": true}
     });
   const service_api = {
     setup() {
