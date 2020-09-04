@@ -100,7 +100,7 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
     let url = originalUrl.replace("http://", "https://");
     // use proxy for imagej.net for now
     // TODO: fix this when imagej.net supports CORS
-    if(url.includes("wsr.imagej.net")){
+    if(url.includes("imagej.net")){
       url = "https://cors-anywhere.herokuapp.com/" + url
     }
     Snackbar.show({
@@ -139,7 +139,7 @@ async function startImageJ() {
   cheerpjCreateDisplay(-1, -1, appContainer);
   cheerpjRunMain(
     "ij.ImageJ",
-    "/app/ij153/ij.jar:/app/ij153/plugins/Thunder_STORM.jar"
+    "/app/ij153/ij-1.53d.jar:/app/ij153/plugins/Thunder_STORM.jar"
   );
 }
 

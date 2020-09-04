@@ -124,11 +124,6 @@ input[type="button"]:focus {
 
 .window > div > input {
   height: 15px !important;
-  z-index: 1;
-}
-
-.window > div > select {
-  z-index: 1;
 }
 
 #drag-overlay {
