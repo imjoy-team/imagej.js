@@ -5,6 +5,15 @@ import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
 
+const isChrome = !!window.chrome;
+const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+if(!isChrome && !isFirefox){
+  Snackbar.show({
+    text: "Note: ImageJ.JS is only tested with Chrome or Firefox, other browsers may not work properly.",
+    pos: "bottom-left"
+  });
+}
+
 // setup a hook for fixing mobile touch event
 const _createElement = document.createElement;
 

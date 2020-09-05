@@ -1,95 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="ResourceLoaderDynamicStyles" content="" />
-    <meta name="generator" content="MediaWiki 1.28.0" />
-    <meta
-      name="description"
-      content="ImageJ is an open source image processing program designed for scientific multidimensional images."
-    />
-    <link rel="shortcut icon" href="assets/img/ij2.ico" />
-    <meta property="og:type" content="website" />
 
-    <meta property="og:title" content="ImageJ.JS" />
+<head>
+  <meta charset="utf-8" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="ResourceLoaderDynamicStyles" content="" />
+  <meta name="generator" content="MediaWiki 1.28.0" />
+  <meta name="description"
+    content="ImageJ is an open source image processing program designed for scientific multidimensional images." />
+  <link rel="shortcut icon" href="assets/img/ij2.ico" />
+  <meta property="og:type" content="website" />
 
-    <meta property="og:image" content="assets/img/imagej-js-splash.png" />
+  <meta property="og:title" content="ImageJ.JS" />
 
-    <meta
-      property="og:description"
-      content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images"
-    />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>ImageJ.JS</title>
-    <link rel="stylesheet" href="/style.css" />
-    <script src="https://cjrtnc.leaningtech.com/20200831/loader.js"></script>
-  </head>
+  <meta property="og:image" content="assets/img/imagej-js-splash.png" />
 
-  <body>
-    <div class="container" id="imagej-container"></div>
-    <div id="drag-overlay">
-      <input type="file" id="open-file" style="display: none;" />
-      <span>Drop file here to open</span>
-    </div>
+  <meta property="og:description"
+    content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ImageJ.JS</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="https://cjrtnc.leaningtech.com/20200831/loader.js"></script>
+</head>
 
-    <div class="lds-ellipsis" id="loader">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
-    <div class="dialog" id="open-file-dialog">
-      <div class="dialog-overlay" tabindex="-1" data-a11y-dialog-hide></div>
-      <dialog
-        class="dialog-content"
-        aria-labelledby="dialogTitle"
-        aria-describedby="dialogDescription"
-      >
-        <button
-          data-a11y-dialog-hide
-          class="dialog-close"
-          aria-label="Close this dialog window"
-        >
-          &times;
+<body>
+  <div class="container" id="imagej-container"></div>
+  <div id="drag-overlay">
+    <input type="file" id="open-file" style="display: none;" />
+    <span>Drop file here to open</span>
+  </div>
+
+  <div class="lds-ellipsis" id="loader">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+  <div class="dialog" id="open-file-dialog">
+    <div class="dialog-overlay" tabindex="-1" data-a11y-dialog-hide></div>
+    <dialog class="dialog-content" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
+      <button data-a11y-dialog-hide class="dialog-close" aria-label="Close this dialog window">
+        &times;
+      </button>
+
+      <h1 id="dialogTitle">Open File</h1>
+
+      <p id="dialogDescription">
+        You can either select a file from your local file system or cached
+        files in the browser.
+      </p>
+
+      <div class="dialog-button-group">
+        <button aria-label="Select a local file" id="open-file-modal-select">
+          Select Local File
         </button>
+        <button aria-label="Select a cached file" id="open-file-modal-internal">
+          Select Cached File
+        </button>
+        <button aria-label="Cancel the selection" id="open-file-modal-cancel" data-a11y-dialog-hide>
+          Cancel
+        </button>
+      </div>
+    </dialog>
+  </div>
 
-        <h1 id="dialogTitle">Open File</h1>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous" />
+</body>
 
-        <p id="dialogDescription">
-          You can either select a file from your local file system or cached
-          files in the browser.
-        </p>
-
-        <div class="dialog-button-group">
-          <button aria-label="Select a local file" id="open-file-modal-select">
-            Select Local File
-          </button>
-          <button
-            aria-label="Select a cached file"
-            id="open-file-modal-internal"
-          >
-            Select Cached File
-          </button>
-          <button
-            aria-label="Cancel the selection"
-            id="open-file-modal-cancel"
-            data-a11y-dialog-hide
-          >
-            Cancel
-          </button>
-        </div>
-      </dialog>
-    </div>
-
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
-      crossorigin="anonymous"
-    />
-  </body>
 </html>
