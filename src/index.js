@@ -128,6 +128,99 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
 
 const downloadQueue = {};
 
+async function fixStrFS(){
+
+  function strStatAsync(mp, path, fileRef, p)
+  {
+    if(path == "")
+    {
+      fileRef.permType = CheerpJFileData.S_IFDIR | 0o555;
+      // Use the dev id as the inode id
+      fileRef.inodeId = mp.devId;
+      return;
+    }
+    if(mp.files.hasOwnProperty(path))
+    {
+      if(mp.files[path] instanceof File){
+        debugger
+        fileRef.fileLength = mp.files[path].size
+        fileRef.lastModified = mp.files[path].lastModified
+      }
+      else{
+        fileRef.fileLength = mp.files[path].length;
+      }
+      fileRef.permType = CheerpJFileData.S_IFREG | 0o444;
+    }
+    else
+    {
+      fileRef.permType = 0;
+    }
+  }
+
+  function strListAsync(mp, path, fileRef, p)
+  {
+    // Only the root itself can be listed
+    if(path != ""){
+      return;
+    }
+    for(var p in mp.files)
+    {
+      fileRef.push(p);
+    }
+  }
+
+  function strLoadAsync(mp, path, fileRef, p)
+  {
+    assert(mp.files.hasOwnProperty(path));
+    // var str = mp.files[path];
+    debugger
+   
+      // if(str instanceof Uint8Array){
+      //   var ret = str;
+      // }else{
+      //   var ret = new Uint8Array(str.length);
+      //   for(var i=0;i<str.length;i++)
+      //     ret[i] = str.charCodeAt(i);
+      // }
+      // fileRef.cheerpjDownload = ret;
+    
+  }
+
+  function strMakeFileData(mp, path, mode, p){
+    var fileRef={}
+    mp.mountOps.statAsync(mp, path, fileRef, null);
+    assert(fileRef.permType);
+  
+    var fileData = new CheerpJFileData(mp, path, fileRef.fileLength|0, fileRef.inodeId|0, fileRef.permType|0, /*lastModified*/0);
+    fileData.mount = mp.inodeOps;
+    fileData.chunks = [];
+    return fileData;
+  }
+
+  function strReadAsync(fileData, fileOffset, buf, off, len, flags, p)
+  {
+    const r = new FileReader();
+    const file = fileData.parent.files[fileData.path]
+    const blob = file.slice(fileOffset, len + fileOffset);
+    r.onload = function(evt) {
+      if (evt.target.error == null) {
+        buf.set(evt.target.result);
+      }
+    }
+    r.readAsArrayBuffer(blob);
+
+    return len;
+  }
+  const StrOps = { statAsync: strStatAsync, listAsync: strListAsync, makeFileData: strMakeFileData, createDirAsync: null, loadAsync: strLoadAsync, renameAsync: null, linkAsync: null, unlinkAsync: null };
+  const strInodeOps = {readAsync: strReadAsync, writeAsync: null, ioctlAsync: null, commitFileData: null, readPoll: null }
+  for(let mount of window.cheerpjFSMounts){
+    if(mount instanceof CheerpJDataFolder){
+      mount.mountOps = StrOps;
+      mount.inodeOps = strInodeOps;
+      mount.hasReadWrite = true;
+    }
+  }
+}
 async function startImageJ() {
   cheerpjInit({
     enableInputMethods: true,
@@ -150,8 +243,9 @@ async function listFiles(imagej, path) {
 
 async function mountFile(file) {
   const filepath = "/str/" + file.name;
-  const bytes = await readFile(file);
-  cheerpjAddStringFile(filepath, bytes);
+  debugger
+  // const bytes = await readFile(file);
+  cheerpjAddStringFile(filepath, file);
   return filepath;
 }
 
@@ -569,6 +663,7 @@ function cheerpjRemoveStringFile(name) {
 }
 
 window.onImageJInitialized = async () => {
+  fixStrFS();
   const _cheerpjCloseAsync = window.cheerpjCloseAsync;
   window.cheerpjCloseAsync = function(fds, fd, p) {
     const fdObj = fds[fd];
