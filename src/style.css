@@ -446,6 +446,7 @@ hr.solid {
 }
 
 #imjoy-menu {
+  z-index: 9999;
   position: absolute;
   top: 1px;
   left: -4px;
