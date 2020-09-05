@@ -137,7 +137,6 @@ async function fixStrFS(){
     if(mp.files.hasOwnProperty(path))
     {
       if(mp.files[path] instanceof File){
-        debugger
         fileRef.fileLength = mp.files[path].size
         fileRef.lastModified = mp.files[path].lastModified
       }
@@ -168,8 +167,6 @@ async function fixStrFS(){
   {
     assert(mp.files.hasOwnProperty(path));
     // var str = mp.files[path];
-    debugger
-   
       // if(str instanceof Uint8Array){
       //   var ret = str;
       // }else{
@@ -194,18 +191,42 @@ async function fixStrFS(){
 
   function strReadAsync(fileData, fileOffset, buf, off, len, flags, p)
   {
-    const r = new FileReader();
-    const file = fileData.parent.files[fileData.path]
-    const blob = file.slice(fileOffset, len + fileOffset);
-    r.onload = function(evt) {
-      if (evt.target.error == null) {
-        buf.set(evt.target.result);
+    var fileRef={pendingLoads: 0, thread: currentThread};
+    var a={p:p,f:strReadAsync,pc:0,fileData:fileData,fileOffset:fileOffset,buf:buf,off:off,len:len};
+    assert(len != 0);
+  
+    if(!fileData.data){
+      fileRef.pendingLoads = 1;
+      const r = new FileReader();
+      const file = fileData.parent.files[fileData.path]
+      const blob = file.slice(fileOffset, len + fileOffset);
+      r.onload = function(evt) {
+        if (evt.target.error == null) {
+          fileData.data = evt.target.result;
+          fileRef.pendingLoads = 0;
+          var waitingThread = fileRef.thread;
+          assert(waitingThread.state == "BLOCKED_ON_FILE");
+          waitingThread.state = "READY";
+          cheerpjSchedule();
+        }
       }
+      r.readAsArrayBuffer(blob);
     }
-    r.readAsArrayBuffer(blob);
 
+    fileRef.pendingLoads = 1;
+    if(fileRef.pendingLoads){
+      buildContinuations(a,false);
+      currentThread.state = "BLOCKED_ON_FILE";
+      throw "CheerpJContinue";
+    }
+
+    // All chunks are now loaded
+    buf.set(fileData.data);
+    assert(fileData.data.length == len);
     return len;
   }
+
+  window.strReadAsync = strReadAsync;
   const StrOps = { statAsync: strStatAsync, listAsync: strListAsync, makeFileData: strMakeFileData, createDirAsync: null, loadAsync: strLoadAsync, renameAsync: null, linkAsync: null, unlinkAsync: null };
   const strInodeOps = {readAsync: strReadAsync, writeAsync: null, ioctlAsync: null, commitFileData: null, readPoll: null }
   for(let mount of window.cheerpjFSMounts){
@@ -238,7 +259,6 @@ async function listFiles(imagej, path) {
 
 async function mountFile(file) {
   const filepath = "/str/" + file.name;
-  debugger
   // const bytes = await readFile(file);
   cheerpjAddStringFile(filepath, file);
   return filepath;
