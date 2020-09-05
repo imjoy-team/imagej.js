@@ -169,7 +169,8 @@ export async function setupImJoyApp(setAPI) {
   var elem = document.createElement("div");
   elem.id = "imjoy-menu";
   elem.innerHTML = APP_TEMPLATE;
-  document.querySelector(".titleBar").appendChild(elem);
+  const titleBar = document.querySelector(".titleBar");
+  titleBar.parentNode.insertBefore(elem, titleBar);
   document.head.insertAdjacentHTML("beforeend", CSStyle);
   const app = new Vue({
     el: "#imjoy-menu",
