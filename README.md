@@ -127,9 +127,20 @@ Save the current image.
 
 
 ## Benchmark
-We did a preliminary benchmark to check the performance, and it seems ImageJ.JS is ~6x slower than the native.
+We did a preliminary benchmark to check the performance, and it seems ImageJ.JS is ~3x slower than the native.
 
 We ran the following macro on both ImageJ.JS and the native Java version on MacOS.
+```javascript
+run("AuPbSn 40");
+for(i=0;i<5000;i++){
+  run("Smooth");
+}
+print("done");
+```
+ImageJ.JS took 15s, ImageJ took 5s.
+
+
+However, running plugins can be much slower (e.g. 6x or more) since it uses on-the-fly with a simpler compiler.
 
 ```javascript
 run("AuPbSn 40");
@@ -138,6 +149,6 @@ for(i=0; i<60; i++){
 }
 print("done")
 ```
-
 ImageJ.JS takes 14.20s, ImageJ takes 2.40s.
 
+We are currently investigating ways to compile plugins in advance to boost the performance.
