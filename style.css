@@ -66,12 +66,15 @@ div#cheerpjDisplay.status:after {
   width: 400px;
   margin-left: auto;
   margin-right: auto;
+  border: 0px solid rgb(63, 107, 240);
+  border-radius: 5px;
   transform: translate(-50%, 0);
-  top: calc(50% + 60px);
+  top: calc(60%);
   color: #448aff;
   left: 50%;
   font-size: 18px;
   z-index: 99999;
+  background: rgba(255, 255, 255, 0.3)!important;
 }
 
 input[type="button"] {
