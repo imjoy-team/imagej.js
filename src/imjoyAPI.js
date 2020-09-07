@@ -17,7 +17,7 @@ export async function setupImJoyAPI(
       version: version,
       description: description,
       type: "rpc-window",
-      defaults: {"fullscreen": true}
+      defaults: { fullscreen: true }
     });
   const service_api = {
     setup() {

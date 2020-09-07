@@ -1,15 +1,17 @@
 import { setupImJoyApp } from "./imjoyApp.js";
 import { setupImJoyAPI } from "./imjoyAPI.js";
+import { githubUrlRaw } from "./utils.js";
 
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
 
 const isChrome = !!window.chrome;
-const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-if(!isChrome && !isFirefox){
+const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+if (!isChrome && !isFirefox) {
   Snackbar.show({
-    text: "Note: ImageJ.JS is only tested with Chrome or Firefox, other browsers may not work properly.",
+    text:
+      "Note: ImageJ.JS is only tested with Chrome or Firefox, other browsers may not work properly.",
     pos: "bottom-left"
   });
 }
@@ -425,24 +427,23 @@ function addMenuItem(config) {
     config.callback();
   };
   const menuIndexs = {
-    "File": 1,
-    "Edit": 2,
-    "Image": 3,
-    "Process": 4,
-    "Analyze": 5,
-    "Plugins": 6,
-    "Window": 7,
-    "Help": 8
-  }
-  const index = menuIndexs[config.group || "Plugins"]
+    File: 1,
+    Edit: 2,
+    Image: 3,
+    Process: 4,
+    Analyze: 5,
+    Plugins: 6,
+    Window: 7,
+    Help: 8
+  };
+  const index = menuIndexs[config.group || "Plugins"];
 
   const targetMenu = document.querySelector(
     `#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(${index})>ul`
-  )
-  if(config.position){
+  );
+  if (config.position) {
     targetMenu.insertBefore(newMenu, targetMenu.children[config.position]);
-  }
-  else{
+  } else {
     targetMenu.appendChild(newMenu);
   }
 }
@@ -572,6 +573,33 @@ function cheerpjRemoveStringFile(name) {
   delete cjFileCache[name];
 }
 
+async function processUrlParameters(imagej) {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  if (urlParams.has("open")) {
+    let url = urlParams.get("open");
+    try {
+      Snackbar.show({
+        text: "Opening " + url,
+        pos: "bottom-left"
+      });
+      // convert to raw if we can
+      const tmp = await githubUrlRaw(url);
+      url = tmp || url;
+      await imagej.open(url);
+      Snackbar.show({
+        text: "Successfully opened " + url,
+        pos: "bottom-left"
+      });
+    } catch (e) {
+      Snackbar.show({
+        text: "Failed to open " + url,
+        pos: "bottom-left"
+      });
+    }
+  }
+}
+
 window.onImageJInitialized = async () => {
   const _cheerpjCloseAsync = window.cheerpjCloseAsync;
   window.cheerpjCloseAsync = function(fds, fd, p) {
@@ -668,5 +696,7 @@ window.onImageJInitialized = async () => {
   } else {
     setupImJoyApp(setAPI);
   }
+
+  processUrlParameters(imagej);
 };
 startImageJ();

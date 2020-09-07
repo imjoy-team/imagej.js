@@ -55,6 +55,8 @@ async function startImJoy(app, imjoy) {
       }
     }, 500);
   });
+
+  app.loadPluginByQuery();
 }
 
 const CSStyle = `
@@ -322,6 +324,28 @@ export async function setupImJoyApp(setAPI) {
             console.error(e);
             this.showMessage(`Failed to load the plugin, error: ${e}`);
           });
+      },
+      loadPluginByQuery() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        if (urlParams.has("plugin") || urlParams.has("p")) {
+          const p = urlParams.get("plugin") || urlParams.get("p");
+          this.imjoy.pm
+            .reloadPluginRecursively({
+              uri: p
+            })
+            .then(async plugin => {
+              this.plugins[plugin.name] = plugin;
+              this.showMessage(
+                `Plugin ${plugin.name} successfully loaded, you can now run it from the ImJoy plugin menu.`
+              );
+              this.$forceUpdate();
+            })
+            .catch(e => {
+              console.error(e);
+              this.showMessage(`Failed to load the plugin, error: ${e}`);
+            });
+        }
       },
       showWindow(w) {
         if (w.fullscreen || w.standalone) this.fullscreen = true;

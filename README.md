@@ -15,6 +15,15 @@ Try ImageJ.JS here: https://ij.imjoy.io
 
 This project is currently under development, please expect frequent changes.
 
+## Sharing images, macro or plugins with URL parameters
+
+ImageJ.JS web app supports loading predefined images, macro or plugin by constructing a URL. The following options are supported:
+1. `open`: used to open an image or macro script automatically when the user click the link. For example: `https://ij.imjoy.io/?open=https://github.com/imjoy-team/imagej.js/blob/master/src/assets/img/screenshot-1.png`
+2. `plugin`: used to load an ImJoy plugin when the user click the link. For example: `https://ij.imjoy.io/?plugin=https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html`
+
+If you want to use two options `open` and `plugin`, then use `&` to connect them: `https://ij.imjoy.io/?open=https://github.com/imjoy-team/imagej.js/blob/master/src/assets/img/screenshot-1.png&plugin=https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html`
+
+
 ## ImJoy Integration and API
 
 ImageJ.JS supports two-way integration with ImJoy, meaning you can either use it as an ImJoy plugin or load other ImJoy plugins into ImageJ.JS. This a a powerful combination, since it brings useful features from ImageJ including file IO, image processing plugins, macro scripting together with web plugins in ImJoy for building easy to use modern UI and powerful deep learning libraries.
