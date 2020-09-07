@@ -69,7 +69,7 @@ div#cheerpjDisplay.status:after {
   border: 0px solid rgb(63, 107, 240);
   border-radius: 5px;
   transform: translate(-50%, 0);
-  top: calc(60%);
+  top: calc(50% + 65px );
   color: #448aff;
   left: 50%;
   font-size: 18px;
