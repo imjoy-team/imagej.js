@@ -296,7 +296,6 @@ async function fixMenu(imagej) {
     "#cheerpjDisplay>.window:nth-child(2) li > a"
   );
   for (let it of items) {
-    it.text = it.text.trim();
     if (removes.includes(it.text)) {
       // remove li
       const el = it.parentNode;
