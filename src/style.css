@@ -50,7 +50,7 @@ div.menuBar {
 }
 
 .cheerpjLoading:before {
-  background: url(assets/img/imagej-js-loading.gif) no-repeat center !important;
+  background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
   background-size: 300px !important;
   max-width: 300px !important;
 }
@@ -63,13 +63,15 @@ div.menuBar {
 div#cheerpjDisplay.status:after {
   outline: none !important;
   position: absolute !important;
-  border: 0px solid rgb(63, 107, 240);
-  border-radius: 5px;
-  bottom: 30px;
   width: 400px;
   margin-left: auto;
   margin-right: auto;
   transform: translate(-50%, 0);
+  top: calc(50% + 60px);
+  color: #448aff;
+  left: 50%;
+  font-size: 18px;
+  z-index: 99999;
 }
 
 input[type="button"] {

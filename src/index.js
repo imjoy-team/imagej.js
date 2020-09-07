@@ -135,6 +135,7 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
 const downloadQueue = {};
 
 async function startImageJ() {
+  loader.style.display = "block";
   cheerpjInit({
     enableInputMethods: true,
     clipboardMode: "system",
@@ -698,5 +699,7 @@ window.onImageJInitialized = async () => {
   }
 
   processUrlParameters(imagej);
+
+  loader.style.display = "none";
 };
 startImageJ();
