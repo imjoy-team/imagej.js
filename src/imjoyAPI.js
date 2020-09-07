@@ -61,6 +61,24 @@ export async function setupImJoyAPI(
         loader.style.display = "none";
       }
     },
+    async installMacro(macro) {
+      try {
+        await imagej.installMacro(macro);
+      } catch (e) {
+        throw e;
+      } finally {
+        loader.style.display = "none";
+      }
+    },
+    async installTool(tool) {
+      try {
+        await imagej.installTool(tool);
+      } catch (e) {
+        throw e;
+      } finally {
+        loader.style.display = "none";
+      }
+    },
     runPlugIn(className, args) {
       imagej.runPlugIn(className, args || "");
     },

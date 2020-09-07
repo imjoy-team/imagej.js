@@ -610,6 +610,12 @@ window.onImageJInitialized = async () => {
       "java.lang.String",
       "java.lang.String"
     ]),
+    installMacro: await cjResolveCall("ij.IJ", "installMacro", [
+      "java.lang.String"
+    ]),
+    installTool: await cjResolveCall("ij.IJ", "installTool", [
+      "java.lang.String"
+    ]),
     open: await cjResolveCall("ij.IJ", "open", ["java.lang.String"]),
     installPlugin: await cjResolveCall("ij.Menus", "installPlugin", null),
     getPlugins: await cjResolveCall("ij.Menus", "getPlugins", []),

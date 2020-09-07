@@ -96,6 +96,24 @@ ij = await api.createWindow(src="https://ij.imjoy.io")
 await ij.runMacro("close();")
 ```
 
+### installMacro(macro)
+Install a macro (string).
+```python
+ij = await api.createWindow(src="https://ij.imjoy.io")
+
+myMacro = open("my_macro_to_install.ijm", "r").read()
+await ij.installMacro(myMacro)
+```
+
+### installTool(tool)
+Install a macro tool (string).
+```python
+ij = await api.createWindow(src="https://ij.imjoy.io")
+
+myMacroTool = open("my_macro_tool_to_install.ijm", "r").read()
+await ij.installTool(myMacroTool)
+```
+
 ### runPlugIn(className, args)
 Run plugin by its class name with an optional arguments.
 
