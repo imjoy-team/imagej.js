@@ -577,25 +577,50 @@ async function processUrlParameters(imagej) {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   if (urlParams.has("open")) {
-    let url = urlParams.get("open");
-    try {
-      Snackbar.show({
-        text: "Opening " + url,
-        pos: "bottom-left"
-      });
-      // convert to raw if we can
-      const tmp = await githubUrlRaw(url);
-      url = tmp || url;
-      await imagej.open(url);
-      Snackbar.show({
-        text: "Successfully opened " + url,
-        pos: "bottom-left"
-      });
-    } catch (e) {
-      Snackbar.show({
-        text: "Failed to open " + url,
-        pos: "bottom-left"
-      });
+    const urls =  urlParams.getAll("open");
+    for(let url of urls){
+      try {
+        Snackbar.show({
+          text: "Opening " + url,
+          pos: "bottom-left"
+        });
+        // convert to raw if we can
+        const tmp = await githubUrlRaw(url, ".ijm");
+        url = tmp || url;
+        await imagej.open(url);
+        Snackbar.show({
+          text: "Successfully opened " + url,
+          pos: "bottom-left"
+        });
+      } catch (e) {
+        Snackbar.show({
+          text: "Failed to open " + url,
+          pos: "bottom-left"
+        });
+      }
+    }
+  }
+  if(urlParams.has("run")) {
+    const urls =  urlParams.getAll("run");
+    for(let url of urls){
+      try {
+        Snackbar.show({
+          text: "Fetching and running macro from: " + url,
+          pos: "bottom-left"
+        });
+        // convert to raw if we can
+        const tmp = await githubUrlRaw(url, ".ijm");
+        url = tmp || url;
+        const blob = await fetch(url).then(r => r.blob());
+        const macro = await new Response(blob).text();
+        await imagej.runMacro(macro, "");
+      }
+      catch(e){
+        Snackbar.show({
+          text: "Failed to run macro: " + e.toString(),
+          pos: "bottom-left"
+        });
+      }
     }
   }
 }

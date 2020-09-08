@@ -149,19 +149,21 @@ export function githubUrlToObject(repoUrl, opts) {
 }
 
 // from: https://github.com/Elixirdoc/github-url-raw
-export async function githubUrlRaw(url) {
+export async function githubUrlRaw(url, extFilter) {
   if (url.includes("gist.github.com")) {
     const gistId = url.split("/").slice(-1)[0];
-    const response = await axios.get("https://api.github.com/gists/" + gistId);
-    if (response.status === 200) {
-      // TODO: handle multiple files, e.g.: display them all
-      const plugin_file = Object.values(response.data.files).filter(file => {
-        return file.filename.endsWith(".imjoy.html");
+    const blob = await fetch("https://api.github.com/gists/" + gistId).then(r => r.blob());
+    const data = JSON.parse(await new Response(blob).text());
+    // TODO: handle multiple files, e.g.: display them all
+    if(extFilter){
+      const selected_file = Object.values(data.files).filter(file => {
+        return file.filename.endsWith(extFilter);
       })[0];
-      return plugin_file.raw_url;
-    } else {
-      throw "Failed to fetch from Gist: " + response.statusText;
+      return selected_file.raw_url
     }
+    else
+      return data.files[Object.values(data.files)[0]].raw_url;
+
   }
   if (!url.includes("blob") || !url.includes("github")) {
     return null;
