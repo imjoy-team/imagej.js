@@ -136,7 +136,11 @@ const downloadQueue = {};
 
 async function startImageJ() {
   loader.style.display = "block";
+  let preload = localStorage.getItem("cheepjPreload");
+  if(preload) preload = JSON.parse(preload);
+  else preload = [];
   cheerpjInit({
+    preloadResources: preload,
     enableInputMethods: true,
     clipboardMode: "system",
     enablePreciseClassLoaders: true,
@@ -626,6 +630,7 @@ async function processUrlParameters(imagej) {
 }
 
 window.onImageJInitialized = async () => {
+  
   const _cheerpjCloseAsync = window.cheerpjCloseAsync;
   window.cheerpjCloseAsync = function(fds, fd, p) {
     const fdObj = fds[fd];
@@ -725,5 +730,9 @@ window.onImageJInitialized = async () => {
   processUrlParameters(imagej);
 
   loader.style.display = "none";
+
+  setTimeout(()=>{
+    localStorage.setItem("cheepjPreload", JSON.stringify(cjGetRuntimeResources()))
+  }, 1000);
 };
 startImageJ();
