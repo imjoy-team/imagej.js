@@ -76,7 +76,7 @@ const config = (env, argv) => ({
         {
           // You can use a RegExp as the pattern:
           urlPattern: new RegExp('\.(jar|jar\.js|js)$'),
-          handler: 'StaleWhileRevalidate',
+          handler: 'NetworkFirst',
         },
       ]
     }),
