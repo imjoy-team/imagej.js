@@ -100,11 +100,6 @@ input[type="button"]:focus {
   min-height: 20px;
 }
 
-/* fix the play button */
-.window > div > div > div > div > canvas {
-  top: 5px !important;
-}
-
 .titleBar {
   background-color: #448aff !important;
   color: white !important;
