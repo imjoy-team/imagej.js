@@ -734,5 +734,7 @@ window.onImageJInitialized = async () => {
   setTimeout(()=>{
     localStorage.setItem("cheepjPreload", JSON.stringify(cjGetRuntimeResources()))
   }, 1000);
+  console.timeEnd("Loading ImageJ.JS");
 };
+console.time("Loading ImageJ.JS");
 startImageJ();
