@@ -29,7 +29,7 @@ You can also use multple times the same option, for example open multiple `open`
 ### Example usage: sharing macro via Github/Gist
 If you made a ImageJ macro that you want to share, you can store them in your project repo on Github, or simply go to Gist(https://gist.github.com), paste it and get the URL. For example, we stored a demo macro here: https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac. Note: set the file extension as `.ijm`.
 
-Then wen can construct an URL for sharing where user can directly click and run: `https://ij.imjoy.io/?run=https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac`
+Then wen can construct an URL for sharing where user can directly click and run: https://ij.imjoy.io/?run=https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac . This URL can be shared as is, or further shorten by one of the short URL service (e.g. tiny.cc).
 
 
 ## ImJoy Integration and API
