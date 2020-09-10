@@ -65,19 +65,32 @@ const config = (env, argv) => ({
       // and not allow any straggling "old" SWs to hang around
       clientsClaim: true,
       skipWaiting: true,
-      runtimeCaching: [{
+      runtimeCaching: [
+        {
           urlPattern: new RegExp('https://cjrtnc.leaningtech.com/.*'),
+          handler: 'StaleWhileRevalidate'
+        },
+        {
+          urlPattern: new RegExp('https://stackpath.bootstrapcdn.com/font-awesome/.*'),
           handler: 'CacheFirst'
+        },
+        {
+          urlPattern: new RegExp('https://imjoy.io/static/.*'),
+          handler: 'StaleWhileRevalidate'
         },
         {
           urlPattern: new RegExp('https://static.imjoy.io/.*'),
           handler: 'StaleWhileRevalidate'
         },
         {
-          // You can use a RegExp as the pattern:
-          urlPattern: new RegExp('\.(jar|jar\.js|js)$'),
-          handler: 'NetworkFirst',
-        },
+          urlPattern: new RegExp('/ij153/.*'),
+          handler: 'StaleWhileRevalidate'
+        }, 
+        {
+          // debugging
+          urlPattern: new RegExp('/sockjs-node.*'),
+          handler: 'NetworkOnly'
+        }, 
       ]
     }),
     // new WriteFilePlugin(),
