@@ -304,11 +304,13 @@ export async function setupImJoyApp(setAPI) {
           pos: "bottom-left"
         });
       },
-      loadPlugin() {
-        const p = prompt(
-          `Please type a ImJoy plugin URL`,
-          "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
-        );
+      loadPlugin(p) {
+        if(!p){
+          p = prompt(
+            `Please type a ImJoy plugin URL`,
+            "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
+          );
+        }
         this.imjoy.pm
           .reloadPluginRecursively({
             uri: p
@@ -330,21 +332,7 @@ export async function setupImJoyApp(setAPI) {
         const urlParams = new URLSearchParams(queryString);
         if (urlParams.has("plugin") || urlParams.has("p")) {
           const p = urlParams.get("plugin") || urlParams.get("p");
-          this.imjoy.pm
-            .reloadPluginRecursively({
-              uri: p
-            })
-            .then(async plugin => {
-              this.plugins[plugin.name] = plugin;
-              this.showMessage(
-                `Plugin ${plugin.name} successfully loaded, you can now run it from the ImJoy plugin menu.`
-              );
-              this.$forceUpdate();
-            })
-            .catch(e => {
-              console.error(e);
-              this.showMessage(`Failed to load the plugin, error: ${e}`);
-            });
+          this.loadPlugin(p);
         }
       },
       showWindow(w) {

@@ -139,16 +139,21 @@ export async function setupImJoyAPI(
       );
       return bytes;
     },
-    async getImage() {
+    async getImage(format) {
       loader.style.display = "block";
       try {
-        const data = await getImageData(imagej);
-        return {
-          _rtype: "ndarray",
-          _rvalue: data.bytes,
-          _rshape: data.shape,
-          _rdtype: data.type
-        };
+        if(!format || format==='ndarray'){
+          const data = await getImageData(imagej);
+          return {
+            _rtype: "ndarray",
+            _rvalue: data.bytes,
+            _rshape: data.shape,
+            _rdtype: data.type
+          };
+        }
+        else{
+          return javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, format));
+        }
       } finally {
         loader.style.display = "none";
       }

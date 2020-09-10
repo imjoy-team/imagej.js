@@ -80,14 +80,15 @@ await ij.viewImage(image)
 
 ```
 
-### getImage()
+### getImage(format)
 
-Get the current image (3~5 dimensions), for example, in Python you will get it as numpy array.
+Get the current image (3~5 dimensions), for example, in Python you can get it as numpy array by setting the format to "ndarray".
 ```python
 ij = await api.createWindow(src="https://ij.imjoy.io")
-img = await ij.getImage()
-
+img = await ij.getImage("ndarray")
 ```
+Optionally, you can specify it as "tiff", "png", "jpeg", "gif", "zip", "raw", "avi", "bmp", "fits", "pgm", "text image", "lut", "selection", "measurements", "xy Coordinates" or "text".
+
 ### getSelection()
 Get the ROI selection in the current image.
 
