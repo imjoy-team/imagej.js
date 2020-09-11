@@ -36,7 +36,7 @@
   "homepage": "https://github.com/imjoy-team/imagej.js#readme",
   "dependencies": {
     "a11y-dialog": "^5.3.2",
-    "imjoy-core": "0.13.34",
+    "imjoy-core": "0.13.35",
     "imjoy-rpc": "^0.2.22",
     "node-snackbar": "^0.1.16",
     "vue-js-modal": "github:imjoy-team/vue-js-modal#2.0.0-rc.3g",
