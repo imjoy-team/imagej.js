@@ -199,6 +199,7 @@ export async function setupImJoyApp(setAPI) {
                 config.type === "ImageJ.JS"
               ) {
                 const api = Object.assign({}, imjoy.pm.imjoy_api);
+                api._rintf = true;
                 api.export = service_api => {
                   resolve(promisify_functions(service_api));
                 };
