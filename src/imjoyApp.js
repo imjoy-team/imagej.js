@@ -57,6 +57,7 @@ async function startImJoy(app, imjoy) {
   });
 
   app.loadPluginByQuery();
+  app.loadPlugin("https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html");
 }
 
 const CSStyle = `
@@ -130,6 +131,7 @@ const APP_TEMPLATE = `
       
     </div>
   <template v-for="wdialog in dialogWindows">
+  <iframe src="https://cellpose.imjoy.io" style="width: 100%; height: 100%;"></iframe>
     <div
       :key="wdialog.window_id"
       v-show="wdialog === selected_dialog_window"
