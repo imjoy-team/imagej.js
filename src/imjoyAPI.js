@@ -88,43 +88,49 @@ export async function setupImJoyAPI(
         options = options || {};
         options.name = options.name || "tmp";
         const filepath = "/str/" + options.name;
-        const formats = {
-          uint8: "8-bit",
-          uint16: "16-bit Unsigned",
-          int16: "16-bit Signed",
-          uint32: "32-bit Unsigned",
-          int32: "32-bit Signed"
-        };
-        cheerpjAddStringFile(filepath, new Uint8Array(img._rvalue));
-        let format = formats[img._rdtype];
+        if(img instanceof ArrayBuffer){
+          cheerpjAddStringFile(filepath, new Uint8Array(img));
+          return await openImage(imagej, filepath);
+        }
+        else{
+          const formats = {
+            uint8: "8-bit",
+            uint16: "16-bit Unsigned",
+            int16: "16-bit Signed",
+            uint32: "32-bit Unsigned",
+            int32: "32-bit Signed"
+          };
+          cheerpjAddStringFile(filepath, new Uint8Array(img._rvalue));
+          let format = formats[img._rdtype];
 
-        if (img._rshape.length === 3) {
-          let number = img._rshape[2];
-          if (img._rshape[2] === 3) {
-            format = "[24-bit RGB]";
-            number = 1;
-          }
-          return await imagej.run(
-            "Raw...",
-            `open=${filepath} image=${format} width=${img._rshape[1]} height=${img._rshape[0]} number=${number}`
-          );
-        } else if (img._rshape.length === 4) {
-          if (img._rshape[3] === 3) {
-            format = "[24-bit RGB]";
-          } else {
-            if (img._rshape[3] !== 1) {
-              throw "channel dimension (last) can only be 1 or 3";
+          if (img._rshape.length === 3) {
+            let number = img._rshape[2];
+            if (img._rshape[2] === 3) {
+              format = "[24-bit RGB]";
+              number = 1;
             }
+            return await imagej.run(
+              "Raw...",
+              `open=${filepath} image=${format} width=${img._rshape[1]} height=${img._rshape[0]} number=${number}`
+            );
+          } else if (img._rshape.length === 4) {
+            if (img._rshape[3] === 3) {
+              format = "[24-bit RGB]";
+            } else {
+              if (img._rshape[3] !== 1) {
+                throw "channel dimension (last) can only be 1 or 3";
+              }
+            }
+            return await imagej.run(
+              "Raw...",
+              `open=${filepath} image=${format} width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]}`
+            );
+          } else if (img._rshape.length === 2) {
+            return await imagej.run(
+              "Raw...",
+              `open=${filepath} image=${format} width=${img._rshape[1]} height=${img._rshape[0]}`
+            );
           }
-          return await imagej.run(
-            "Raw...",
-            `open=${filepath} image=${format} width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]}`
-          );
-        } else if (img._rshape.length === 2) {
-          return await imagej.run(
-            "Raw...",
-            `open=${filepath} image=${format} width=${img._rshape[1]} height=${img._rshape[0]}`
-          );
         }
       } catch (e) {
         throw e;
@@ -152,6 +158,7 @@ export async function setupImJoyAPI(
           };
         }
         else{
+          const imp = await imagej.getImage();
           return javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, format));
         }
       } finally {

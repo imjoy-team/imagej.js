@@ -62,14 +62,16 @@ The most common use case is to use it with Python, e.g. in a Jupyter notebook or
 
 Try an online demo: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/imjoy-team/imagej.js/master?filepath=examples%2Fgetting-started.ipynb)
 
-### viewImage(img_array)
-Load an image into ImageJ.JS. For example, you can pass images from Python with numpy arrays. The shape can have the following format:
+### viewImage(img_array, config)
+Load an image into ImageJ.JS. For example, you can pass images from Python with numpy arrays or raw bytes in other image file formats (e.g PNG). The shape can have the following format:
  * [height, width]
  * [height, width, 1]
  * [height, width, 3] (will show as RGB image)
  * [height, width, z-stack]
  * [z-stack, height, width, 1]
  * [z-stack, height, width, 3] (will show as a stack of RGB image)
+
+`config` is optional for numpy array, you can use it to specify file name. For example: `{"name": "my image"}`
 ```python
 import imageio
 
@@ -79,6 +81,8 @@ ij = await api.createWindow(src="https://ij.imjoy.io")
 await ij.viewImage(image)
 
 ```
+
+If you pass raw bytes of an image in other formats, you need to specify the file name with the corresponding file extension. For example: `ij.viewImage(image_bytes, {"name": "my_image.png"})`.
 
 ### getImage(format)
 
