@@ -56,7 +56,6 @@ async function startImJoy(app, imjoy) {
   });
 
   app.loadPluginByQuery();
-  app.loadPlugin("https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html");
 }
 
 const CSStyle = `
