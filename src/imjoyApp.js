@@ -130,7 +130,6 @@ const APP_TEMPLATE = `
       
     </div>
   <template v-for="wdialog in dialogWindows">
-  <iframe src="https://cellpose.imjoy.io" style="width: 100%; height: 100%;"></iframe>
     <div
       :key="wdialog.window_id"
       v-show="wdialog === selected_dialog_window"
