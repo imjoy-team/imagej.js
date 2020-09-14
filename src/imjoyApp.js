@@ -9,8 +9,7 @@ async function startImJoy(app, imjoy) {
     });
   });
   imjoy.event_bus.on("close_window", w => {
-    const idx = app.dialogWindows.indexOf(w);
-    if (idx >= 0) app.dialogWindows.splice(idx, 1);
+    app.closeWindow(w);
     app.$forceUpdate();
   });
   imjoy.event_bus.on("plugin_loaded", p => {
