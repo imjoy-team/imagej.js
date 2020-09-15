@@ -574,7 +574,7 @@ function cheerpjRemoveStringFile(name) {
   var mount = cheerpjGetFSMountForPath(name);
   assert(mount instanceof CheerpJDataFolder);
   delete mount.files[name.substr(mount.mountPoint.length - 1)];
-  delete cjFileCache[name];
+  delete mount.fileCache[name];
 }
 
 async function processUrlParameters(imagej) {
