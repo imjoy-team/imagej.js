@@ -171,8 +171,19 @@ export async function setupImJoyApp(setAPI) {
   var elem = document.createElement("div");
   elem.id = "imjoy-menu";
   elem.innerHTML = APP_TEMPLATE;
+  elem.style.position = "absolute";
+  document.body.appendChild(elem);
+
   const titleBar = document.querySelector(".titleBar");
-  titleBar.parentNode.insertBefore(elem, titleBar);
+  const updatePos = ()=>{
+    const bbox = titleBar.getBoundingClientRect();
+    const elem = document.getElementById("imjoy-menu");
+    elem.style.left = (bbox.left -4) + "px";
+    elem.style.top = (bbox.top + 1) + "px";
+  }
+  titleBar.addEventListener("drag", updatePos);
+  updatePos();
+
   document.head.insertAdjacentHTML("beforeend", CSStyle);
   const app = new Vue({
     el: "#imjoy-menu",
