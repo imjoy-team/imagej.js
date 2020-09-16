@@ -88,11 +88,10 @@ export async function setupImJoyAPI(
         options = options || {};
         options.name = options.name || "tmp";
         const filepath = "/str/" + options.name;
-        if(img instanceof ArrayBuffer){
+        if (img instanceof ArrayBuffer) {
           cheerpjAddStringFile(filepath, new Uint8Array(img));
           return await openImage(imagej, filepath);
-        }
-        else{
+        } else {
           const formats = {
             uint8: "8-bit",
             uint16: "16-bit Unsigned",
@@ -145,28 +144,33 @@ export async function setupImJoyAPI(
       );
       return bytes;
     },
-    async getDimensions(){
+    async getDimensions() {
       const imp = await imagej.getImage();
       // d[0] = width;	d[1] = height; d[2] = nChannels;	d[3] = nSlices; d[4] = nFrames;
-      return Array.from((await imagej.getDimensions(imp)).slice(1))
+      return Array.from((await imagej.getDimensions(imp)).slice(1));
     },
-    async selectWindow(title){
+    async selectWindow(title) {
       await imagej.selectWindow(title);
     },
     async getImage(format) {
       loader.style.display = "block";
       try {
-        if(!format || format==='ndarray' || typeof format !== 'string'){
+        if (!format || format === "ndarray" || typeof format !== "string") {
           const imp = await imagej.getImage();
-          const data = await getImageData(imagej, imp, format.channel || -1, format.slice || -1, format.frame || -1);
+          const data = await getImageData(
+            imagej,
+            imp,
+            format.channel || -1,
+            format.slice || -1,
+            format.frame || -1
+          );
           return {
             _rtype: "ndarray",
             _rvalue: data.bytes,
             _rshape: data.shape,
             _rdtype: data.type
           };
-        }
-        else{
+        } else {
           const imp = await imagej.getImage();
           return javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, format));
         }

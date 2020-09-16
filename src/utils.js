@@ -152,18 +152,17 @@ export function githubUrlToObject(repoUrl, opts) {
 export async function githubUrlRaw(url, extFilter) {
   if (url.includes("gist.github.com")) {
     const gistId = url.split("/").slice(-1)[0];
-    const blob = await fetch("https://api.github.com/gists/" + gistId).then(r => r.blob());
+    const blob = await fetch("https://api.github.com/gists/" + gistId).then(r =>
+      r.blob()
+    );
     const data = JSON.parse(await new Response(blob).text());
     // TODO: handle multiple files, e.g.: display them all
-    if(extFilter){
+    if (extFilter) {
       const selected_file = Object.values(data.files).filter(file => {
         return file.filename.endsWith(extFilter);
       })[0];
-      return selected_file.raw_url
-    }
-    else
-      return data.files[Object.values(data.files)[0]].raw_url;
-
+      return selected_file.raw_url;
+    } else return data.files[Object.values(data.files)[0]].raw_url;
   }
   if (!url.includes("blob") || !url.includes("github")) {
     return null;

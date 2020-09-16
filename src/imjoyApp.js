@@ -175,12 +175,12 @@ export async function setupImJoyApp(setAPI) {
   document.body.appendChild(elem);
 
   const titleBar = document.querySelector(".titleBar");
-  const updatePos = ()=>{
+  const updatePos = () => {
     const bbox = titleBar.getBoundingClientRect();
     const elem = document.getElementById("imjoy-menu");
-    elem.style.left = (bbox.left -4) + "px";
-    elem.style.top = (bbox.top + 1) + "px";
-  }
+    elem.style.left = bbox.left - 4 + "px";
+    elem.style.top = bbox.top + 1 + "px";
+  };
   titleBar.addEventListener("drag", updatePos);
   updatePos();
 
@@ -316,7 +316,7 @@ export async function setupImJoyApp(setAPI) {
         });
       },
       loadPlugin(p) {
-        if(!p){
+        if (!p) {
           p = prompt(
             `Please type a ImJoy plugin URL`,
             "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
