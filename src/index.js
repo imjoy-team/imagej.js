@@ -154,8 +154,8 @@ async function startImageJ() {
       _addEL.apply(elm, [
         event,
         e => {
-          // skip handling mouse events for textarea elements
-          if (e.target.nodeName !== "TEXTAREA") {
+          // skip handling mouse events for the cheerpj display and textarea elements
+          if (e.target !== elm && e.target.nodeName !== "TEXTAREA") {
             handler.apply(null, [e]);
           }
         }
