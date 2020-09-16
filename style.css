@@ -69,12 +69,12 @@ div#cheerpjDisplay.status:after {
   border: 0px solid rgb(63, 107, 240);
   border-radius: 5px;
   transform: translate(-50%, 0);
-  top: calc(50% + 65px );
+  top: calc(50% + 65px);
   color: #448aff;
   left: 50%;
   font-size: 18px;
   z-index: 99999;
-  background: rgba(255, 255, 255, 0.3)!important;
+  background: rgba(255, 255, 255, 0.3) !important;
 }
 
 input[type="button"] {
@@ -118,7 +118,7 @@ input[type="button"]:focus {
 }
 
 textarea {
-  font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+  font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
   font-size: 12px;
 }
 
