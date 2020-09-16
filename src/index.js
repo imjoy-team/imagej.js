@@ -150,7 +150,11 @@ async function startImageJ() {
   const elm = cheerpjCreateDisplay(-1, -1, appContainer);
   const _addEL = elm.addEventListener;
   elm.addEventListener = (event, handler, options) => {
-    if (event.startsWith("mouse") || event === "contextmenu") {
+    if (
+      event.startsWith("mouse") ||
+      event === "wheel" ||
+      event === "contextmenu"
+    ) {
       _addEL.apply(elm, [
         event,
         e => {
