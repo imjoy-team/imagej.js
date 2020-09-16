@@ -212,6 +212,16 @@ dialog::backdrop {
   margin: 0;
 }
 
+#cheepj-logo {
+  width: 90px;
+  position: absolute;
+  left: calc(50% + 81px);
+  top: calc(50% + 38px);
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
 /* -------------------------------------------------------------------------- *\
    * Extra dialog styling to make it shiny
    * -------------------------------------------------------------------------- */

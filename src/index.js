@@ -766,6 +766,7 @@ window.onImageJInitialized = async () => {
   processUrlParameters(imagej);
 
   loader.style.display = "none";
+  document.getElementById("cheepj-logo").style.display = "none";
 
   setTimeout(()=>{
     localStorage.setItem("cheepjPreload", JSON.stringify(cjGetRuntimeResources()))
@@ -774,13 +775,3 @@ window.onImageJInitialized = async () => {
 };
 console.time("Loading ImageJ.JS");
 startImageJ();
-
-window.test = async ()=>{
-  const imp = await ij.getImage();
-  const res2 =await getImageData(ij, imp);
-  const res3 = await ij.getDimensions(imp);
-
-  // remove the first number
-  const res4 = Array.from((await ij.getDimensions(imp)).slice(1))
-  debugger
-}
