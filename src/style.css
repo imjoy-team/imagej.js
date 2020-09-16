@@ -114,6 +114,12 @@ input[type="button"]:focus {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: calc(100% - 40px);
+}
+
+textarea {
+  font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+  font-size: 12px;
 }
 
 #cheerpjDisplay > div.bordered {

@@ -86,12 +86,20 @@ If you pass raw bytes of an image in other formats, you need to specify the file
 
 ### getImage(format)
 
-Get the current image (3~5 dimensions), for example, in Python you can get it as numpy array by setting the format to "ndarray".
+Get the current image (current slice for a stack), for example, in Python you can get it as numpy array by setting the format to "ndarray".
 ```python
 ij = await api.createWindow(src="https://ij.imjoy.io")
 img = await ij.getImage("ndarray")
 ```
 Optionally, you can specify it as "tiff", "png", "jpeg", "gif", "zip", "raw", "avi", "bmp", "fits", "pgm", "text image", "lut", "selection", "measurements", "xy Coordinates" or "text".
+
+For a stack, `format` can be set as an object with keys: `channel`, `slice`, `frame`, otherwise it will return the data of the current slice. 
+
+### getDimensions()
+Return the dimensions of the image as an array of [`width`, `height`, `nChannels`, `nSlices`, `nFrames`].
+
+### selectWindow(title)
+Select the current window by its title.
 
 ### getSelection()
 Get the ROI selection in the current image.

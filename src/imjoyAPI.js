@@ -145,11 +145,20 @@ export async function setupImJoyAPI(
       );
       return bytes;
     },
+    async getDimensions(){
+      const imp = await imagej.getImage();
+      // d[0] = width;	d[1] = height; d[2] = nChannels;	d[3] = nSlices; d[4] = nFrames;
+      return Array.from((await imagej.getDimensions(imp)).slice(1))
+    },
+    async selectWindow(title){
+      await imagej.selectWindow(title);
+    },
     async getImage(format) {
       loader.style.display = "block";
       try {
-        if(!format || format==='ndarray'){
-          const data = await getImageData(imagej);
+        if(!format || format==='ndarray' || typeof format !== 'string'){
+          const imp = await imagej.getImage();
+          const data = await getImageData(imagej, imp, format.channel || -1, format.slice || -1, format.frame || -1);
           return {
             _rtype: "ndarray",
             _rvalue: data.bytes,

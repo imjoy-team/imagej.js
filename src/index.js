@@ -142,12 +142,27 @@ async function startImageJ() {
   cheerpjInit({
     preloadResources: preload,
     enableInputMethods: true,
-    clipboardMode: "system",
+    clipboardMode: "java",
     enablePreciseClassLoaders: true,
     javaProperties: ["user.dir=/files", "plugins.dir=/app/ij153/plugins"]
   });
   const appContainer = document.getElementById("imagej-container");
-  cheerpjCreateDisplay(-1, -1, appContainer);
+  const elm = cheerpjCreateDisplay(-1, -1, appContainer);
+  const _addEL = elm.addEventListener
+  elm.addEventListener = (event, handler)=>{
+    if(event.startsWith('mouse') || event === 'contextmenu'){
+      _addEL(event, (e)=>{
+        if(e.target.nodeName === 'TEXTAREA'){
+          console.log('Skipping text area event')
+        }
+        else{
+          handler(e)
+        }
+      })
+    } 
+    else
+      _addEL(event, handler)
+  }
   cheerpjRunMain(
     "ij.ImageJ",
     "/app/ij153/ij-1.53d.jar:/app/ij153/plugins/Thunder_STORM.jar"
@@ -166,16 +181,18 @@ async function mountFile(file) {
   return filepath;
 }
 
-async function getImageData(imagej) {
-  const imp = await imagej.getImage();
-  const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
+async function getImageData(imagej, imp, channel, slice, frame) {
+  // const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
   const width = await cjCall(imp, "getWidth");
   const height = await cjCall(imp, "getHeight");
-  const slices = await cjCall(imp, "getNSlices");
+  const slices = {value0: 1} //await cjCall(imp, "getNSlices");
   const channels = await cjCall(imp, "getNChannels");
-  const frames = await cjCall(imp, "getNFrames");
+  const frames = {value0: 1} // await cjCall(imp, "getNFrames");
   const type = await cjCall(imp, "getType");
-  const bytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, "raw"));
+  if(channel === undefined) channel = -1;
+  if(slice === undefined) slice = -1;
+  if(frame === undefined) frame = -1;
+  const bytes = javaBytesToArrayBuffer(await imagej.getPixels(imp, channel, slice, frame));
   const shape = [height.value0, width.value0, channels.value0];
   if (slices.value0 && slices.value0 !== 1) {
     shape.push(slices.value0);
@@ -190,11 +207,19 @@ async function getImageData(imagej) {
     3: "uint8", // COLOR_256 8-bit indexed color
     4: "uint8" // COLOR_RGB 32-bit RGB color
   };
+  const bytesPerPixelMapping = {
+    0: 1, //GRAY8 8-bit grayscale (unsigned)
+    1: 2, //GRAY16 16-bit grayscale (unsigned)
+    2: 4, //	GRAY32 32-bit floating-point grayscale
+    3: 1, // COLOR_256 8-bit indexed color
+    4: 1 // COLOR_RGB 32-bit RGB color
+  };
 
   // calculate the actual channel number, e.g. for RGB image
   shape[2] =
     bytes.byteLength /
-    (shape[0] * shape[1] * (shape[3] || 1) * (shape[4] || 1));
+    (shape[0] * shape[1] * (shape[3] || 1) * (shape[4] || 1))/
+    bytesPerPixelMapping[type.value0];
 
   return {
     type: typeMapping[type.value0],
@@ -687,6 +712,18 @@ window.onImageJInitialized = async () => {
       "ij.ImagePlus",
       "java.lang.String"
     ]),
+    getPixels: await cjResolveCall("ij.IJ", "getPixels", [
+      "ij.ImagePlus",
+      "int",
+      "int",
+      "int"
+    ]),
+    selectWindow:  await cjResolveCall("ij.IJ", "selectWindow", [
+      "java.lang.String"
+    ]),
+    getDimensions: await cjResolveCall("ij.IJ", "getDimensions", [
+      "ij.ImagePlus"
+    ]),
     getString: await cjResolveCall("ij.IJ", "getString", [
       "java.lang.String",
       "java.lang.String"
@@ -704,7 +741,6 @@ window.onImageJInitialized = async () => {
   };
   window.ij = imagej;
   setupDragAndDrop(imagej);
-
   fixMenu(imagej);
   fixTouch();
 
@@ -738,3 +774,13 @@ window.onImageJInitialized = async () => {
 };
 console.time("Loading ImageJ.JS");
 startImageJ();
+
+window.test = async ()=>{
+  const imp = await ij.getImage();
+  const res2 =await getImageData(ij, imp);
+  const res3 = await ij.getDimensions(imp);
+
+  // remove the first number
+  const res4 = Array.from((await ij.getDimensions(imp)).slice(1))
+  debugger
+}
