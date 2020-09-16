@@ -152,10 +152,8 @@ async function startImageJ() {
   elm.addEventListener = (event, handler)=>{
     if(event.startsWith('mouse') || event === 'contextmenu'){
       _addEL(event, (e)=>{
-        if(e.target.nodeName === 'TEXTAREA'){
-          console.log('Skipping text area event')
-        }
-        else{
+        // let the browser handle mouse events for textarea elements
+        if(e.target.nodeName !== 'TEXTAREA'){
           handler(e)
         }
       })
