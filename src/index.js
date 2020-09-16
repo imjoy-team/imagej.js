@@ -137,7 +137,7 @@ const downloadQueue = {};
 async function startImageJ() {
   loader.style.display = "block";
   let preload = localStorage.getItem("cheepjPreload");
-  if(preload) preload = JSON.parse(preload);
+  if (preload) preload = JSON.parse(preload);
   else preload = [];
   cheerpjInit({
     preloadResources: preload,
@@ -148,19 +148,20 @@ async function startImageJ() {
   });
   const appContainer = document.getElementById("imagej-container");
   const elm = cheerpjCreateDisplay(-1, -1, appContainer);
-  const _addEL = elm.addEventListener
-  elm.addEventListener = (event, handler)=>{
-    if(event.startsWith('mouse') || event === 'contextmenu'){
-      _addEL(event, (e)=>{
-        // skip handling mouse events for textarea elements
-        if(e.target.nodeName !== 'TEXTAREA'){
-          handler(e)
+  const _addEL = elm.addEventListener;
+  elm.addEventListener = (event, handler, options) => {
+    if (event.startsWith("mouse") || event === "contextmenu") {
+      _addEL.apply(elm, [
+        event,
+        e => {
+          // skip handling mouse events for textarea elements
+          if (e.target.nodeName !== "TEXTAREA") {
+            handler.apply(null, [e]);
+          }
         }
-      })
-    } 
-    else
-      _addEL(event, handler)
-  }
+      ]);
+    } else _addEL.apply(elm, [event, handler, options]);
+  };
   cheerpjRunMain(
     "ij.ImageJ",
     "/app/ij153/ij-1.53d.jar:/app/ij153/plugins/Thunder_STORM.jar"
@@ -183,14 +184,16 @@ async function getImageData(imagej, imp, channel, slice, frame) {
   // const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
   const width = await cjCall(imp, "getWidth");
   const height = await cjCall(imp, "getHeight");
-  const slices = {value0: 1} //await cjCall(imp, "getNSlices");
+  const slices = { value0: 1 }; //await cjCall(imp, "getNSlices");
   const channels = await cjCall(imp, "getNChannels");
-  const frames = {value0: 1} // await cjCall(imp, "getNFrames");
+  const frames = { value0: 1 }; // await cjCall(imp, "getNFrames");
   const type = await cjCall(imp, "getType");
-  if(channel === undefined) channel = -1;
-  if(slice === undefined) slice = -1;
-  if(frame === undefined) frame = -1;
-  const bytes = javaBytesToArrayBuffer(await imagej.getPixels(imp, channel, slice, frame));
+  if (channel === undefined) channel = -1;
+  if (slice === undefined) slice = -1;
+  if (frame === undefined) frame = -1;
+  const bytes = javaBytesToArrayBuffer(
+    await imagej.getPixels(imp, channel, slice, frame)
+  );
   const shape = [height.value0, width.value0, channels.value0];
   if (slices.value0 && slices.value0 !== 1) {
     shape.push(slices.value0);
@@ -216,7 +219,7 @@ async function getImageData(imagej, imp, channel, slice, frame) {
   // calculate the actual channel number, e.g. for RGB image
   shape[2] =
     bytes.byteLength /
-    (shape[0] * shape[1] * (shape[3] || 1) * (shape[4] || 1))/
+    (shape[0] * shape[1] * (shape[3] || 1) * (shape[4] || 1)) /
     bytesPerPixelMapping[type.value0];
 
   return {
@@ -604,8 +607,8 @@ async function processUrlParameters(imagej) {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   if (urlParams.has("open")) {
-    const urls =  urlParams.getAll("open");
-    for(let url of urls){
+    const urls = urlParams.getAll("open");
+    for (let url of urls) {
       try {
         Snackbar.show({
           text: "Opening " + url,
@@ -627,9 +630,9 @@ async function processUrlParameters(imagej) {
       }
     }
   }
-  if(urlParams.has("run")) {
-    const urls =  urlParams.getAll("run");
-    for(let url of urls){
+  if (urlParams.has("run")) {
+    const urls = urlParams.getAll("run");
+    for (let url of urls) {
       try {
         Snackbar.show({
           text: "Fetching and running macro from: " + url,
@@ -641,8 +644,7 @@ async function processUrlParameters(imagej) {
         const blob = await fetch(url).then(r => r.blob());
         const macro = await new Response(blob).text();
         await imagej.runMacro(macro, "");
-      }
-      catch(e){
+      } catch (e) {
         Snackbar.show({
           text: "Failed to run macro: " + e.toString(),
           pos: "bottom-left"
@@ -653,7 +655,6 @@ async function processUrlParameters(imagej) {
 }
 
 window.onImageJInitialized = async () => {
-  
   const _cheerpjCloseAsync = window.cheerpjCloseAsync;
   window.cheerpjCloseAsync = function(fds, fd, p) {
     const fdObj = fds[fd];
@@ -716,7 +717,7 @@ window.onImageJInitialized = async () => {
       "int",
       "int"
     ]),
-    selectWindow:  await cjResolveCall("ij.IJ", "selectWindow", [
+    selectWindow: await cjResolveCall("ij.IJ", "selectWindow", [
       "java.lang.String"
     ]),
     getDimensions: await cjResolveCall("ij.IJ", "getDimensions", [
@@ -766,8 +767,11 @@ window.onImageJInitialized = async () => {
   loader.style.display = "none";
   document.getElementById("cheepj-logo").style.display = "none";
 
-  setTimeout(()=>{
-    localStorage.setItem("cheepjPreload", JSON.stringify(cjGetRuntimeResources()))
+  setTimeout(() => {
+    localStorage.setItem(
+      "cheepjPreload",
+      JSON.stringify(cjGetRuntimeResources())
+    );
   }, 1000);
   console.timeEnd("Loading ImageJ.JS");
 };
