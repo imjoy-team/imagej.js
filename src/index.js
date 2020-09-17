@@ -84,9 +84,13 @@ window.openFileDialogJS = async (title, initPath, selectionMode, promise) => {
 window.saveFileDialogJS = async (title, initPath, selectionMode, promise) => {
   // by pass the selection
   const savePath = prompt(title || "Saving file as ", initPath);
-  downloadQueue[savePath] = 1;
-  loader.style.display = "block";
-  await cjCall(promise, "resolve", "/files/" + savePath);
+  if (savePath) {
+    downloadQueue[savePath] = 1;
+    loader.style.display = "block";
+    await cjCall(promise, "resolve", "/files/" + savePath);
+  } else {
+    await cjCall(promise, "reject", "cancelled");
+  }
 };
 
 window.onFileOpened = (path, error) => {
@@ -151,7 +155,9 @@ async function startImageJ() {
   const _addEL = elm.addEventListener;
   elm.addEventListener = (event, handler, options) => {
     if (
-      event.startsWith("mouse") ||
+      event.startsWith("mousedown") ||
+      event.startsWith("mouseup") ||
+      event.startsWith("mousemove") ||
       event === "wheel" ||
       event === "contextmenu"
     ) {
@@ -525,10 +531,6 @@ function fixStyle() {
       margin-top: -5px;
       color: white !important;
     }
-
-    #imjoy-menu {
-      top: -1px !important;
-    }
     `;
     // Get the first script tag
     var ref = document.querySelector("script");
@@ -769,7 +771,6 @@ window.onImageJInitialized = async () => {
   processUrlParameters(imagej);
 
   loader.style.display = "none";
-  document.getElementById("cheepj-logo").style.display = "none";
 
   setTimeout(() => {
     localStorage.setItem(

@@ -56,6 +56,47 @@ async function startImJoy(app, imjoy) {
   });
 
   app.loadPluginByQuery();
+  window.runImJoyPlugin = code => {
+    loader.style.display = "block";
+    imjoy.pm
+      .reloadPlugin({ code: code, load_dependencies: true })
+      .then(plugin => {
+        Snackbar.show({
+          text: `Plugin "${plugin.name}" loaded successfully.`,
+          pos: "bottom-left"
+        });
+        app.plugins[plugin.name] = plugin;
+        app.$forceUpdate();
+        if (plugin.api && plugin.api.run) {
+          plugin.api.run({});
+        } else {
+          Snackbar.show({
+            text: `No "run" function defined in Plugin "${plugin.name}".`,
+            pos: "bottom-left"
+          });
+        }
+      })
+      .finally(() => {
+        loader.style.display = "none";
+      });
+  };
+
+  window.reloadImJoyPlugin = code => {
+    loader.style.display = "block";
+    imjoy.pm
+      .reloadPlugin({ code: code, load_dependencies: true })
+      .then(plugin => {
+        Snackbar.show({
+          text: `Plugin "${plugin.name}" loaded successfully.`,
+          pos: "bottom-left"
+        });
+        app.plugins[plugin.name] = plugin;
+        app.$forceUpdate();
+      })
+      .finally(() => {
+        loader.style.display = "none";
+      });
+  };
 }
 
 const CSStyle = `

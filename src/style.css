@@ -38,6 +38,8 @@ body {
 
 #cheerpjDisplay {
   box-shadow: none;
+  outline-color: transparent;
+  outline-width: thin;
 }
 
 /* make menu always on top of window */
@@ -50,13 +52,13 @@ div.menuBar {
 }
 
 .cheerpjLoading:before {
-  background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
+  background: url(assets/img/imagej-js-splash.jpg) no-repeat center !important;
   background-size: 300px !important;
   max-width: 300px !important;
 }
 
 .container:not(.cheerpjLoading) {
-  background: url(assets/img/imagej-js-splash.png) no-repeat center !important;
+  background: url(assets/img/imagej-js-imjoy.png) no-repeat center !important;
   background-size: 300px !important;
 }
 
@@ -120,6 +122,8 @@ input[type="button"]:focus {
 textarea {
   font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
   font-size: 12px;
+  outline-color: #80808054;
+  outline-width: thin;
 }
 
 #cheerpjDisplay > div.bordered {
@@ -210,16 +214,6 @@ dialog::backdrop {
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   margin: 0;
-}
-
-#cheepj-logo {
-  width: 90px;
-  position: absolute;
-  left: calc(50% + 81px);
-  top: calc(50% + 38px);
-  -webkit-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
 }
 
 /* -------------------------------------------------------------------------- *\
