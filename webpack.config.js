@@ -75,6 +75,10 @@ const config = (env, argv) => ({
           handler: 'CacheFirst'
         },
         {
+          urlPattern: new RegExp('https://cdnjs.cloudflare.com/.*'),
+          handler: 'CacheFirst'
+        },
+        {
           urlPattern: new RegExp('https://imjoy.io/static/.*'),
           handler: 'StaleWhileRevalidate'
         },

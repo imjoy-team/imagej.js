@@ -16,6 +16,28 @@ if (!isChrome && !isFirefox) {
   });
 }
 
+const codeEditors = {};
+window.onEditorResized = () => {
+  setTimeout(() => {
+    for (let id in codeEditors) {
+      const textArea = document.getElementById(id);
+      if (textArea) {
+        const bbox = textArea.getBoundingClientRect();
+        codeEditors[id].setSize(bbox.width - 10, bbox.height - 10);
+      } else {
+        delete codeEditors[id];
+      }
+    }
+  }, 1);
+};
+
+window.onEditorTextChanged = () => {
+  // for(let id in codeEditors){
+  //   const textArea = document.getElementById(id);
+  //   codeEditors[id].setValue(textArea.value);
+  // }
+};
+
 // setup a hook for fixing mobile touch event
 const _createElement = document.createElement;
 
@@ -28,6 +50,54 @@ function touchClick(ev) {
 document.createElement = function(type) {
   const elm = _createElement.call(document, type);
   elm.addEventListener("touchstart", touchClick, false);
+  if (elm.nodeName === "TEXTAREA") {
+    setTimeout(() => {
+      const editorDiv = _createElement.call(document, "DIV");
+      editorDiv.setAttribute("style", elm.getAttribute("style"));
+      const myCodeMirror = CodeMirror(editorDiv, {
+        value: elm.value,
+        mode: {
+          name: "htmlmixed",
+          tags: {
+            docs: [[null, null, "markdown"]],
+            config: [
+              ["lang", /^json$/, "javascript"],
+              ["lang", /^yaml$/, "yaml"],
+              [null, null, "javascript"]
+            ],
+            script: [
+              ["lang", /^python$/, "python"],
+              [null, null, "javascript"]
+            ]
+          }
+        },
+        lineNumbers: false,
+        matchBrackets: true
+        // lint: true,
+        // gutters: ["CodeMirror-lint-markers"],
+      });
+      const bbox = elm.getBoundingClientRect();
+      myCodeMirror.setSize(bbox.width, bbox.height);
+      setTimeout(function() {
+        myCodeMirror.refresh();
+      }, 1);
+      elm.parentNode.appendChild(editorDiv);
+      elm.id =
+        "_" +
+        Math.random()
+          .toString(36)
+          .substr(2, 9);
+      codeEditors[elm.id] = myCodeMirror;
+      myCodeMirror.on("change", () => {
+        elm.value = myCodeMirror.getValue();
+        const event = new Event("input", {
+          bubbles: true,
+          cancelable: true
+        });
+        elm.dispatchEvent(event);
+      });
+    }, 1000);
+  }
   return elm;
 };
 
@@ -155,9 +225,9 @@ async function startImageJ() {
   const _addEL = elm.addEventListener;
   elm.addEventListener = (event, handler, options) => {
     if (
-      event.startsWith("mousedown") ||
-      event.startsWith("mouseup") ||
-      event.startsWith("mousemove") ||
+      event === "dblclick" ||
+      event === "drag" ||
+      event.startsWith("mouse") ||
       event === "wheel" ||
       event === "contextmenu"
     ) {
@@ -165,12 +235,18 @@ async function startImageJ() {
         event,
         e => {
           // skip handling mouse events for the cheerpj display and textarea elements
-          if (e.target !== elm && e.target.nodeName !== "TEXTAREA") {
+          if (
+            e.target !== elm &&
+            e.target.nodeName !== "TEXTAREA" &&
+            e.target.getAttribute("role") !== "presentation"
+          ) {
             handler.apply(null, [e]);
           }
         }
       ]);
-    } else _addEL.apply(elm, [event, handler, options]);
+    } else {
+      _addEL.apply(elm, [event, handler, options]);
+    }
   };
   cheerpjRunMain(
     "ij.ImageJ",
