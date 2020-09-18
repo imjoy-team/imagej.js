@@ -56,6 +56,7 @@ document.createElement = function(type) {
       if (elm.parentNode.nextSibling.classList[0] !== "titleBar") return;
       const editorDiv = _createElement.call(document, "DIV");
       editorDiv.setAttribute("style", elm.getAttribute("style"));
+      editorDiv.style["z-index"] = 0;
       const myCodeMirror = CodeMirror(editorDiv, {
         value: elm.value,
         mode: {
