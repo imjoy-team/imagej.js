@@ -47,59 +47,71 @@ function touchClick(ev) {
   if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName))
     ev.stopPropagation();
 }
+
+function replaceTextArea(elm) {
+  const editorDiv = _createElement.call(document, "DIV");
+  editorDiv.setAttribute("style", elm.getAttribute("style"));
+  editorDiv.style["z-index"] = 0;
+  const myCodeMirror = CodeMirror(editorDiv, {
+    value: elm.value,
+    mode: {
+      name: "htmlmixed",
+      tags: {
+        docs: [[null, null, "markdown"]],
+        config: [
+          ["lang", /^json$/, "javascript"],
+          ["lang", /^yaml$/, "yaml"],
+          [null, null, "javascript"]
+        ],
+        script: [
+          ["lang", /^python$/, "python"],
+          [null, null, "javascript"]
+        ]
+      }
+    },
+    lineNumbers: false,
+    matchBrackets: true
+    // lint: true,
+    // gutters: ["CodeMirror-lint-markers"],
+  });
+  const bbox = elm.getBoundingClientRect();
+  myCodeMirror.setSize(bbox.width, bbox.height);
+  setTimeout(function() {
+    myCodeMirror.refresh();
+  }, 1);
+  elm.parentNode.appendChild(editorDiv);
+  elm.id =
+    "_" +
+    Math.random()
+      .toString(36)
+      .substr(2, 9);
+  codeEditors[elm.id] = myCodeMirror;
+  myCodeMirror.on("change", () => {
+    elm.value = myCodeMirror.getValue();
+    const event = new Event("input", {
+      bubbles: true,
+      cancelable: true
+    });
+    elm.dispatchEvent(event);
+  });
+}
+
 document.createElement = function(type) {
   const elm = _createElement.call(document, type);
   elm.addEventListener("touchstart", touchClick, false);
   if (elm.nodeName === "TEXTAREA") {
-    setTimeout(() => {
+    function tryReplace() {
+      if (!document.contains(elm)) {
+        setTimeout(tryReplace, 200);
+        return;
+      }
       // only apply to textarea in a window
-      if (elm.parentNode.nextSibling.classList[0] !== "titleBar") return;
-      const editorDiv = _createElement.call(document, "DIV");
-      editorDiv.setAttribute("style", elm.getAttribute("style"));
-      editorDiv.style["z-index"] = 0;
-      const myCodeMirror = CodeMirror(editorDiv, {
-        value: elm.value,
-        mode: {
-          name: "htmlmixed",
-          tags: {
-            docs: [[null, null, "markdown"]],
-            config: [
-              ["lang", /^json$/, "javascript"],
-              ["lang", /^yaml$/, "yaml"],
-              [null, null, "javascript"]
-            ],
-            script: [
-              ["lang", /^python$/, "python"],
-              [null, null, "javascript"]
-            ]
-          }
-        },
-        lineNumbers: false,
-        matchBrackets: true
-        // lint: true,
-        // gutters: ["CodeMirror-lint-markers"],
-      });
-      const bbox = elm.getBoundingClientRect();
-      myCodeMirror.setSize(bbox.width, bbox.height);
-      setTimeout(function() {
-        myCodeMirror.refresh();
-      }, 1);
-      elm.parentNode.appendChild(editorDiv);
-      elm.id =
-        "_" +
-        Math.random()
-          .toString(36)
-          .substr(2, 9);
-      codeEditors[elm.id] = myCodeMirror;
-      myCodeMirror.on("change", () => {
-        elm.value = myCodeMirror.getValue();
-        const event = new Event("input", {
-          bubbles: true,
-          cancelable: true
-        });
-        elm.dispatchEvent(event);
-      });
-    }, 1000);
+      if (elm.parentNode.nextSibling.classList[0] === "titleBar") {
+        if (elm.style.display === "none") setTimeout(tryReplace, 200);
+        else replaceTextArea(elm);
+      }
+    }
+    setTimeout(tryReplace, 200);
   }
   return elm;
 };
@@ -251,10 +263,7 @@ async function startImageJ() {
       _addEL.apply(elm, [event, handler, options]);
     }
   };
-  cheerpjRunMain(
-    "ij.ImageJ",
-    "/app/ij153/ij-1.53d.jar"
-  );
+  cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53d.jar");
 }
 
 async function listFiles(imagej, path) {
