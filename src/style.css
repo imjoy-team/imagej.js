@@ -161,6 +161,9 @@ textarea {
   font-size: 20px;
   font-family: Arial, Helvetica, sans-serif;
 }
+.CodeMirror {
+  margin-top: 2px;
+}
 /* -------------------------------------------------------------------------- *\
  * Necessary styling for the dialog to work
  * -------------------------------------------------------------------------- */
