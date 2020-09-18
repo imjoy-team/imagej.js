@@ -188,8 +188,7 @@ function promisify_functions(obj, bind) {
     if (typeof obj[k] === "function") {
       // make sure it returns a promise
       const func = obj[k];
-      if(bind)
-      func.bind(null, bind);
+      if (bind) func.bind(null, bind);
       if (func.constructor.name !== "AsyncFunction") {
         ret[k] = function(...args) {
           return Promise.resolve(func(...args));
