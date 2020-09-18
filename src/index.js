@@ -253,7 +253,7 @@ async function startImageJ() {
   };
   cheerpjRunMain(
     "ij.ImageJ",
-    "/app/ij153/ij-1.53d.jar:/app/ij153/plugins/Thunder_STORM.jar"
+    "/app/ij153/ij-1.53d.jar"
   );
 }
 
