@@ -52,6 +52,8 @@ document.createElement = function(type) {
   elm.addEventListener("touchstart", touchClick, false);
   if (elm.nodeName === "TEXTAREA") {
     setTimeout(() => {
+      // only apply to textarea in a window
+      if (elm.parentNode.nextSibling.classList[0] !== "titleBar") return;
       const editorDiv = _createElement.call(document, "DIV");
       editorDiv.setAttribute("style", elm.getAttribute("style"));
       const myCodeMirror = CodeMirror(editorDiv, {
