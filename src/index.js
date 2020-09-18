@@ -23,7 +23,7 @@ window.onEditorResized = () => {
       const textArea = document.getElementById(id);
       if (textArea) {
         const bbox = textArea.getBoundingClientRect();
-        codeEditors[id].setSize(bbox.width, bbox.height);
+        codeEditors[id].setSize(bbox.width - 8, bbox.height - 7);
       } else {
         delete codeEditors[id];
       }
@@ -75,7 +75,7 @@ function replaceTextArea(elm) {
     // gutters: ["CodeMirror-lint-markers"],
   });
   const bbox = elm.getBoundingClientRect();
-  myCodeMirror.setSize(bbox.width, bbox.height);
+  myCodeMirror.setSize(bbox.width - 8, bbox.height - 7);
   setTimeout(function() {
     myCodeMirror.refresh();
   }, 1);
