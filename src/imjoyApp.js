@@ -182,12 +182,14 @@ const APP_TEMPLATE = `
 </div>
 `;
 
-function promisify_functions(obj) {
+function promisify_functions(obj, bind) {
   const ret = {};
   for (let k in obj) {
     if (typeof obj[k] === "function") {
       // make sure it returns a promise
       const func = obj[k];
+      if(bind)
+      func.bind(null, bind);
       if (func.constructor.name !== "AsyncFunction") {
         ret[k] = function(...args) {
           return Promise.resolve(func(...args));
@@ -255,7 +257,10 @@ export async function setupImJoyApp(setAPI) {
                 api.registerCodec = () => {
                   throw "register codec is not implemented yet.";
                 };
-                setAPI(promisify_functions(api));
+                // we need to pass the Plugin object as second argument
+                // use config for now
+                // TODO: pass the actual plugin object
+                setAPI(promisify_functions(api, config));
               } else {
                 imjoy.pm
                   .getWindow(_plugin, config)
