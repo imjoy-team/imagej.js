@@ -23,7 +23,7 @@ window.onEditorResized = () => {
       const textArea = document.getElementById(id);
       if (textArea) {
         const bbox = textArea.getBoundingClientRect();
-        codeEditors[id].setSize(bbox.width - 10, bbox.height - 10);
+        codeEditors[id].setSize(bbox.width, bbox.height);
       } else {
         delete codeEditors[id];
       }
