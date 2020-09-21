@@ -868,5 +868,12 @@ window.onImageJInitialized = async () => {
   }, 1000);
   console.timeEnd("Loading ImageJ.JS");
 };
-console.time("Loading ImageJ.JS");
-startImageJ();
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
+    console.time("Loading ImageJ.JS");
+    startImageJ();
+  },
+  false
+);
