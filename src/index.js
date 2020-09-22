@@ -693,8 +693,8 @@ fixStyle();
 function cheerpjRemoveStringFile(name) {
   var mount = cheerpjGetFSMountForPath(name);
   assert(mount instanceof CheerpJDataFolder);
-  delete mount.files[name.substr(mount.mountPoint.length - 1)];
-  delete mount.fileCache[name];
+  const path = name.substr(mount.mountPoint.length - 1);
+  delete mount.files[path];
 }
 
 async function processUrlParameters(imagej) {
