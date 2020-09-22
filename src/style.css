@@ -155,10 +155,11 @@ textarea {
 
 #drag-overlay > span {
   position: relative;
-  top: 30%;
+  top: calc(50% - 120px);
   transform: translateY(-30%);
   line-height: 90px;
   font-size: 20px;
+  color: #448aff;
   font-family: Arial, Helvetica, sans-serif;
 }
 .CodeMirror {
