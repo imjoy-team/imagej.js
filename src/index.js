@@ -757,7 +757,17 @@ window.onImageJInitialized = async () => {
     const filename = tmp[tmp.length - 1];
     if (downloadQueue[filename]) {
       delete downloadQueue[fileData.path];
-      downloadBytesFile(fileData.chunks, filename);
+      //TODO: support file system other than indexeddb
+      const chunks = [];
+      let byteCount = 0;
+      for (let c of fileData.chunks) {
+        if (byteCount + c.length > fileData.length) {
+          chunks.push(c.slice(0, fileData.length - byteCount));
+          break;
+        } else chunks.push(c);
+        byteCount += c.length;
+      }
+      downloadBytesFile(chunks, filename);
       _cheerpjCloseAsync.apply(null, arguments);
       // remove the file after downloading
       window.ij.removeFile("/files/" + filename);
