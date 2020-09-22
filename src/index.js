@@ -756,10 +756,12 @@ window.onImageJInitialized = async () => {
     const tmp = fileData.path.split("/");
     const filename = tmp[tmp.length - 1];
     if (downloadQueue[filename]) {
-      delete downloadQueue[fileData.path];
+      delete downloadQueue[filename];
       //TODO: support file system other than indexeddb
+      //TODO: support streaming for large files
       const chunks = [];
       let byteCount = 0;
+      // copy the chunks
       for (let c of fileData.chunks) {
         if (byteCount + c.length > fileData.length) {
           chunks.push(c.slice(0, fileData.length - byteCount));
@@ -767,8 +769,8 @@ window.onImageJInitialized = async () => {
         } else chunks.push(c);
         byteCount += c.length;
       }
-      downloadBytesFile(chunks, filename);
       _cheerpjCloseAsync.apply(null, arguments);
+      downloadBytesFile(chunks, filename);
       // remove the file after downloading
       window.ij.removeFile("/files/" + filename);
       loader.style.display = "none";
