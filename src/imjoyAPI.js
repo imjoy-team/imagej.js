@@ -97,7 +97,9 @@ export async function setupImJoyAPI(
             uint16: "16-bit Unsigned",
             int16: "16-bit Signed",
             uint32: "32-bit Unsigned",
-            int32: "32-bit Signed"
+            int32: "32-bit Signed",
+            float32: "32-bit Real",
+            flaot64: "64-bit Real"
           };
           cheerpjAddStringFile(filepath, new Uint8Array(img._rvalue));
           let format = formats[img._rdtype];
@@ -105,16 +107,16 @@ export async function setupImJoyAPI(
           if (img._rshape.length === 3) {
             let number = img._rshape[2];
             if (img._rshape[2] === 3) {
-              format = "[24-bit RGB]";
+              format = "24-bit RGB";
               number = 1;
             }
             return await imagej.run(
               "Raw...",
-              `open=${filepath} image=${format} width=${img._rshape[1]} height=${img._rshape[0]} number=${number}`
+              `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} number=${number} little-endian`
             );
           } else if (img._rshape.length === 4) {
             if (img._rshape[3] === 3) {
-              format = "[24-bit RGB]";
+              format = "24-bit RGB";
             } else {
               if (img._rshape[3] !== 1) {
                 throw "channel dimension (last) can only be 1 or 3";
@@ -122,12 +124,12 @@ export async function setupImJoyAPI(
             }
             return await imagej.run(
               "Raw...",
-              `open=${filepath} image=${format} width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]}`
+              `open=${filepath} image=[${format}] width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]} little-endian`
             );
           } else if (img._rshape.length === 2) {
             return await imagej.run(
               "Raw...",
-              `open=${filepath} image=${format} width=${img._rshape[1]} height=${img._rshape[0]}`
+              `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} little-endian`
             );
           }
         }
@@ -183,22 +185,24 @@ export async function setupImJoyAPI(
 
   api.export(service_api);
 
-  window.runImJoyPlugin = code => {
-    loader.style.display = "block";
-    api
-      .getPlugin(code)
-      .then(plugin_api => {
-        api.showMessage(`Plugin loaded successfully.`);
-        if (plugin_api && plugin_api.run) {
-          plugin_api.run({});
-        } else {
-          api.showMessage(`No "run" function defined in the plugin.`);
-        }
-      })
-      .finally(() => {
-        loader.style.display = "none";
-      });
-  };
+  window.runImJoyPlugin =
+    window.runImJoyPlugin ||
+    (code => {
+      loader.style.display = "block";
+      api
+        .getPlugin(code)
+        .then(plugin_api => {
+          api.showMessage(`Plugin loaded successfully.`);
+          if (plugin_api && plugin_api.run) {
+            plugin_api.run({});
+          } else {
+            api.showMessage(`No "run" function defined in the plugin.`);
+          }
+        })
+        .finally(() => {
+          loader.style.display = "none";
+        });
+    });
 
   window.reloadImJoyPlugin = code => {
     loader.style.display = "block";

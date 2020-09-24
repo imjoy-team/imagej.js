@@ -97,7 +97,7 @@ input[type="button"]:focus {
 
 /* fix text label display in window */
 .window > div > div {
-  min-width: 70%;
+  /* min-width: 70%; */
   background-color: transparent !important;
   min-height: 20px;
 }
