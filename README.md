@@ -31,6 +31,15 @@ If you made a ImageJ macro that you want to share, you can store them in your pr
 
 Then wen can construct an URL for sharing where user can directly click and run: https://ij.imjoy.io/?run=https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac . This URL can be shared as is, or further shorten by one of the short URL service (e.g. tiny.cc).
 
+## Install new ImageJ plugins
+Currently, we don't support install plugin downloaded locally, all the plugines need to be installed from the ImageJ.JS site.
+
+To install a new ImageJ plugin, please make an issue with the following information:
+ 1. name of the plugin
+ 2. what does the plugin do and how to use it
+ 2. a publicly accessible url to the jar file, preferably a link to github release
+
+NOTE: **Only ImageJ-1 plugins are supported for now.**
 
 ## ImJoy Integration and API
 
