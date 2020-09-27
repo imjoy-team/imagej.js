@@ -108,7 +108,8 @@ document.createElement = function(type) {
       // only apply to textarea in a window
       if (elm.parentNode.nextSibling.classList[0] === "titleBar") {
         if (elm.style.display === "none") setTimeout(tryReplace, 200);
-        else replaceTextArea(elm);
+        else if(elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")) 
+        replaceTextArea(elm);
       }
     }
     setTimeout(tryReplace, 200);
