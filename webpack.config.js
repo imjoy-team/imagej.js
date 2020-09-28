@@ -60,43 +60,43 @@ const config = (env, argv) => ({
       analyzerMode: 'static',
       openAnalyzer: false,
     }),
-    // new WorkboxPlugin.GenerateSW({
-    //   // these options encourage the ServiceWorkers to get in there fast
-    //   // and not allow any straggling "old" SWs to hang around
-    //   clientsClaim: true,
-    //   skipWaiting: true,
-    //   runtimeCaching: [
-    //     {
-    //       urlPattern: new RegExp('https://cjrtnc.leaningtech.com/.*'),
-    //       handler: 'StaleWhileRevalidate'
-    //     },
-    //     {
-    //       urlPattern: new RegExp('https://stackpath.bootstrapcdn.com/font-awesome/.*'),
-    //       handler: 'CacheFirst'
-    //     },
-    //     {
-    //       urlPattern: new RegExp('https://cdnjs.cloudflare.com/.*'),
-    //       handler: 'CacheFirst'
-    //     },
-    //     {
-    //       urlPattern: new RegExp('https://imjoy.io/static/.*'),
-    //       handler: 'StaleWhileRevalidate'
-    //     },
-    //     {
-    //       urlPattern: new RegExp('https://static.imjoy.io/.*'),
-    //       handler: 'StaleWhileRevalidate'
-    //     },
-    //     {
-    //       urlPattern: new RegExp('/ij153/.*'),
-    //       handler: 'StaleWhileRevalidate'
-    //     }, 
-    //     {
-    //       // debugging
-    //       urlPattern: new RegExp('/sockjs-node.*'),
-    //       handler: 'NetworkOnly'
-    //     }, 
-    //   ]
-    // }),
+    new WorkboxPlugin.GenerateSW({
+      // these options encourage the ServiceWorkers to get in there fast
+      // and not allow any straggling "old" SWs to hang around
+      clientsClaim: true,
+      skipWaiting: true,
+      runtimeCaching: [
+        {
+          urlPattern: new RegExp('https://cjrtnc.leaningtech.com/.*'),
+          handler: 'NetworkFirst'
+        },
+        {
+          urlPattern: new RegExp('https://stackpath.bootstrapcdn.com/font-awesome/.*'),
+          handler: 'NetworkFirst'
+        },
+        {
+          urlPattern: new RegExp('https://cdnjs.cloudflare.com/.*'),
+          handler: 'NetworkFirst'
+        },
+        {
+          urlPattern: new RegExp('https://imjoy.io/static/.*'),
+          handler: 'NetworkFirst'
+        },
+        {
+          urlPattern: new RegExp('https://static.imjoy.io/.*'),
+          handler: 'NetworkFirst'
+        },
+        {
+          urlPattern: new RegExp('/ij153/.*'),
+          handler: 'NetworkFirst'
+        }, 
+        {
+          // debugging
+          urlPattern: new RegExp('/sockjs-node.*'),
+          handler: 'NetworkOnly'
+        }, 
+      ]
+    }),
     // new WriteFilePlugin(),
   ],
   module: {
