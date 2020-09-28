@@ -687,7 +687,7 @@ function fixTouch() {
   }
 }
 
-registerServiceWorker();
+// registerServiceWorker();
 fixHeight();
 fixStyle();
 
