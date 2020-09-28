@@ -68,15 +68,15 @@ const config = (env, argv) => ({
       runtimeCaching: [
         {
           urlPattern: new RegExp('https://cjrtnc.leaningtech.com/.*'),
-          handler: 'NetworkFirst'
+          handler: 'CacheFirst'
         },
         {
           urlPattern: new RegExp('https://stackpath.bootstrapcdn.com/font-awesome/.*'),
-          handler: 'NetworkFirst'
+          handler: 'CacheFirst'
         },
         {
           urlPattern: new RegExp('https://cdnjs.cloudflare.com/.*'),
-          handler: 'NetworkFirst'
+          handler: 'CacheFirst'
         },
         {
           urlPattern: new RegExp('https://imjoy.io/static/.*'),
