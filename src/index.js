@@ -620,6 +620,12 @@ function fixStyle() {
       margin-top: -5px;
       color: white !important;
     }
+    .dialog-ctrl{
+      margin-top: -14px!important;
+    }
+    #imjoy-menu {
+      margin-top: -1px;
+    }
     `;
     // Get the first script tag
     var ref = document.querySelector("script");
@@ -686,10 +692,6 @@ function fixTouch() {
     menu.removeEventListener("touchstart", touchClick);
   }
 }
-
-registerServiceWorker();
-fixHeight();
-fixStyle();
 
 function cheerpjRemoveStringFile(name) {
   var mount = cheerpjGetFSMountForPath(name);
@@ -885,6 +887,9 @@ window.onImageJInitialized = async () => {
 document.addEventListener(
   "DOMContentLoaded",
   function() {
+    registerServiceWorker();
+    fixHeight();
+    fixStyle();
     console.time("Loading ImageJ.JS");
     startImageJ();
   },

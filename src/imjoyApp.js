@@ -155,7 +155,7 @@ const APP_TEMPLATE = `
 
 <modal name="window-modal-dialog" height="500px" style="max-height: 100%; max-width: 100%" :fullscreen="fullscreen" :resizable="true" draggable=".drag-handle" :scrollable="true">
     <div v-if="selected_dialog_window" @dblclick="maximizeWindow()" class="navbar-collapse collapse drag-handle" style="cursor:move; background-color: #448aff; color: white; text-align: center;">
-    <div style="position: absolute; left:2px; margin-top: -1px;">
+    <div class="dialog-ctrl" style="position: absolute; left:2px; margin-top: -1px;">
       <button @click="closeWindow(selected_dialog_window)" class="noselect dialog-control" style="background:#ff0000c4;">
         X
       </button>
@@ -217,15 +217,17 @@ export async function setupImJoyApp(setAPI) {
   document.body.appendChild(elem);
 
   const titleBar = document.querySelector(".titleBar");
-  const updatePos = () => {
+  const updateImJoyIconPos = () => {
     const bbox = titleBar.getBoundingClientRect();
     const elem = document.getElementById("imjoy-menu");
     elem.style.left = bbox.left - 4 + "px";
     elem.style.top = bbox.top + 1 + "px";
   };
-  titleBar.addEventListener("drag", updatePos);
-  updatePos();
-
+  titleBar.addEventListener("drag", updateImJoyIconPos);
+  updateImJoyIconPos()
+  setTimeout(()=>{
+    titleBar.dispatchEvent(new Event("drag"))
+  }, 1000);
   document.head.insertAdjacentHTML("beforeend", CSStyle);
   const app = new Vue({
     el: "#imjoy-menu",
@@ -238,7 +240,7 @@ export async function setupImJoyApp(setAPI) {
       active_plugin: null
     },
     mounted() {
-      window.dispatchEvent(new Event("resize"));
+      
       console.log(`ImJoy Core (v${imjoyCore.VERSION}) loaded.`);
       const imjoy = new imjoyCore.ImJoy({
         imjoy_api: {
