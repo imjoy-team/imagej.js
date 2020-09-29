@@ -191,3 +191,68 @@ print("done")
 ImageJ.JS takes 14.20s, ImageJ takes 2.40s.
 
 We are currently investigating ways to compile plugins in advance to boost the performance.
+
+
+## Development
+
+### Run the ImageJ.JS site locally
+
+Before start, please make sure you have [nodejs](https://nodejs.org/en/download/) installed.
+
+```bash
+git clone https://github.com/imjoy-team/imagej.js
+cd imagej.js
+npm install
+npm build # files will be saved into ./dist folder
+sh get-imagej.sh # fetch precompiled imagej
+npm run serve
+```
+
+Now you can go to http://127.0.0.1:9090/ to visit your local site.
+
+If you make any changes to the code, you might need to reload the page to see them.
+
+### Compile ImageJ into Javascript
+The above step runs [`get-imagej.sh`](https://github.com/imjoy-team/imagej.js/blob/master/get-imagej.sh) to obtain the precompiled imagej with plugins. You can compile them locally by following these:
+
+Before start, you need to:
+ 1. download and install [maven](https://maven.apache.org/download.cgi)
+ 1. download and install [cheerpj compiler](https://www.leaningtech.com/pages/cheerpj.html#Download)
+
+    Change the following path to your actual path of cheerpj:
+    ```bash
+    # set CHEERPJ_DIR
+    export CHEERPJ_DIR=/path/to/your/cheerpj/installation
+    ```
+ 1. compile imagej with maven
+    ```bash
+    git clone https://github.com/imjoy-team/ImageJA.JS
+    cd ImageJA.JS
+    # compile imagej
+    mvn install:install-file -Dfile=${CHEERPJ_DIR}/cheerpj-dom.jar -DgroupId=com.learningtech -DartifactId=cheerpj-dom -Dversion=1.0 -Dpackaging=jar
+    mvn -Pdeps package
+    ```
+ 1. compile imagej jar into js
+    ```bash
+    cd target
+    mv ij-1.53e.jar ij.jar
+    # compile ij.jar and we should get
+    ${CHEERPJ_DIR}/cheerpjfy.py ij.jar
+    ```
+ 1. compile a plugin, take MorphoLibJ plugin as an example:
+    ```bash
+    mkdir -p plugins
+    # download MorphoLibJ
+    curl https://github.com/ijpb/MorphoLibJ/releases/download/v1.4.2.1/MorphoLibJ_-1.4.2.1.jar -LO
+    mv MorphoLibJ_-1.4.2.1.jar plugins/MorphoLibJ_-1.4.2.1.jar
+    # compile MorphoLibJ
+    ${CHEERPJ_DIR}/cheerpjfy.py  --deps=ij.jar plugins/MorphoLibJ_-1.4.2.1.jar
+    # extract plugins.config
+    jar xf plugins/MorphoLibJ_-1.4.2.1.jar plugins.config
+    ```
+
+The compiled files can be placed under imagej.js/dist folder, and used by your local imagej.js site.
+Note: you may need to adjust the imagej jar file name to keep consistent with the one defined in `index.js`.
+
+
+
