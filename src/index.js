@@ -457,8 +457,7 @@ async function fixMenu(imagej) {
 function setupDragDropPaste(imagej) {
   const appContainer = document.getElementById("imagej-container");
   const dragOverlay = document.getElementById("drag-overlay");
-  function processDataTransfer(dataTransfer) {
-    const items = dataTransfer.items;
+  function processDataTransfer(items) {
     const processed = [];
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -470,32 +469,15 @@ function setupDragDropPaste(imagej) {
             processed.push(data);
           }
         });
-      } else if (dataTransfer.types.includes("Files")) {
-        const files = dataTransfer.files;
-        for (let i = 0, len = files.length; i < len; i++) {
-          if (
-            files[i].name.endsWith(".jar") ||
-            files[i].name.endsWith(".jar.js")
-          ) {
-            saveFileToFS(imagej, files[i]);
-          } else {
-            mountFile(files[i]).then(filepath => {
-              imagej.open(filepath).finally(() => {
-                cheerpjRemoveStringFile(filepath);
-              });
-            });
-          }
-        }
-      } else {
-        // item.kind === 'file'
-        if (item.type.indexOf("text/") === 0) {
-          mountFile(item.getAsFile()).then(filepath => {
-            imagej.open(filepath).finally(() => {
-              cheerpjRemoveStringFile(filepath);
-            });
-          });
-        } else if (item.type.indexOf("image/") === 0) {
-          mountFile(item.getAsFile()).then(filepath => {
+      } else if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (
+          file.name.endsWith(".jar") ||
+          file.name.endsWith(".jar.js")
+        ) {
+          saveFileToFS(imagej, file);
+        } else {
+          mountFile(file).then(filepath => {
             imagej.open(filepath).finally(() => {
               cheerpjRemoveStringFile(filepath);
             });
@@ -540,7 +522,7 @@ function setupDragDropPaste(imagej) {
     e => {
       e.preventDefault();
       e.stopPropagation();
-      processDataTransfer(e.dataTransfer);
+      processDataTransfer(e.dataTransfer.items);
       dragOverlay.style.display = "none";
     },
     false
@@ -550,39 +532,37 @@ function setupDragDropPaste(imagej) {
     event.preventDefault();
     event.stopPropagation();
     const paste = event.clipboardData || window.clipboardData;
-    processDataTransfer(paste);
+    processDataTransfer(paste.items);
   });
 
-  document.body.addEventListener("copy", async event => {
-    const imp = await window.ij.getImage();
-    if (imp) {
-      event.preventDefault();
-      event.stopPropagation();
-      const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
+  window.pasteFromSystem = ()=>{
+    navigator.clipboard.read().then((items)=>{
+      processDataTransfer(items);
+    })
+  }
+  
+  window.copyToSystem = async imp => {
+    const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
+    try {
+      const blob = new Blob([
+        javaBytesToArrayBuffer(await window.ij.saveAsBytes(imp, "png"))
+      ]);
+      const file = new File([blob], name, { type: "image/png" });
+      let data = [new ClipboardItem({ [file.type]: file })];
+
+      await navigator.clipboard.write(data);
       Snackbar.show({
-        text: "Copying image (" + name + ") to the clipboard...",
+        text: "Image (" + name + ") copied to clipboard",
         pos: "bottom-left"
       });
-      try {
-        const blob = new Blob([
-          javaBytesToArrayBuffer(await window.ij.saveAsBytes(imp, "png"))
-        ]);
-        const file = new File([blob], name, { type: "image/png" });
-        let data = [new ClipboardItem({ [file.type]: file })];
-
-        await navigator.clipboard.write(data);
-        Snackbar.show({
-          text: "Image (" + name + ") copied to clipboard",
-          pos: "bottom-left"
-        });
-      } catch (e) {
-        Snackbar.show({
-          text: "Failed to copy (" + name + "), Error: " + e.toString(),
-          pos: "bottom-left"
-        });
-      }
+    } catch (e) {
+      Snackbar.show({
+        text: "Failed to copy (" + name + "), Error: " + e.toString(),
+        pos: "bottom-left"
+      });
     }
-  });
+  
+  }
 }
 
 function readFile(file) {
