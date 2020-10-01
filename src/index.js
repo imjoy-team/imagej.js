@@ -108,8 +108,10 @@ document.createElement = function(type) {
       // only apply to textarea in a window
       if (elm.parentNode.nextSibling.classList[0] === "titleBar") {
         if (elm.style.display === "none") setTimeout(tryReplace, 200);
-        else if(elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")) 
-        replaceTextArea(elm);
+        else if (
+          elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")
+        )
+          replaceTextArea(elm);
       }
     }
     setTimeout(tryReplace, 200);
@@ -452,51 +454,24 @@ async function fixMenu(imagej) {
   // }})
 }
 
-function setupDragAndDrop(imagej) {
+function setupDragDropPaste(imagej) {
   const appContainer = document.getElementById("imagej-container");
   const dragOverlay = document.getElementById("drag-overlay");
-
-  appContainer.addEventListener(
-    "dragenter",
-    e => {
-      if (e.dataTransfer.types.includes("Files")) {
-        e.preventDefault();
-        e.stopPropagation();
-        dragOverlay.style.display = "block";
-      }
-    },
-    false
-  );
-  appContainer.addEventListener(
-    "dragover",
-    e => {
-      if (e.dataTransfer.types.includes("Files")) {
-        e.preventDefault();
-        e.stopPropagation();
-        dragOverlay.style.display = "block";
-      }
-    },
-    false
-  );
-  appContainer.addEventListener(
-    "dragleave",
-    e => {
-      if (e.dataTransfer.types.includes("Files")) {
-        e.preventDefault();
-        e.stopPropagation();
-        dragOverlay.style.display = "none";
-      }
-    },
-    false
-  );
-  appContainer.addEventListener(
-    "drop",
-    e => {
-      if (e.dataTransfer.types.includes("Files")) {
-        e.preventDefault();
-        e.stopPropagation();
-        const data = e.dataTransfer,
-          files = data.files;
+  function processDataTransfer(dataTransfer) {
+    const items = dataTransfer.items;
+    const processed = [];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.kind === "string") {
+        item.getAsString(function(data) {
+          if (processed.includes(data)) return;
+          if (data.startsWith("http")) {
+            loadContentFromUrl(imagej, data);
+            processed.push(data);
+          }
+        });
+      } else if (dataTransfer.types.includes("Files")) {
+        const files = dataTransfer.files;
         for (let i = 0, len = files.length; i < len; i++) {
           if (
             files[i].name.endsWith(".jar") ||
@@ -511,11 +486,103 @@ function setupDragAndDrop(imagej) {
             });
           }
         }
-        dragOverlay.style.display = "none";
+      } else {
+        // item.kind === 'file'
+        if (item.type.indexOf("text/") === 0) {
+          mountFile(item.getAsFile()).then(filepath => {
+            imagej.open(filepath).finally(() => {
+              cheerpjRemoveStringFile(filepath);
+            });
+          });
+        } else if (item.type.indexOf("image/") === 0) {
+          mountFile(item.getAsFile()).then(filepath => {
+            imagej.open(filepath).finally(() => {
+              cheerpjRemoveStringFile(filepath);
+            });
+          });
+        }
+      }
+    }
+  }
+  appContainer.addEventListener(
+    "dragenter",
+    e => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer.types.includes("Files")) {
+        dragOverlay.style.display = "block";
       }
     },
     false
   );
+  appContainer.addEventListener(
+    "dragover",
+    e => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer.types.includes("Files")) {
+        dragOverlay.style.display = "block";
+      }
+    },
+    false
+  );
+  appContainer.addEventListener(
+    "dragleave",
+    e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragOverlay.style.display = "none";
+    },
+    false
+  );
+  appContainer.addEventListener(
+    "drop",
+    e => {
+      e.preventDefault();
+      e.stopPropagation();
+      processDataTransfer(e.dataTransfer);
+      dragOverlay.style.display = "none";
+    },
+    false
+  );
+
+  document.body.addEventListener("paste", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    const paste = event.clipboardData || window.clipboardData;
+    processDataTransfer(paste);
+  });
+
+  document.body.addEventListener("copy", async event => {
+    const imp = await window.ij.getImage();
+    if (imp) {
+      event.preventDefault();
+      event.stopPropagation();
+      const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
+      Snackbar.show({
+        text: "Copying image (" + name + ") to the clipboard...",
+        pos: "bottom-left"
+      });
+      try {
+        const blob = new Blob([
+          javaBytesToArrayBuffer(await window.ij.saveAsBytes(imp, "png"))
+        ]);
+        const file = new File([blob], name, { type: "image/png" });
+        let data = [new ClipboardItem({ [file.type]: file })];
+
+        await navigator.clipboard.write(data);
+        Snackbar.show({
+          text: "Image (" + name + ") copied to clipboard",
+          pos: "bottom-left"
+        });
+      } catch (e) {
+        Snackbar.show({
+          text: "Failed to copy (" + name + "), Error: " + e.toString(),
+          pos: "bottom-left"
+        });
+      }
+    }
+  });
 }
 
 function readFile(file) {
@@ -700,31 +767,38 @@ function cheerpjRemoveStringFile(name) {
   delete mount.files[path];
 }
 
+async function loadContentFromUrl(imagej, url) {
+  try {
+    Snackbar.show({
+      text: "Opening " + url,
+      pos: "bottom-left"
+    });
+    // convert to raw if we can
+    const tmp =
+      (await githubUrlRaw(url, ".ijm")) ||
+      (await githubUrlRaw(url, ".imjoy.html"));
+    url = tmp || url;
+    await imagej.open(url);
+    Snackbar.show({
+      text: "Successfully opened " + url,
+      pos: "bottom-left"
+    });
+  } catch (e) {
+    console.error(e);
+    Snackbar.show({
+      text: "Failed to open " + url,
+      pos: "bottom-left"
+    });
+  }
+}
+
 async function processUrlParameters(imagej) {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   if (urlParams.has("open")) {
     const urls = urlParams.getAll("open");
     for (let url of urls) {
-      try {
-        Snackbar.show({
-          text: "Opening " + url,
-          pos: "bottom-left"
-        });
-        // convert to raw if we can
-        const tmp = await githubUrlRaw(url, ".ijm");
-        url = tmp || url;
-        await imagej.open(url);
-        Snackbar.show({
-          text: "Successfully opened " + url,
-          pos: "bottom-left"
-        });
-      } catch (e) {
-        Snackbar.show({
-          text: "Failed to open " + url,
-          pos: "bottom-left"
-        });
-      }
+      await loadContentFromUrl(imagej, url);
     }
   }
   if (urlParams.has("run")) {
@@ -848,7 +922,7 @@ window.onImageJInitialized = async () => {
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
   };
   window.ij = imagej;
-  setupDragAndDrop(imagej);
+  setupDragDropPaste(imagej);
   fixMenu(imagej);
   fixTouch();
 

@@ -161,7 +161,7 @@ export async function githubUrlRaw(url, extFilter) {
       const selected_file = Object.values(data.files).filter(file => {
         return file.filename.endsWith(extFilter);
       })[0];
-      return selected_file.raw_url;
+      return selected_file && selected_file.raw_url;
     } else return data.files[Object.values(data.files)[0]].raw_url;
   }
   if (!url.includes("blob") || !url.includes("github")) {

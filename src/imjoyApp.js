@@ -224,9 +224,9 @@ export async function setupImJoyApp(setAPI) {
     elem.style.top = bbox.top + 1 + "px";
   };
   titleBar.addEventListener("drag", updateImJoyIconPos);
-  updateImJoyIconPos()
-  setTimeout(()=>{
-    titleBar.dispatchEvent(new Event("drag"))
+  updateImJoyIconPos();
+  setTimeout(() => {
+    titleBar.dispatchEvent(new Event("drag"));
   }, 1000);
   document.head.insertAdjacentHTML("beforeend", CSStyle);
   const app = new Vue({
@@ -240,7 +240,6 @@ export async function setupImJoyApp(setAPI) {
       active_plugin: null
     },
     mounted() {
-      
       console.log(`ImJoy Core (v${imjoyCore.VERSION}) loaded.`);
       const imjoy = new imjoyCore.ImJoy({
         imjoy_api: {
