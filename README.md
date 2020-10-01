@@ -102,7 +102,7 @@ img = await ij.getImage("ndarray")
 ```
 Optionally, you can specify it as "tiff", "png", "jpeg", "gif", "zip", "raw", "avi", "bmp", "fits", "pgm", "text image", "lut", "selection", "measurements", "xy Coordinates" or "text".
 
-For a stack, `format` can be set as an object with keys: `channel`, `slice`, `frame`, otherwise it will return the data of the current slice. 
+For a stack, `format` can be set as an object with keys: `channel`, `slice`, `frame` (the values are one-based indexes), otherwise it will return the data of the current slice. 
 
 ### getDimensions()
 Return the dimensions of the image as an array of [`width`, `height`, `nChannels`, `nSlices`, `nFrames`].
