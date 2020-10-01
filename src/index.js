@@ -583,9 +583,10 @@ function setupDragDropPaste(imagej) {
   };
 
   window.copyToSystem = async imp => {
-    const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
     try {
       await window.ij.showStatus("Copying to system clipboard...");
+      loader.style.display = "block";
+      const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
       const blob = new Blob([
         javaBytesToArrayBuffer(await window.ij.saveAsBytes(imp, "png"))
       ]);
@@ -596,6 +597,8 @@ function setupDragDropPaste(imagej) {
       await window.ij.showStatus("Image copied to system clipboard");
     } catch (e) {
       await window.ij.showStatus("Failed to copy, error: " + e.toString());
+    } finally {
+      loader.style.display = "none";
     }
   };
 }
