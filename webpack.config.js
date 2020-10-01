@@ -87,6 +87,10 @@ const config = (env, argv) => ({
           handler: 'NetworkFirst'
         },
         {
+          urlPattern: new RegExp('/.*'),
+          handler: 'NetworkFirst'
+        }, 
+        {
           urlPattern: new RegExp('/ij153/.*'),
           handler: 'NetworkFirst'
         }, 
