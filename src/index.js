@@ -281,6 +281,7 @@ async function mountFile(file) {
   return filepath;
 }
 
+// Note: 'channel', 'slice' and 'frame' are one-based indexes
 async function getImageData(imagej, imp, channel, slice, frame) {
   // const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
   const width = await cjCall(imp, "getWidth");
@@ -289,9 +290,9 @@ async function getImageData(imagej, imp, channel, slice, frame) {
   const channels = await cjCall(imp, "getNChannels");
   const frames = { value0: 1 }; // await cjCall(imp, "getNFrames");
   const type = await cjCall(imp, "getType");
-  if (channel === undefined) channel = -1;
-  if (slice === undefined) slice = -1;
-  if (frame === undefined) frame = -1;
+  if (channel === undefined) channel = 0; // 0 means current channel
+  if (slice === undefined) slice = 0; // 0 means current slice
+  if (frame === undefined) frame = 0; // 0 means current frame
   const bytes = javaBytesToArrayBuffer(
     await imagej.getPixels(imp, channel, slice, frame)
   );

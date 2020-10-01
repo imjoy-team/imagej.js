@@ -163,9 +163,9 @@ export async function setupImJoyAPI(
           const data = await getImageData(
             imagej,
             imp,
-            format.channel || -1,
-            format.slice || -1,
-            format.frame || -1
+            format.channel || 0,
+            format.slice || 0,
+            format.frame || 0
           );
           return {
             _rtype: "ndarray",
