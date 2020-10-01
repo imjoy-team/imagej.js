@@ -461,19 +461,21 @@ function setupDragDropPaste(imagej) {
     const processed = [];
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if(item.type.startsWith("event/")) continue;
-      if (item.kind === "string" && item.type === "text/plain") {
+      if (item.type.startsWith("event/")) continue;
+      if (
+        item.kind === "string" &&
+        ["text/plain", "text/uri-list"].includes(item.type)
+      ) {
         item.getAsString(function(data) {
           if (processed.includes(data)) return;
           if (data.startsWith("http")) {
             loadContentFromUrl(imagej, data);
             processed.push(data);
-          }
-          else{
-            const blob = new Blob([
-              data
-            ]);
-            const file = new File([blob], "clipboard.txt", { type: "text/plain" });
+          } else {
+            const blob = new Blob([data]);
+            const file = new File([blob], "clipboard.txt", {
+              type: "text/plain"
+            });
             mountFile(file).then(filepath => {
               imagej.open(filepath).finally(() => {
                 cheerpjRemoveStringFile(filepath);
@@ -481,12 +483,9 @@ function setupDragDropPaste(imagej) {
             });
           }
         });
-      } else if (item.kind === 'file') {
+      } else if (item.kind === "file") {
         const file = item.getAsFile();
-        if (
-          file.name.endsWith(".jar") ||
-          file.name.endsWith(".jar.js")
-        ) {
+        if (file.name.endsWith(".jar") || file.name.endsWith(".jar.js")) {
           saveFileToFS(imagej, file);
         } else {
           mountFile(file).then(filepath => {
@@ -547,28 +546,36 @@ function setupDragDropPaste(imagej) {
     processDataTransfer(paste.items);
   });
 
-  window.pasteFromSystem = ()=>{
-    navigator.clipboard.read().then( async (clipboardItems)=>{
-      for (const clipboardItem of clipboardItems) {
-        try {
-          for (const type of clipboardItem.types) {
-            const blob = await clipboardItem.getType(type);
-            const file = new File([blob], blob.name || "clipboard" + (blob.type==='text/plain'? '.txt':''),  { type: blob.type || type });
-            mountFile(file).then(filepath => {
-              imagej.open(filepath).finally(() => {
-                cheerpjRemoveStringFile(filepath);
+  window.pasteFromSystem = () => {
+    navigator.clipboard
+      .read()
+      .then(async clipboardItems => {
+        for (const clipboardItem of clipboardItems) {
+          try {
+            for (const type of clipboardItem.types) {
+              const blob = await clipboardItem.getType(type);
+              const file = new File(
+                [blob],
+                blob.name ||
+                  "clipboard" + (blob.type === "text/plain" ? ".txt" : ""),
+                { type: blob.type || type }
+              );
+              mountFile(file).then(filepath => {
+                imagej.open(filepath).finally(() => {
+                  cheerpjRemoveStringFile(filepath);
+                });
               });
-            });
+            }
+          } catch (e) {
+            console.error(e, e.message);
           }
-        } catch (e) {
-          console.error(e, e.message);
         }
-      }
-    }).catch((e)=>{
-      window.ij.showStatus("Failed to paste from system: " + e.toString());
-    })
-  }
-  
+      })
+      .catch(e => {
+        window.ij.showStatus("Failed to paste from system: " + e.toString());
+      });
+  };
+
   window.copyToSystem = async imp => {
     const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
     try {
@@ -589,8 +596,7 @@ function setupDragDropPaste(imagej) {
         pos: "bottom-left"
       });
     }
-  
-  }
+  };
 }
 
 function readFile(file) {
