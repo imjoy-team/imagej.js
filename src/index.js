@@ -461,12 +461,24 @@ function setupDragDropPaste(imagej) {
     const processed = [];
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item.kind === "string") {
+      if(item.type.startsWith("event/")) continue;
+      if (item.kind === "string" && item.type === "text/plain") {
         item.getAsString(function(data) {
           if (processed.includes(data)) return;
           if (data.startsWith("http")) {
             loadContentFromUrl(imagej, data);
             processed.push(data);
+          }
+          else{
+            const blob = new Blob([
+              data
+            ]);
+            const file = new File([blob], "clipboard.txt", { type: "text/plain" });
+            mountFile(file).then(filepath => {
+              imagej.open(filepath).finally(() => {
+                cheerpjRemoveStringFile(filepath);
+              });
+            });
           }
         });
       } else if (item.kind === 'file') {
@@ -536,8 +548,24 @@ function setupDragDropPaste(imagej) {
   });
 
   window.pasteFromSystem = ()=>{
-    navigator.clipboard.read().then((items)=>{
-      processDataTransfer(items);
+    navigator.clipboard.read().then( async (clipboardItems)=>{
+      for (const clipboardItem of clipboardItems) {
+        try {
+          for (const type of clipboardItem.types) {
+            const blob = await clipboardItem.getType(type);
+            const file = new File([blob], blob.name || "clipboard" + (blob.type==='text/plain'? '.txt':''),  { type: blob.type || type });
+            mountFile(file).then(filepath => {
+              imagej.open(filepath).finally(() => {
+                cheerpjRemoveStringFile(filepath);
+              });
+            });
+          }
+        } catch (e) {
+          console.error(e, e.message);
+        }
+      }
+    }).catch((e)=>{
+      window.ij.showStatus("Failed to paste from system: " + e.toString());
     })
   }
   
