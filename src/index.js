@@ -540,10 +540,12 @@ function setupDragDropPaste(imagej) {
   );
 
   document.body.addEventListener("paste", event => {
-    event.preventDefault();
-    event.stopPropagation();
-    const paste = event.clipboardData || window.clipboardData;
-    processDataTransfer(paste.items);
+    if(event.target ===  document.getElementById("cheerpjDisplay").firstChild){
+      event.preventDefault();
+      event.stopPropagation();
+      const paste = event.clipboardData || window.clipboardData;
+      processDataTransfer(paste.items);
+    }
   });
 
   window.pasteFromSystem = () => {
