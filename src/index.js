@@ -539,8 +539,12 @@ function setupDragDropPaste(imagej) {
     false
   );
 
+  const cdisplay = document.getElementById("cheerpjDisplay");
   document.body.addEventListener("paste", event => {
-    if(event.target ===  document.getElementById("cheerpjDisplay").firstChild){
+    if (
+      event.target === cdisplay.firstChild ||
+      !cdisplay.contains(event.target)
+    ) {
       event.preventDefault();
       event.stopPropagation();
       const paste = event.clipboardData || window.clipboardData;
@@ -581,7 +585,7 @@ function setupDragDropPaste(imagej) {
   window.copyToSystem = async imp => {
     const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
     try {
-      await window.ij.showStatus("Copying to system clipboard...")
+      await window.ij.showStatus("Copying to system clipboard...");
       const blob = new Blob([
         javaBytesToArrayBuffer(await window.ij.saveAsBytes(imp, "png"))
       ]);
