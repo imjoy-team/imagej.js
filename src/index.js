@@ -445,13 +445,11 @@ async function fixMenu(imagej) {
     // }
   }
 
-  addMenuItem({
-    label: "Debug",
-    async callback() {
-      const frame = await window.ij.createPlugInFrame("test", 30, 30, 100, 100);
-      debugger;
-    }
-  });
+  // addMenuItem({
+  //   label: "Debug",
+  //   async callback() {
+  //   }
+  // });
 }
 
 function setupDragDropPaste(imagej) {
