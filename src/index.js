@@ -445,14 +445,11 @@ async function fixMenu(imagej) {
     // }
   }
 
-  // addMenuItem({label: "Debug", async callback(){
-  // const bytesIn = new Int8Array(new ArrayBuffer(30));
-  // bytesIn[0] = 33;
-  // bytesIn[2] = 99;
-  // await imagej.saveBytes(cjTypedArrayToJava(bytesIn), "/files/test.bin");
-  // const bytesOut = await imagej.openAsBytes('/files/test.bin')
-
-  // }})
+  // addMenuItem({
+  //   label: "Debug",
+  //   async callback() {
+  //   }
+  // });
 }
 
 function setupDragDropPaste(imagej) {
@@ -921,6 +918,13 @@ window.onImageJInitialized = async () => {
     ]),
     selectWindow: await cjResolveCall("ij.IJ", "selectWindow", [
       "java.lang.String"
+    ]),
+    createPlugInFrame: await cjResolveCall("ij.IJ", "createPlugInFrame", [
+      "java.lang.String",
+      "int",
+      "int",
+      "int",
+      "int"
     ]),
     getDimensions: await cjResolveCall("ij.IJ", "getDimensions", [
       "ij.ImagePlus"

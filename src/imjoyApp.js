@@ -15,44 +15,89 @@ async function startImJoy(app, imjoy) {
   imjoy.event_bus.on("plugin_loaded", p => {
     app.showMenu();
   });
-  imjoy.event_bus.on("add_window", w => {
+  let windowCount = 0;
+  imjoy.event_bus.on("add_window", async w => {
+    windowCount++;
     if (document.getElementById(w.window_id)) return;
-    if (!w.dialog && app.active_plugin) {
-      if (document.getElementById(app.active_plugin.id)) {
-        const elem = document.createElement("div");
-        elem.id = w.window_id;
-        elem.classList.add("imjoy-inline-window");
-        document.getElementById(app.active_plugin.id).appendChild(elem);
-        return;
-      }
-    }
-    app.dialogWindows.push(w);
-    app.selected_dialog_window = w;
-    if (w.fullscreen || w.standalone) app.fullscreen = true;
-    else app.fullscreen = false;
-    app.$modal.show("window-modal-dialog");
-    app.$forceUpdate();
-    w.api.show = w.show = () => {
+    if (w.dialog) {
+      app.dialogWindows.push(w);
       app.selected_dialog_window = w;
+      if (w.fullscreen || w.standalone) app.fullscreen = true;
+      else app.fullscreen = false;
       app.$modal.show("window-modal-dialog");
-      imjoy.wm.selectWindow(w);
-      w.api.emit("show");
-    };
+      app.$forceUpdate();
+      w.api.show = w.show = () => {
+        app.selected_dialog_window = w;
+        app.$modal.show("window-modal-dialog");
+        imjoy.wm.selectWindow(w);
+        w.api.emit("show");
+      };
 
-    w.api.hide = w.hide = () => {
-      if (app.selected_dialog_window === w) {
-        app.$modal.hide("window-modal-dialog");
-      }
-      w.api.emit("hide");
-    };
+      w.api.hide = w.hide = () => {
+        if (app.selected_dialog_window === w) {
+          app.$modal.hide("window-modal-dialog");
+        }
+        w.api.emit("hide");
+      };
 
-    setTimeout(() => {
-      try {
-        w.show();
-      } catch (e) {
-        console.error(e);
+      setTimeout(() => {
+        try {
+          w.show();
+        } catch (e) {
+          console.error(e);
+        }
+      }, 500);
+    } else {
+      const title = `${w.name}(#${windowCount})`;
+      let width, height;
+      if (w.fullscreen || w.standalone) {
+        width = -1;
+        height = -1;
+      } else {
+        width = w.w * 30;
+        height = w.h * 30;
       }
-    }, 500);
+      await window.ij.createPlugInFrame(title, 0, 100, width, height);
+      // find the window element by the title
+      const xpath = `//a[text()='${title}']`;
+      const matchingElement = document.evaluate(
+        xpath,
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+      ).singleNodeValue;
+      const titleBar = matchingElement.parentNode;
+      const container = titleBar.previousSibling;
+      const elem = document.createElement("div");
+      elem.id = w.window_id;
+      elem.style.marginTop = "20px";
+      elem.style.height = "100%";
+      container.appendChild(elem);
+      titleBar.addEventListener("dragstart", () => {
+        elem.style.pointerEvents = "none";
+      });
+      titleBar.addEventListener("dragend", () => {
+        elem.style.pointerEvents = "auto";
+      });
+      const observer = new MutationObserver(mutationsList => {
+        for (const mutation of mutationsList) {
+          if (mutation.type === "childList") {
+            // resizerBord div added during resizing
+            if (mutation.addedNodes.length === 1)
+              elem.style.pointerEvents = "none";
+            // resizerBord div removed after resizing
+            else if (mutation.removedNodes.length === 1)
+              elem.style.pointerEvents = "auto";
+            break;
+          }
+        }
+      });
+      // observe after the initialization
+      setTimeout(() => {
+        observer.observe(container.parentNode, { childList: true });
+      }, 100);
+    }
   });
 
   app.loadPluginByQuery();
@@ -309,7 +354,7 @@ export async function setupImJoyApp(setAPI) {
         });
       },
       showAPIDocs() {
-        this.imjoy.pm.imjoy_api.showDialog(null, {
+        this.imjoy.pm.imjoy_api.createWindow(null, {
           src: "https://imjoy.io/docs/#/api",
           passive: true
         });

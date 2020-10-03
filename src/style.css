@@ -470,3 +470,6 @@ hr.solid {
   position: absolute;
   display: inline-block;
 }
+.resizerBord {
+  color: #7d7d7d54;
+}
