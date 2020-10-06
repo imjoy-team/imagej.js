@@ -471,5 +471,17 @@ hr.solid {
   display: inline-block;
 }
 .resizerBorder {
-  color: #7d7d7d84!important;
+  color: #7d7d7d84 !important;
+}
+
+.subMenuItem.active > .subMenu {
+  display: block !important;
+}
+
+.menuItem.active > * {
+  z-index: 9999;
+}
+
+.menuBarClosing .subMenuItem > .subMenu {
+  display: none;
 }
