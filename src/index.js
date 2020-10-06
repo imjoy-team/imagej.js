@@ -781,6 +781,21 @@ function iOS() {
   );
 }
 
+function getCSSRule(search) {
+  return [].map
+    .call(document.styleSheets, function(item) {
+      return [].slice.call(item.cssRules);
+    })
+    .reduce(function(a, b) {
+      return b.concat(a);
+    })
+    .filter(function(rule) {
+      return (
+        rule.cssText.lastIndexOf(search) === rule.cssText.length - search.length
+      );
+    })[0];
+}
+
 function fixStyle() {
   if (iOS()) {
     // Create our stylesheet
