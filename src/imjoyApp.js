@@ -96,7 +96,7 @@ async function startImJoy(app, imjoy) {
       // observe after the initialization
       setTimeout(() => {
         observer.observe(container.parentNode, { childList: true });
-      }, 100);
+      }, 2000);
     }
   });
 
