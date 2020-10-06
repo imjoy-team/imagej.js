@@ -330,6 +330,15 @@ async function startImageJ() {
             )
           ) {
             handler.apply(null, [e]);
+          } else if (
+            e.target.parentNode &&
+            e.target.parentNode.classList.contains("titleBar")
+          ) {
+            e.target.style.display = "none";
+            setTimeout(() => {
+              e.target.style.display = "inline-block";
+            }, 2000);
+            handler.apply(null, [e]);
           }
         },
         options
