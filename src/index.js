@@ -5,6 +5,17 @@ import { githubUrlRaw } from "./utils.js";
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
+import { polyfill } from "mobile-drag-drop";
+
+// optional import of scroll behaviour
+import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
+
+// options are optional ;)
+polyfill({
+  // use this to make use of the scroll behaviour
+  dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride
+});
+window.addEventListener("touchmove", function() {});
 
 const isChrome = !!window.chrome;
 const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
@@ -41,11 +52,46 @@ window.onEditorTextChanged = () => {
 // setup a hook for fixing mobile touch event
 const _createElement = document.createElement;
 
+let lastMenus = [];
+function switchMenu(menu) {
+  if (menu) {
+    menu.classList.add("active");
+    if (lastMenus.length > 0) {
+      let i = lastMenus.length;
+      while (i--) {
+        if (!lastMenus[i].contains(menu)) {
+          lastMenus[i].classList.remove("active");
+          lastMenus.splice(i, 1);
+        }
+      }
+    }
+    lastMenus.push(menu);
+  } else {
+    if (lastMenus.length > 0) {
+      for (let m of lastMenus) {
+        m.classList.remove("active");
+      }
+      lastMenus = [];
+    }
+  }
+}
+
 function touchClick(ev) {
   ev.target.click();
   ev.preventDefault();
-  if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName))
+  if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName)) {
     ev.stopPropagation();
+  } else if (ev.target.tagName === "LABEL") {
+    const menu = ev.target.parentNode.parentNode;
+    if (menu && menu.classList.contains("subMenuItem")) {
+      switchMenu(menu);
+    } else {
+      switchMenu(null);
+    }
+    ev.stopPropagation();
+  } else {
+    switchMenu(null);
+  }
 }
 
 function replaceTextArea(elm) {
@@ -244,7 +290,6 @@ async function startImageJ() {
   elm.addEventListener = (event, handler, options) => {
     if (
       event === "dblclick" ||
-      event === "drag" ||
       event.startsWith("mouse") ||
       event === "wheel" ||
       event === "contextmenu"
@@ -261,6 +306,33 @@ async function startImageJ() {
             handler.apply(null, [e]);
           }
         }
+      ]);
+    } else if (event.startsWith("drag")) {
+      _addEL.apply(elm, [
+        event,
+        e => {
+          // fix for mobile
+          if (e.dataTransfer) e.dataTransfer.items = e.dataTransfer.items || [];
+          handler.apply(null, [e]);
+        },
+        options
+      ]);
+    } else if (event.startsWith("touch")) {
+      _addEL.apply(elm, [
+        event,
+        e => {
+          // skip for menubar
+          if (
+            !e.target.classList.contains("titleBar") &&
+            !(
+              e.target.parentNode &&
+              e.target.parentNode.classList.contains("titleBar")
+            )
+          ) {
+            handler.apply(null, [e]);
+          }
+        },
+        options
       ]);
     } else {
       _addEL.apply(elm, [event, handler, options]);
@@ -456,6 +528,7 @@ function setupDragDropPaste(imagej) {
   const appContainer = document.getElementById("imagej-container");
   const dragOverlay = document.getElementById("drag-overlay");
   function processDataTransfer(items) {
+    if (!items) return;
     const processed = [];
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -764,12 +837,6 @@ function touchHandler(event) {
 }
 
 function fixTouch() {
-  const titleBar = document.querySelector(".titleBar");
-  titleBar.addEventListener("touchstart", touchHandler, true);
-  titleBar.addEventListener("touchmove", touchHandler, true);
-  titleBar.addEventListener("touchend", touchHandler, true);
-  titleBar.addEventListener("touchcancel", touchHandler, true);
-
   const menus = document.querySelectorAll(".subMenuItem");
   for (let menu of menus) {
     menu.removeEventListener("touchstart", touchClick);
