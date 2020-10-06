@@ -475,13 +475,17 @@ hr.solid {
 }
 
 .subMenuItem.active > .subMenu {
-  display: block !important;
+  display: block;
 }
 
 .menuItem.active > * {
   z-index: 9999;
 }
 
-.menuBarClosing .subMenuItem > .subMenu {
-  display: none;
+.menuBarClosing .subMenuItem:hover > .subMenu {
+  display: block !important;
+}
+
+.menuBarClosing .subMenuItem.active > .subMenu {
+  display: block !important;
 }
