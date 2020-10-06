@@ -312,7 +312,8 @@ async function startImageJ() {
         event,
         e => {
           // fix for mobile
-          if (e.dataTransfer) e.dataTransfer.items = e.dataTransfer.items || [];
+          if (e.dataTransfer && !e.dataTransfer.items)
+            e.dataTransfer.items = [];
           handler.apply(null, [e]);
         },
         options
