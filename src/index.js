@@ -81,6 +81,7 @@ function touchClick(ev) {
   ev.preventDefault();
   if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName)) {
     ev.stopPropagation();
+    switchMenu(null);
   } else if (ev.target.tagName === "LABEL") {
     const menu = ev.target.parentNode.parentNode;
     if (menu && menu.classList.contains("subMenuItem")) {
@@ -304,6 +305,8 @@ async function startImageJ() {
             e.target.getAttribute("role") !== "presentation"
           ) {
             handler.apply(null, [e]);
+          } else {
+            switchMenu(null);
           }
         }
       ]);
@@ -1058,9 +1061,23 @@ window.onImageJInitialized = async () => {
   console.timeEnd("Loading ImageJ.JS");
 };
 
+function updateViewPort() {
+  const mvp = document.getElementById("index-viewport");
+  if (screen.width < 400) {
+    mvp.setAttribute("content", "user-scalable=no,width=400");
+  } else {
+    mvp.setAttribute(
+      "content",
+      "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    );
+  }
+}
+
 document.addEventListener(
   "DOMContentLoaded",
   function() {
+    updateViewPort();
+    window.addEventListener("resize", updateViewPort);
     registerServiceWorker();
     fixHeight();
     fixStyle();
