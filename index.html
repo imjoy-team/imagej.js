@@ -160,13 +160,19 @@
       src="https://www.googletagmanager.com/gtag/js?id=UA-134837258-3"
     ></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
+      const dnt =
+        navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      if (dnt != "1" && dnt != "yes") {
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
 
-      gtag("config", "UA-134837258-3");
+        gtag("config", "UA-134837258-3");
+      } else {
+        console.debug("Respecting Do-Not-Track, not loading analytics.");
+      }
     </script>
   <script type="text/javascript" src="index.js"></script></body>
 </html>
