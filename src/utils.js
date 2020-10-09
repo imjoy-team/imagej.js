@@ -186,3 +186,21 @@ export async function githubUrlRaw(url, extFilter) {
     regStr
   );
 }
+
+export async function convertZenodoFileUrl(url) {
+  const myRegexp = /https?:\/\/zenodo.org\/record\/([a-zA-Z0-9-]+)\/files\/(.*)/g;
+  const match = myRegexp.exec(url);
+  if (!match || match.length !== 3) {
+    throw new Error("Invalid zenodo url");
+  }
+  const [fullUrl, depositId, fileName] = match;
+  const blob = await fetch(
+    `https://zenodo.org/api/records/${depositId}`
+  ).then(r => r.blob());
+  const data = JSON.parse(await new Response(blob).text());
+  const fn = fileName.split("?")[0];
+  const fileObj = data.files.filter(file => {
+    return file.key === fn;
+  })[0];
+  return fileObj.links.self;
+}

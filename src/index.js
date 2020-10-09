@@ -1,6 +1,6 @@
 import { setupImJoyApp } from "./imjoyApp.js";
 import { setupImJoyAPI } from "./imjoyAPI.js";
-import { githubUrlRaw } from "./utils.js";
+import { githubUrlRaw, convertZenodoFileUrl } from "./utils.js";
 
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
@@ -885,10 +885,15 @@ async function loadContentFromUrl(imagej, url) {
       pos: "bottom-left"
     });
     // convert to raw if we can
-    const tmp =
-      (await githubUrlRaw(url, ".ijm")) ||
-      (await githubUrlRaw(url, ".imjoy.html"));
-    url = tmp || url;
+    if (url.includes("//zenodo.org/record")) {
+      url = await convertZenodoFileUrl(url);
+    } else {
+      const tmp =
+        (await githubUrlRaw(url, ".ijm")) ||
+        (await githubUrlRaw(url, ".imjoy.html"));
+      url = tmp || url;
+    }
+
     await imagej.open(url);
     Snackbar.show({
       text: "Successfully opened " + url,
@@ -920,9 +925,15 @@ async function processUrlParameters(imagej) {
           text: "Fetching and running macro from: " + url,
           pos: "bottom-left"
         });
-        // convert to raw if we can
-        const tmp = await githubUrlRaw(url, ".ijm");
-        url = tmp || url;
+        if (url.includes("//zenodo.org/record")) {
+          url = await convertZenodoFileUrl(url);
+          if (!url.endsWith(".ijm")) throw new Error("not an imagej macro");
+        } else {
+          // convert to raw if we can
+          const tmp = await githubUrlRaw(url, ".ijm");
+          url = tmp || url;
+        }
+
         const blob = await fetch(url).then(r => r.blob());
         const macro = await new Response(blob).text();
         await imagej.runMacro(macro, "");
