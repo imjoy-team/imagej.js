@@ -26,6 +26,8 @@ If you want to use two options `open` and `run`, then use `&` to connect them: `
 
 You can also use multple times the same option, for example open multiple `open`, you just need to connect them with `&` as the above example.
 
+**Note for the URL**: not every url can be loaded into ImageJ.JS, it must be starts with `https` and the site should have [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) enabled. In general you can load files from Github repository,  [Gist](https://gist.github.com/) and [Zenodo](https://zenodo.org/). Typically, Github or Gist is suitable for storing macro files or small test images, if you have large images Zenodo is recommended.
+
 ### Example usage: sharing macro via Github/Gist
 If you made a ImageJ macro that you want to share, you can store them in your project repo on Github, or simply go to Gist(https://gist.github.com), paste it and get the URL. For example, we stored a demo macro here: https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac. Note: set the file extension as `.ijm`.
 
