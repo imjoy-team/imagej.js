@@ -88,7 +88,7 @@ function switchMenu(menu) {
 function touchClick(ev) {
   ev.target.click();
   ev.preventDefault();
-  if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName)) {
+  if (["UL", "LI", "BUTTON", "A"].includes(ev.target.tagName)) {
     ev.stopPropagation();
     switchMenu(null);
   } else if (ev.target.tagName === "LABEL") {
