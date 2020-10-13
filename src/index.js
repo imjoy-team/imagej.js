@@ -10,12 +10,21 @@ import { polyfill } from "mobile-drag-drop";
 // optional import of scroll behaviour
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
 
-// options are optional ;)
-polyfill({
-  // use this to make use of the scroll behaviour
-  dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride
+const ua = window.navigator.userAgent.toLowerCase();
+const isiPad =
+  ua.indexOf("ipad") > -1 ||
+  (ua.indexOf("macintosh") > -1 && "ontouchend" in document);
+const usePolyfill = polyfill({
+  forceApply: isiPad, // force apply for ipad
+  dragImageTranslateOverride:
+    scrollBehaviourDragImageTranslateOverride || isiPad
 });
-window.addEventListener("touchmove", function() {});
+
+// https://github.com/timruffles/mobile-drag-drop/issues/152
+if (usePolyfill) {
+  document.addEventListener("dragenter", event => event.preventDefault());
+  window.addEventListener("touchmove", () => {}, { passive: false });
+}
 
 const isChrome = !!window.chrome;
 const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
