@@ -95,6 +95,10 @@ const config = (env, argv) => ({
           handler: 'NetworkFirst'
         }, 
         {
+          urlPattern: new RegExp('/ij211/.*'),
+          handler: 'NetworkFirst'
+        },
+        {
           // debugging
           urlPattern: new RegExp('/sockjs-node.*'),
           handler: 'NetworkOnly'

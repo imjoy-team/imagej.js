@@ -283,7 +283,7 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
 
 const downloadQueue = {};
 
-async function startImageJ() {
+async function startImageJ(version) {
   loader.style.display = "block";
   let preload = localStorage.getItem("cheepjPreload");
   if (preload) preload = JSON.parse(preload);
@@ -361,7 +361,12 @@ async function startImageJ() {
       _addEL.apply(elm, [event, handler, options]);
     }
   };
-  cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53e.jar");
+  if(version === '2'){
+    cheerpjRunMain("net.imagej.Main", "/app/ij211/imagej2-cheerpj-0-SNAPSHOT-all.jar");
+  }
+  else{
+    cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53e.jar");
+  }
 }
 
 async function listFiles(imagej, path) {
@@ -1118,7 +1123,15 @@ document.addEventListener(
     fixHeight();
     fixStyle();
     console.time("Loading ImageJ.JS");
-    startImageJ();
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    window.ij_version = urlParams.get('version');
+    startImageJ(window.ij_version)
+    if(window.ij_version === '2'){
+      // setTimeout(window.onImageJInitialized, 5000);
+      loader.style.display = "none";
+    }
   },
   false
 );
