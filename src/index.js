@@ -105,74 +105,74 @@ function touchClick(ev) {
   }
 }
 
-function replaceTextArea(elm) {
-  const editorDiv = _createElement.call(document, "DIV");
-  editorDiv.setAttribute("style", elm.getAttribute("style"));
-  editorDiv.style["z-index"] = 0;
-  const myCodeMirror = CodeMirror(editorDiv, {
-    value: elm.value,
-    mode: {
-      name: "htmlmixed",
-      tags: {
-        docs: [[null, null, "markdown"]],
-        config: [
-          ["lang", /^json$/, "javascript"],
-          ["lang", /^yaml$/, "yaml"],
-          [null, null, "javascript"]
-        ],
-        script: [
-          ["lang", /^python$/, "python"],
-          [null, null, "javascript"]
-        ]
-      }
-    },
-    lineNumbers: false,
-    matchBrackets: true
-    // lint: true,
-    // gutters: ["CodeMirror-lint-markers"],
-  });
-  const bbox = elm.getBoundingClientRect();
-  myCodeMirror.setSize(bbox.width - 8, bbox.height - 7);
-  setTimeout(function() {
-    myCodeMirror.refresh();
-  }, 1);
-  elm.parentNode.appendChild(editorDiv);
-  elm.id =
-    "_" +
-    Math.random()
-      .toString(36)
-      .substr(2, 9);
-  codeEditors[elm.id] = myCodeMirror;
-  myCodeMirror.on("change", () => {
-    elm.value = myCodeMirror.getValue();
-    const event = new Event("input", {
-      bubbles: true,
-      cancelable: true
-    });
-    elm.dispatchEvent(event);
-  });
-}
+// function replaceTextArea(elm) {
+//   const editorDiv = _createElement.call(document, "DIV");
+//   editorDiv.setAttribute("style", elm.getAttribute("style"));
+//   editorDiv.style["z-index"] = 0;
+//   const myCodeMirror = CodeMirror(editorDiv, {
+//     value: elm.value,
+//     mode: {
+//       name: "htmlmixed",
+//       tags: {
+//         docs: [[null, null, "markdown"]],
+//         config: [
+//           ["lang", /^json$/, "javascript"],
+//           ["lang", /^yaml$/, "yaml"],
+//           [null, null, "javascript"]
+//         ],
+//         script: [
+//           ["lang", /^python$/, "python"],
+//           [null, null, "javascript"]
+//         ]
+//       }
+//     },
+//     lineNumbers: false,
+//     matchBrackets: true
+//     // lint: true,
+//     // gutters: ["CodeMirror-lint-markers"],
+//   });
+//   const bbox = elm.getBoundingClientRect();
+//   myCodeMirror.setSize(bbox.width - 8, bbox.height - 7);
+//   setTimeout(function() {
+//     myCodeMirror.refresh();
+//   }, 1);
+//   elm.parentNode.appendChild(editorDiv);
+//   elm.id =
+//     "_" +
+//     Math.random()
+//       .toString(36)
+//       .substr(2, 9);
+//   codeEditors[elm.id] = myCodeMirror;
+//   myCodeMirror.on("change", () => {
+//     elm.value = myCodeMirror.getValue();
+//     const event = new Event("input", {
+//       bubbles: true,
+//       cancelable: true
+//     });
+//     elm.dispatchEvent(event);
+//   });
+// }
 
 document.createElement = function(type) {
   const elm = _createElement.call(document, type);
   elm.addEventListener("touchstart", touchClick, false);
-  if (elm.nodeName === "TEXTAREA") {
-    function tryReplace() {
-      if (!document.contains(elm)) {
-        setTimeout(tryReplace, 200);
-        return;
-      }
-      // only apply to textarea in a window
-      if (elm.parentNode.nextSibling.classList[0] === "titleBar") {
-        if (elm.style.display === "none") setTimeout(tryReplace, 200);
-        else if (
-          elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")
-        )
-          replaceTextArea(elm);
-      }
-    }
-    setTimeout(tryReplace, 200);
-  }
+//   if (elm.nodeName === "TEXTAREA") {
+//     function tryReplace() {
+//       if (!document.contains(elm)) {
+//         setTimeout(tryReplace, 200);
+//         return;
+//       }
+//       // only apply to textarea in a window
+//       if (elm.parentNode.nextSibling.classList[0] === "titleBar") {
+//         if (elm.style.display === "none") setTimeout(tryReplace, 200);
+//         else if (
+//           elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")
+//         )
+//           replaceTextArea(elm);
+//       }
+//     }
+//     setTimeout(tryReplace, 200);
+//   }
   return elm;
 };
 
@@ -297,70 +297,70 @@ async function startImageJ() {
   });
   const appContainer = document.getElementById("imagej-container");
   const elm = cheerpjCreateDisplay(-1, -1, appContainer);
-  const _addEL = elm.addEventListener;
-  elm.addEventListener = (event, handler, options) => {
-    if (
-      event === "dblclick" ||
-      event.startsWith("mouse") ||
-      event === "wheel" ||
-      event === "contextmenu"
-    ) {
-      _addEL.apply(elm, [
-        event,
-        e => {
-          // skip handling mouse events for the cheerpj display and textarea elements
-          if (
-            e.target !== elm &&
-            e.target.nodeName !== "TEXTAREA" &&
-            e.target.getAttribute("role") !== "presentation"
-          ) {
-            handler.apply(null, [e]);
-          } else {
-            switchMenu(null);
-          }
-        }
-      ]);
-    } else if (event.startsWith("drag")) {
-      _addEL.apply(elm, [
-        event,
-        e => {
-          // fix for mobile
-          if (e.dataTransfer && !e.dataTransfer.items)
-            e.dataTransfer.items = [];
-          handler.apply(null, [e]);
-        },
-        options
-      ]);
-    } else if (event.startsWith("touch")) {
-      _addEL.apply(elm, [
-        event,
-        e => {
-          // skip for menubar
-          if (
-            !e.target.classList.contains("titleBar") &&
-            !(
-              e.target.parentNode &&
-              e.target.parentNode.classList.contains("titleBar")
-            )
-          ) {
-            handler.apply(null, [e]);
-          } else if (
-            e.target.parentNode &&
-            e.target.parentNode.classList.contains("titleBar")
-          ) {
-            e.target.style.display = "none";
-            setTimeout(() => {
-              e.target.style.display = "inline-block";
-            }, 2000);
-            handler.apply(null, [e]);
-          }
-        },
-        options
-      ]);
-    } else {
-      _addEL.apply(elm, [event, handler, options]);
-    }
-  };
+  // const _addEL = elm.addEventListener;
+  // elm.addEventListener = (event, handler, options) => {
+  //   if (
+  //     event === "dblclick" ||
+  //     event.startsWith("mouse") ||
+  //     event === "wheel" ||
+  //     event === "contextmenu"
+  //   ) {
+  //     _addEL.apply(elm, [
+  //       event,
+  //       e => {
+  //         // skip handling mouse events for the cheerpj display and textarea elements
+  //         if (
+  //           e.target !== elm &&
+  //           e.target.nodeName !== "TEXTAREA" &&
+  //           e.target.getAttribute("role") !== "presentation"
+  //         ) {
+  //           handler.apply(null, [e]);
+  //         } else {
+  //           switchMenu(null);
+  //         }
+  //       }
+  //     ]);
+  //   } else if (event.startsWith("drag")) {
+  //     _addEL.apply(elm, [
+  //       event,
+  //       e => {
+  //         // fix for mobile
+  //         if (e.dataTransfer && !e.dataTransfer.items)
+  //           e.dataTransfer.items = [];
+  //         handler.apply(null, [e]);
+  //       },
+  //       options
+  //     ]);
+  //   } else if (event.startsWith("touch")) {
+  //     _addEL.apply(elm, [
+  //       event,
+  //       e => {
+  //         // skip for menubar
+  //         if (
+  //           !e.target.classList.contains("titleBar") &&
+  //           !(
+  //             e.target.parentNode &&
+  //             e.target.parentNode.classList.contains("titleBar")
+  //           )
+  //         ) {
+  //           handler.apply(null, [e]);
+  //         } else if (
+  //           e.target.parentNode &&
+  //           e.target.parentNode.classList.contains("titleBar")
+  //         ) {
+  //           e.target.style.display = "none";
+  //           setTimeout(() => {
+  //             e.target.style.display = "inline-block";
+  //           }, 2000);
+  //           handler.apply(null, [e]);
+  //         }
+  //       },
+  //       options
+  //     ]);
+  //   } else {
+  //     _addEL.apply(elm, [event, handler, options]);
+  //   }
+  // };
   cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53e.jar");
 }
 
@@ -1061,8 +1061,8 @@ window.onImageJInitialized = async () => {
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
   };
   window.ij = imagej;
-  setupDragDropPaste(imagej);
-  fixMenu(imagej);
+  // setupDragDropPaste(imagej);
+  // fixMenu(imagej);
   fixTouch();
 
   function setAPI(core_api) {
@@ -1081,7 +1081,7 @@ window.onImageJInitialized = async () => {
   if (window.self !== window.top) {
     setAPI(null);
   } else {
-    setupImJoyApp(setAPI);
+    // setupImJoyApp(setAPI);
   }
 
   processUrlParameters(imagej);
@@ -1115,8 +1115,8 @@ document.addEventListener(
     updateViewPort();
     window.addEventListener("resize", updateViewPort);
     registerServiceWorker();
-    fixHeight();
-    fixStyle();
+    // fixHeight();
+    // fixStyle();
     console.time("Loading ImageJ.JS");
     startImageJ();
   },
