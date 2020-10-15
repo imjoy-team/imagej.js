@@ -5,26 +5,26 @@ import { githubUrlRaw, convertZenodoFileUrl } from "./utils.js";
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
-import { polyfill } from "mobile-drag-drop";
+// import { polyfill } from "mobile-drag-drop";
 
 // optional import of scroll behaviour
-import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
+// import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
 
-const ua = window.navigator.userAgent.toLowerCase();
-const isiPad =
-  ua.indexOf("ipad") > -1 ||
-  (ua.indexOf("macintosh") > -1 && "ontouchend" in document);
-const usePolyfill = polyfill({
-  forceApply: isiPad, // force apply for ipad
-  dragImageTranslateOverride:
-    scrollBehaviourDragImageTranslateOverride || isiPad
-});
+// const ua = window.navigator.userAgent.toLowerCase();
+// const isiPad =
+//   ua.indexOf("ipad") > -1 ||
+//   (ua.indexOf("macintosh") > -1 && "ontouchend" in document);
+// const usePolyfill = polyfill({
+//   forceApply: isiPad, // force apply for ipad
+//   dragImageTranslateOverride:
+//     scrollBehaviourDragImageTranslateOverride || isiPad
+// });
 
-// https://github.com/timruffles/mobile-drag-drop/issues/152
-if (usePolyfill) {
-  document.addEventListener("dragenter", event => event.preventDefault());
-  window.addEventListener("touchmove", () => {}, { passive: false });
-}
+// // https://github.com/timruffles/mobile-drag-drop/issues/152
+// if (usePolyfill) {
+//   document.addEventListener("dragenter", event => event.preventDefault());
+//   window.addEventListener("touchmove", () => {}, { passive: false });
+// }
 
 const isChrome = !!window.chrome;
 const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
@@ -85,25 +85,25 @@ function switchMenu(menu) {
   }
 }
 
-function touchClick(ev) {
-  ev.target.focus();
-  ev.target.click();
-  ev.preventDefault();
-  if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName)) {
-    ev.stopPropagation();
-    switchMenu(null);
-  } else if (ev.target.tagName === "LABEL") {
-    const menu = ev.target.parentNode.parentNode;
-    if (menu && menu.classList.contains("subMenuItem")) {
-      switchMenu(menu);
-    } else {
-      switchMenu(null);
-    }
-    ev.stopPropagation();
-  } else {
-    switchMenu(null);
-  }
-}
+// function touchClick(ev) {
+//   ev.target.focus();
+//   ev.target.click();
+//   ev.preventDefault();
+//   if (["UL", "LI", "BUTTON", "INPUT", "A"].includes(ev.target.tagName)) {
+//     ev.stopPropagation();
+//     switchMenu(null);
+//   } else if (ev.target.tagName === "LABEL") {
+//     const menu = ev.target.parentNode.parentNode;
+//     if (menu && menu.classList.contains("subMenuItem")) {
+//       switchMenu(menu);
+//     } else {
+//       switchMenu(null);
+//     }
+//     ev.stopPropagation();
+//   } else {
+//     switchMenu(null);
+//   }
+// }
 
 // function replaceTextArea(elm) {
 //   const editorDiv = _createElement.call(document, "DIV");
@@ -153,9 +153,9 @@ function touchClick(ev) {
 //   });
 // }
 
-document.createElement = function(type) {
-  const elm = _createElement.call(document, type);
-  elm.addEventListener("touchstart", touchClick, false);
+// document.createElement = function(type) {
+//   const elm = _createElement.call(document, type);
+//   elm.addEventListener("touchstart", touchClick, false);
 //   if (elm.nodeName === "TEXTAREA") {
 //     function tryReplace() {
 //       if (!document.contains(elm)) {
@@ -173,8 +173,8 @@ document.createElement = function(type) {
 //     }
 //     setTimeout(tryReplace, 200);
 //   }
-  return elm;
-};
+//   return elm;
+// };
 
 window.debug = async message => {
   console.log(message);
@@ -1063,7 +1063,7 @@ window.onImageJInitialized = async () => {
   window.ij = imagej;
   // setupDragDropPaste(imagej);
   // fixMenu(imagej);
-  fixTouch();
+  // fixTouch();
 
   function setAPI(core_api) {
     setupImJoyAPI(
