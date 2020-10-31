@@ -1,8 +1,8 @@
-Fast_Filters$1.class
-Hill_Shade.class
-Fast_Filters.class
 Enhance_Local_Contrast.class
-Floyd_Steinberg_Dithering.class
-Color_Transformer.class
-Fit_Polynomial.class
 Mexican_Hat_Filter.class
+Floyd_Steinberg_Dithering.class
+Fit_Polynomial.class
+Fast_Filters$1.class
+Color_Transformer.class
+Fast_Filters.class
+Hill_Shade.class
