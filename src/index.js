@@ -105,13 +105,10 @@ function touchClick(ev) {
   }
 }
 
-function replaceTextArea(elm) {
-  const editorDiv = _createElement.call(document, "DIV");
-  editorDiv.setAttribute("style", elm.getAttribute("style"));
-  editorDiv.style["z-index"] = 0;
-  const myCodeMirror = CodeMirror(editorDiv, {
-    value: elm.value,
-    mode: {
+function replaceTextArea(elm, fileName) {
+  let mode;
+  if (fileName.endsWith(".imjoy.html")) {
+    mode = {
       name: "htmlmixed",
       tags: {
         docs: [[null, null, "markdown"]],
@@ -125,11 +122,30 @@ function replaceTextArea(elm) {
           [null, null, "javascript"]
         ]
       }
-    },
+    };
+  } else if (
+    fileName.endsWith(".ijm") ||
+    fileName.endsWith(".js") ||
+    fileName.endsWith(".txt")
+  ) {
+    mode = {
+      name: "javascript"
+    };
+  } else if (fileName.endsWith(".py")) {
+    mode = {
+      name: "python"
+    };
+  } else {
+    return;
+  }
+  const editorDiv = _createElement.call(document, "DIV");
+  editorDiv.setAttribute("style", elm.getAttribute("style"));
+  editorDiv.style["z-index"] = 0;
+  const myCodeMirror = CodeMirror(editorDiv, {
+    value: elm.value,
+    mode,
     lineNumbers: false,
     matchBrackets: true
-    // lint: true,
-    // gutters: ["CodeMirror-lint-markers"],
   });
   const bbox = elm.getBoundingClientRect();
   myCodeMirror.setSize(bbox.width - 8, bbox.height - 7);
@@ -165,10 +181,11 @@ document.createElement = function(type) {
       // only apply to textarea in a window
       if (elm.parentNode.nextSibling.classList[0] === "titleBar") {
         if (elm.style.display === "none") setTimeout(tryReplace, 200);
-        else if (
-          elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")
-        )
-          replaceTextArea(elm);
+        else
+          replaceTextArea(
+            elm,
+            elm.parentNode.nextSibling.children[0].innerText
+          );
       }
     }
     setTimeout(tryReplace, 200);
