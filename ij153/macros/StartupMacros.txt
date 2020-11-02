@@ -5,6 +5,7 @@
 
 // The "AutoRun" macro has been replaced by the Edit>Options>Startup command.
 
+  macro "Command Finder Built-in Tool" {}
   macro "Developer Menu Built-in Tool" {}
   macro "Brush Built-in Tool" {}
   macro "Flood Filler Built-in Tool" {}
