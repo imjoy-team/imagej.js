@@ -1,5 +1,8 @@
 import Snackbar from "node-snackbar/dist/snackbar";
 
+const builtinPlugins = [
+  "https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html"
+];
 async function startImJoy(app, imjoy) {
   await imjoy.start();
   imjoy.event_bus.on("show_message", msg => {
@@ -13,7 +16,7 @@ async function startImJoy(app, imjoy) {
     app.$forceUpdate();
   });
   imjoy.event_bus.on("plugin_loaded", p => {
-    app.showMenu();
+    if (!builtinPlugins.includes(p.config.origin)) app.showMenu();
   });
   let windowCount = 0;
   imjoy.event_bus.on("add_window", async w => {
@@ -99,7 +102,10 @@ async function startImJoy(app, imjoy) {
       }, 2000);
     }
   });
-
+  // load built-in plugins
+  for (const p of builtinPlugins) {
+    app.loadPlugin(p);
+  }
   app.loadPluginByQuery();
   window.runImJoyPlugin = code => {
     loader.style.display = "block";
@@ -419,9 +425,10 @@ export async function setupImJoyApp(setAPI) {
           })
           .then(async plugin => {
             this.plugins[plugin.name] = plugin;
-            this.showMessage(
-              `Plugin ${plugin.name} successfully loaded, you can now run it from the ImJoy plugin menu.`
-            );
+            if (!builtinPlugins.includes(plugin.config.origin))
+              this.showMessage(
+                `Plugin ${plugin.name} successfully loaded, you can now run it from the ImJoy plugin menu.`
+              );
             this.$forceUpdate();
           })
           .catch(e => {
