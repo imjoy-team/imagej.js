@@ -293,6 +293,7 @@ async function startImageJ() {
     enableInputMethods: true,
     clipboardMode: "java",
     enablePreciseClassLoaders: true,
+    disableErrorReporting: true,
     javaProperties: ["user.dir=/files", "plugins.dir=/app/ij153/plugins"]
   });
   const appContainer = document.getElementById("imagej-container");
