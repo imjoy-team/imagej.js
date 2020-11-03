@@ -238,8 +238,8 @@ function promisify_functions(obj, bind) {
   for (let k in obj) {
     if (typeof obj[k] === "function") {
       // make sure it returns a promise
-      const func = obj[k];
-      if (bind) func.bind(null, bind);
+      let func = obj[k];
+      if (bind) func = func.bind(null, bind);
       if (func.constructor.name !== "AsyncFunction") {
         ret[k] = function(...args) {
           return Promise.resolve(func(...args));
@@ -301,8 +301,11 @@ export async function setupImJoyApp(setAPI) {
                 config.name === "ImageJ.JS" ||
                 config.type === "ImageJ.JS"
               ) {
+                if (config === "ImageJ.JS") {
+                  config = { name: "ImageJ.JS", type: "ImageJ.JS" };
+                }
                 const api = Object.assign({}, imjoy.pm.imjoy_api);
-                api.export = service_api => {
+                api.export = (_plugin, service_api) => {
                   resolve(promisify_functions(service_api));
                 };
                 api.registerCodec = () => {
@@ -451,8 +454,10 @@ export async function setupImJoyApp(setAPI) {
         this.$modal.show("window-modal-dialog");
       },
       closeWindow(w) {
-        this.selected_dialog_window = null;
-        this.$modal.hide("window-modal-dialog");
+        if (this.selected_dialog_window === w) {
+          this.selected_dialog_window = null;
+          this.$modal.hide("window-modal-dialog");
+        }
         const idx = this.dialogWindows.indexOf(w);
         if (idx >= 0) this.dialogWindows.splice(idx, 1);
       },

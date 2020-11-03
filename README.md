@@ -194,6 +194,37 @@ ImageJ.JS takes 14.20s, ImageJ takes 2.40s.
 
 We are currently investigating ways to compile plugins in advance to boost the performance.
 
+## ImageJ.JS badges
+
+If you use ImageJ.JS in your project, it is recommended to add one of our ImageJ.JS badge to your project repository (e.g. on Github) or website. We have two official badges: ![launch ImageJ.JS](https://ij.imjoy.io/static/assets/badge/launch-imagej-js-badge.svg) and ![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg).
+
+For starting ImageJ.JS (e.g. with preloaded macro or image), you can use the ![launch ImageJ.JS](https://ij.imjoy.io/static/assets/badge/launch-imagej-js-badge.svg) badge.
+
+Markdown:
+```
+[![launch ImageJ.JS](https://ij.imjoy.io/static/assets/badge/launch-imagej-js-badge.svg)](https://ij.imjoy.io)
+```
+
+reStructuredText:
+```
+.. image:: https://ij.imjoy.io/static/assets/badge/launch-imagej-js-badge.svg
+ :target: https://ij.imjoy.io
+```
+
+For opening images or macro, you can use the ![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg) badge.
+
+
+Markdown:
+```
+[![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg)](https://ij.imjoy.io/?open=YOUR_IMAGE_URL)
+```
+
+reStructuredText:
+```
+.. image:: https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg
+ :target: https://ij.imjoy.io/?open=YOUR_IMAGE_URL
+```
+
 
 ## Development
 
