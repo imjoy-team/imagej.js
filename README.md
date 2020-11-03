@@ -28,6 +28,39 @@ You can also use multple times the same option, for example open multiple `open`
 
 **Note for the URL**: not every url can be loaded into ImageJ.JS, it must be starts with `https` and the site should have [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) enabled. In general you can load files from Github repository,  [Gist](https://gist.github.com/) and [Zenodo](https://zenodo.org/). Typically, Github or Gist is suitable for storing macro files or small test images, if you have large images Zenodo is recommended.
 
+
+## ImageJ.JS badges
+
+If you use ImageJ.JS in your project, it is recommended to add one of our ImageJ.JS badge to your project repository (e.g. on Github) or website. We have two official badges: ![launch ImageJ.JS](https://ij.imjoy.io/assets/badge/launch-imagej-js-badge.svg) and ![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg). A typical use case is to use the badges with the custom ImageJ.JS URL in a Github repo.
+
+For starting ImageJ.JS (e.g. with preloaded macro or image), you can use the ![launch ImageJ.JS](https://ij.imjoy.io/assets/badge/launch-imagej-js-badge.svg) badge.
+
+Markdown:
+```
+[![launch ImageJ.JS](https://ij.imjoy.io/assets/badge/launch-imagej-js-badge.svg)](https://ij.imjoy.io)
+```
+
+reStructuredText:
+```
+.. image:: https://ij.imjoy.io/assets/badge/launch-imagej-js-badge.svg
+ :target: https://ij.imjoy.io
+```
+
+For opening images or macro, you can use the ![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg) badge.
+
+
+Markdown:
+```
+[![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg)](https://ij.imjoy.io/?open=YOUR_IMAGE_URL)
+```
+
+reStructuredText:
+```
+.. image:: https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg
+ :target: https://ij.imjoy.io/?open=YOUR_IMAGE_URL
+```
+
+
 ### Example usage: sharing macro via Github/Gist
 If you made a ImageJ macro that you want to share, you can store them in your project repo on Github, or simply go to Gist(https://gist.github.com), paste it and get the URL. For example, we stored a demo macro here: https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac. Note: set the file extension as `.ijm`.
 
@@ -193,37 +226,6 @@ print("done")
 ImageJ.JS takes 14.20s, ImageJ takes 2.40s.
 
 We are currently investigating ways to compile plugins in advance to boost the performance.
-
-## ImageJ.JS badges
-
-If you use ImageJ.JS in your project, it is recommended to add one of our ImageJ.JS badge to your project repository (e.g. on Github) or website. We have two official badges: ![launch ImageJ.JS](https://ij.imjoy.io/static/assets/badge/launch-imagej-js-badge.svg) and ![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg).
-
-For starting ImageJ.JS (e.g. with preloaded macro or image), you can use the ![launch ImageJ.JS](https://ij.imjoy.io/static/assets/badge/launch-imagej-js-badge.svg) badge.
-
-Markdown:
-```
-[![launch ImageJ.JS](https://ij.imjoy.io/static/assets/badge/launch-imagej-js-badge.svg)](https://ij.imjoy.io)
-```
-
-reStructuredText:
-```
-.. image:: https://ij.imjoy.io/static/assets/badge/launch-imagej-js-badge.svg
- :target: https://ij.imjoy.io
-```
-
-For opening images or macro, you can use the ![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg) badge.
-
-
-Markdown:
-```
-[![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg)](https://ij.imjoy.io/?open=YOUR_IMAGE_URL)
-```
-
-reStructuredText:
-```
-.. image:: https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg
- :target: https://ij.imjoy.io/?open=YOUR_IMAGE_URL
-```
 
 
 ## Development
