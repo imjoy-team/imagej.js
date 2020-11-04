@@ -104,7 +104,26 @@ img = await ij.getImage("ndarray")
 ```
 Optionally, you can specify it as "tiff", "png", "jpeg", "gif", "zip", "raw", "avi", "bmp", "fits", "pgm", "text image", "lut", "selection", "measurements", "xy Coordinates" or "text".
 
-For a stack, `format` can be set as an object with keys: `channel`, `slice`, `frame` (the values are one-based indexes), otherwise it will return the data of the current slice. 
+For a stack, `format` can be set as an object with keys: `channel`, `slice`, `frame` (the values are one-based indexes), otherwise it will return the data of the current slice. If you want to get whole image with all the dimensions, pass `{"all": true}` as `format`.
+
+The following example plugin shows how to get a stack of image and visualize it in the itk-vtk-viewer:
+```js
+class ImJoyPlugin {
+  async setup() {
+     const ij = await api.getWindow('ImageJ.JS')
+     await ij.runMacro('run("Fly Brain");')
+  }
+
+  async run(ctx) {
+    const ij = await api.getWindow('ImageJ.JS')
+    const img = await ij.getImage({format: 'ndarray', all: true})
+    const viewer = await api.createWindow({src: "https://kitware.github.io/itk-vtk-viewer/app/"})
+    await viewer.setImage(img)
+  }
+}
+
+api.export(new ImJoyPlugin())
+```
 
 ### getDimensions()
 Return the dimensions of the image as an array of [`width`, `height`, `nChannels`, `nSlices`, `nFrames`].

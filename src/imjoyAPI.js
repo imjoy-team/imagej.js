@@ -163,6 +163,7 @@ export async function setupImJoyAPI(
           const data = await getImageData(
             imagej,
             imp,
+            format.all || false,
             format.channel || 0,
             format.slice || 0,
             format.frame || 0
@@ -184,35 +185,4 @@ export async function setupImJoyAPI(
   };
 
   api.export(service_api);
-
-  window.runImJoyPlugin =
-    window.runImJoyPlugin ||
-    (code => {
-      loader.style.display = "block";
-      api
-        .getPlugin(code)
-        .then(plugin_api => {
-          api.showMessage(`Plugin loaded successfully.`);
-          if (plugin_api && plugin_api.run) {
-            plugin_api.run({});
-          } else {
-            api.showMessage(`No "run" function defined in the plugin.`);
-          }
-        })
-        .finally(() => {
-          loader.style.display = "none";
-        });
-    });
-
-  window.reloadImJoyPlugin = code => {
-    loader.style.display = "block";
-    api
-      .getPlugin(code)
-      .then(() => {
-        api.showMessage(`Plugin loaded successfully.`);
-      })
-      .finally(() => {
-        loader.style.display = "none";
-      });
-  };
 }

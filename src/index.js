@@ -378,53 +378,70 @@ async function mountFile(file) {
 }
 
 // Note: 'channel', 'slice' and 'frame' are one-based indexes
-async function getImageData(imagej, imp, channel, slice, frame) {
+async function getImageData(imagej, imp, all, channel, slice, frame) {
   // const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
   const width = await cjCall(imp, "getWidth");
   const height = await cjCall(imp, "getHeight");
-  const slices = { value0: 1 }; //await cjCall(imp, "getNSlices");
   const channels = await cjCall(imp, "getNChannels");
-  const frames = { value0: 1 }; // await cjCall(imp, "getNFrames");
   const type = await cjCall(imp, "getType");
-  if (channel === undefined) channel = 0; // 0 means current channel
-  if (slice === undefined) slice = 0; // 0 means current slice
-  if (frame === undefined) frame = 0; // 0 means current frame
-  const bytes = javaBytesToArrayBuffer(
-    await imagej.getPixels(imp, channel, slice, frame)
-  );
-  const shape = [height.value0, width.value0, channels.value0];
-  if (slices.value0 && slices.value0 !== 1) {
-    shape.push(slices.value0);
-  }
-  if (frames.value0 && frames.value0 !== 1) {
-    shape.push(frames.value0);
-  }
   const typeMapping = {
     0: "uint8", //GRAY8 8-bit grayscale (unsigned)
     1: "uint16", //GRAY16 16-bit grayscale (unsigned)
     2: "float32", //	GRAY32 32-bit floating-point grayscale
     3: "uint8", // COLOR_256 8-bit indexed color
-    4: "uint8" // COLOR_RGB 32-bit RGB color
+    4: "uint8" // COLOR_RGB 24-bit RGB color
   };
   const bytesPerPixelMapping = {
     0: 1, //GRAY8 8-bit grayscale (unsigned)
     1: 2, //GRAY16 16-bit grayscale (unsigned)
     2: 4, //	GRAY32 32-bit floating-point grayscale
     3: 1, // COLOR_256 8-bit indexed color
-    4: 1 // COLOR_RGB 32-bit RGB color
+    4: 1 // COLOR_RGB 24-bit RGB color
   };
 
-  // calculate the actual channel number, e.g. for RGB image
-  shape[2] =
-    bytes.byteLength /
-    (shape[0] * shape[1] * (shape[3] || 1) * (shape[4] || 1)) /
-    bytesPerPixelMapping[type.value0];
+  if (all) {
+    const slices = await cjCall(imp, "getNSlices");
+    const frames = await cjCall(imp, "getNFrames");
+    const bytes = javaBytesToArrayBuffer(await imagej.saveAsBytes(imp, "raw"));
+    const shape = [height.value0, width.value0, channels.value0];
+    // calculate the actual channel number, e.g. for RGB image
+    shape[2] =
+      bytes.byteLength /
+      (shape[0] * shape[1] * (slices.value0 || 1) * (frames.value0 || 1)) /
+      bytesPerPixelMapping[type.value0];
+    if (slices.value0 && slices.value0 !== 1) {
+      // insert to the begining
+      shape.splice(0, 0, slices.value0);
+    }
+    if (frames.value0 && frames.value0 !== 1) {
+      // insert to the begining
+      shape.splice(0, 0, frames.value0);
+    }
+    return {
+      type: typeMapping[type.value0],
+      shape: shape,
+      bytes
+    };
+  } else {
+    if (channel === undefined) channel = 0; // 0 means current channel
+    if (slice === undefined) slice = 0; // 0 means current slice
+    if (frame === undefined) frame = 0; // 0 means current frame
+    const bytes = javaBytesToArrayBuffer(
+      await imagej.getPixels(imp, channel, slice, frame)
+    );
+    const shape = [height.value0, width.value0, channels.value0];
+    // calculate the actual channel number, e.g. for RGB image
+    shape[2] =
+      bytes.byteLength /
+      (shape[0] * shape[1] * (shape[3] || 1) * (shape[4] || 1)) /
+      bytesPerPixelMapping[type.value0];
 
-  return {
-    type: typeMapping[type.value0],
-    shape: shape,
-    bytes
-  };
+    return {
+      type: typeMapping[type.value0],
+      shape: shape,
+      bytes
+    };
+  }
 }
 
 async function saveImage(imagej, filename, format, ext) {
@@ -750,6 +767,11 @@ function addMenuItem(config) {
   const targetMenu = document.querySelector(
     `#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(${index})>ul`
   );
+  for (let ch of targetMenu.children) {
+    if (ch.children[0].innerHTML === config.label) {
+      targetMenu.removeChild(ch);
+    }
+  }
   if (config.position) {
     targetMenu.insertBefore(newMenu, targetMenu.children[config.position]);
   } else {

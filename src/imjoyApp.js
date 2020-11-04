@@ -1,7 +1,8 @@
 import Snackbar from "node-snackbar/dist/snackbar";
 
 const builtinPlugins = [
-  "https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html"
+  "https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html",
+  "https://gist.githubusercontent.com/oeway/e5c980fbf6582f25fde795262a7e33ec/raw/itk-vtk-viewer-imagej.imjoy.html"
 ];
 async function startImJoy(app, imjoy) {
   await imjoy.start();
@@ -16,7 +17,8 @@ async function startImJoy(app, imjoy) {
     app.$forceUpdate();
   });
   imjoy.event_bus.on("plugin_loaded", p => {
-    if (!builtinPlugins.includes(p.config.origin)) app.showMenu();
+    if (!builtinPlugins.includes(p.config.origin) && p.type !== "window")
+      app.showMenu();
   });
   let windowCount = 0;
   imjoy.event_bus.on("add_window", async w => {
