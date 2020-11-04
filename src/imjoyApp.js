@@ -17,7 +17,7 @@ async function startImJoy(app, imjoy) {
     app.$forceUpdate();
   });
   imjoy.event_bus.on("plugin_loaded", p => {
-    if (!builtinPlugins.includes(p.config.origin) && p.type !== "window")
+    if (!builtinPlugins.includes(p.config.origin) && p.type !== "window" && p.type !== "rpc-window")
       app.showMenu();
   });
   let windowCount = 0;
