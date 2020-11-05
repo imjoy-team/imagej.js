@@ -362,6 +362,7 @@ async function startImageJ() {
       _addEL.apply(elm, [event, handler, options]);
     }
   };
+  fixWindowOrder();
   cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53f.jar");
 }
 
@@ -528,8 +529,58 @@ async function saveFileToFS(imagej, file) {
   console.log(await listFiles(imagej, "/files/"));
 }
 
-async function fixMenu(imagej) {
+function fixWindowOrder() {
+  const cdisplay = document.getElementById("cheerpjDisplay");
+  const _appendChild = cdisplay.appendChild;
+
+  function bringToTop(elm) {
+    const windows = cdisplay.querySelectorAll(".window.bordered");
+    let index = 0;
+    for (const w of windows) {
+      if (w === elm) {
+        w.style["z-index"] = windows.length + 1;
+      } else {
+        w.style["z-index"] = index;
+      }
+      index += 1;
+    }
+  }
+  cdisplay.appendChild = elm => {
+    try {
+      if (
+        elm.classList.contains("window") &&
+        elm.classList.contains("bordered")
+      ) {
+        bringToTop(bringToTop);
+        return;
+      }
+      elm.addEventListener("click", () => {
+        if (
+          elm.classList.contains("window") &&
+          elm.classList.contains("bordered")
+        ) {
+          bringToTop(elm);
+        }
+      });
+      setTimeout(() => {
+        if (
+          elm.classList.contains("window") &&
+          elm.classList.contains("bordered")
+        ) {
+          bringToTop(elm);
+        }
+      }, 100);
+      return _appendChild.apply(cdisplay, [elm]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+}
+
+async function fixMenu() {
   const removes = [
+    "Open Recent",
+    "Install... ",
     "Show Folder",
     "Update ImageJ...",
     "Compile and Run...",
@@ -1085,7 +1136,7 @@ window.onImageJInitialized = async () => {
   };
   window.ij = imagej;
   setupDragDropPaste(imagej);
-  fixMenu(imagej);
+  fixMenu();
   fixTouch();
 
   function setAPI(core_api) {
