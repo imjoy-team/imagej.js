@@ -19,6 +19,6 @@ rm -rf imagej-js-dist
 # get imagej2
 mkdir -p dist/ij211
 cd dist/ij211
-curl -OL https://github.com/imjoy-team/imagej2-cheerpj/releases/download/v0.1.0/imagej2.zip
+curl -OL https://github.com/imjoy-team/imagej2-cheerpj/releases/download/v0.0.2/imagej2.zip
 unzip imagej2.zip
 rm imagej2.zip
