@@ -532,11 +532,13 @@ async function saveFileToFS(imagej, file) {
 function fixWindowOrder() {
   const cdisplay = document.getElementById("cheerpjDisplay");
   const _appendChild = cdisplay.appendChild;
-
+  const sortByZIndex = function(a, b) {
+    return a.style.zIndex - b.style.zIndex;
+  };
   function bringToTop(elm) {
-    const windows = cdisplay.querySelectorAll(".window.bordered");
+    const windows = Array.from(cdisplay.querySelectorAll(".window.bordered"));
     let index = 0;
-    for (const w of windows) {
+    for (const w of windows.sort(sortByZIndex)) {
       if (w === elm) {
         w.style["z-index"] = windows.length + 1;
       } else {
