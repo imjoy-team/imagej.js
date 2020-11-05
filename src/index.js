@@ -365,7 +365,7 @@ async function startImageJ(version) {
     cheerpjRunMain("net.imagej.Main", "/app/ij211/imagej2-cheerpj-0-SNAPSHOT-all.jar");
   }
   else{
-    cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53e.jar");
+    cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53f.jar");
   }
 }
 
