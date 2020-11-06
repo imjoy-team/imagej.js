@@ -154,6 +154,33 @@ async function startImJoy(app, imjoy) {
         loader.style.display = "none";
       });
   };
+
+  window.callPlugin = async function (pluginName, functionName){
+    let args = Array.prototype.slice.call(arguments).slice(2);
+    let promise = null;
+    if(args.length>0){
+      promise = args[args.length-1]
+      args = args.slice(0, args.length-1)
+    }
+    const plugin = await imjoy.pm.imjoy_api.getPlugin(pluginName)
+    try{
+      //TODO: convert ImagePlus to numpy array
+      const result = await plugin[functionName](args);
+      if(promise){
+        //TODO: convert numpy array to ImagePlus
+        promise.resolve(result);
+      }
+    }
+    catch(e){
+      if(promise)
+        promise.reject(e.toString())
+      else{
+        console.error(e)
+      }
+    }
+
+    
+  }
 }
 
 const CSStyle = `

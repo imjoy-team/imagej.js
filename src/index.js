@@ -1199,7 +1199,8 @@ document.addEventListener(
   false
 );
 
-
+// TODO: this will be removed, and use the `callPlugin` function instead
+// see here: https://github.com/deepimagej/deepimagej.JS/issues/1
 window.modelPredict = function(input) {
   alert('predicting...')
   debugger
