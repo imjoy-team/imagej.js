@@ -1198,3 +1198,9 @@ document.addEventListener(
   },
   false
 );
+
+
+window.modelPredict = function(input) {
+  alert('predicting...')
+  debugger
+}
