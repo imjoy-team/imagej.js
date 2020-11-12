@@ -175,7 +175,7 @@ async function startImJoy(app, imjoy) {
       }
 
       //TODO: convert ImagePlus to numpy array
-      const result = await plugin[functionName](args);
+      const result = await plugin[functionName].apply(plugin, args);
       if(promise){
         if( typeof result === 'string'){
           await cjCall(promise, "resolveString", result);

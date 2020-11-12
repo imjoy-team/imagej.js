@@ -163,7 +163,7 @@ document.createElement = function(type) {
         return;
       }
       // only apply to textarea in a window
-      if (elm.parentNode.nextSibling.classList[0] === "titleBar") {
+      if (elm.parentNode.nextSibling && elm.parentNode.nextSibling.classList[0] === "titleBar") {
         if (elm.style.display === "none") setTimeout(tryReplace, 200);
         else if (
           elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")
