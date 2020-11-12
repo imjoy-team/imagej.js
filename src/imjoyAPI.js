@@ -5,7 +5,6 @@ export async function setupImJoyAPI(
   api,
   imagej,
   loader,
-  getImageData,
   javaBytesToArrayBuffer,
   saveImage,
   openImage,
@@ -160,7 +159,7 @@ export async function setupImJoyAPI(
         if (!format || format === "ndarray" || typeof format !== "string") {
           const imp = await imagej.getImage();
           format = format || {};
-          const data = await getImageData(
+          const data = await imagej.getImageData(
             imagej,
             imp,
             format.all || false,

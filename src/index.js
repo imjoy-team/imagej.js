@@ -1132,9 +1132,10 @@ window.onImageJInitialized = async () => {
     openAsBytes: await cjResolveCall("ij.IJ", "openAsBytes", [
       "java.lang.String"
     ]),
-    saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null)
+    saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null),
     // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
+    getImageData
   };
   window.ij = imagej;
   setupDragDropPaste(imagej);
@@ -1146,7 +1147,6 @@ window.onImageJInitialized = async () => {
       core_api,
       imagej,
       loader,
-      getImageData,
       javaBytesToArrayBuffer,
       saveImage,
       openImage,

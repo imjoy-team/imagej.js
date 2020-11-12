@@ -162,18 +162,33 @@ async function startImJoy(app, imjoy) {
       promise = args[args.length-1]
       args = args.slice(0, args.length-1)
     }
-    const plugin = await imjoy.pm.imjoy_api.getPlugin(pluginName)
+    const plugin = await imjoy.pm.imjoy_api.getPlugin(null, pluginName)
     try{
+      for(let i=0;i<args.length;i++){
+        debugger
+        const imp = await window.ij.getImage();
+        const data = await window.ij.getImageData(
+          window.ij,
+          imp,
+          true
+        );
+      }
+
       //TODO: convert ImagePlus to numpy array
       const result = await plugin[functionName](args);
       if(promise){
-        //TODO: convert numpy array to ImagePlus
-        promise.resolve(result);
+        if( typeof result === 'string'){
+          await cjCall(promise, "resolveString", result);
+        }
+        else{
+          //TODO: convert numpy array to ImagePlus
+          await cjCall(promise, "resolveImagePlus", result);
+        }
       }
     }
     catch(e){
       if(promise)
-        promise.reject(e.toString())
+        await cjCall(promise, "reject", e.toString());
       else{
         console.error(e)
       }
