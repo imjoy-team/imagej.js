@@ -165,16 +165,23 @@ async function startImJoy(app, imjoy) {
     const plugin = await imjoy.pm.imjoy_api.getPlugin(null, pluginName)
     try{
       for(let i=0;i<args.length;i++){
-        debugger
-        const imp = await window.ij.getImage();
-        const data = await window.ij.getImageData(
-          window.ij,
-          imp,
-          true
-        );
+        // convert ImagePlus to numpy array
+        if(args[i].constructor.name.endsWith('ImagePlus')){
+          const imgData = await window.ij.getImageData(
+            window.ij,
+            args[i],
+            true
+          );
+          args[i] = {
+            _rtype: 'ndarray',
+            _rshape: imgData.shape,
+            _rdtype: imgData.type,
+            _rvalue: imgData.bytes
+          }
+        }
       }
 
-      //TODO: convert ImagePlus to numpy array
+      
       const result = await plugin[functionName].apply(plugin, args);
       if(promise){
         if( typeof result === 'string'){
@@ -182,7 +189,11 @@ async function startImJoy(app, imjoy) {
         }
         else{
           //TODO: convert numpy array to ImagePlus
-          await cjCall(promise, "resolveImagePlus", result);
+          // if(result._rtype === 'ndarray'){
+          //   await window.ij.showImage(result)
+          // }
+          // ndarray definition: https://github.com/imjoy-team/imjoy-rpc/blob/master/README.md
+          await cjCall(promise, "resolveImagePlus", result._rvalue, result._rshape, result._rdtype);
         }
       }
     }

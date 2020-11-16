@@ -378,6 +378,57 @@ async function mountFile(file) {
   return filepath;
 }
 
+async function showImage(img, options){
+  const imagej = window.ij;
+  options = options || {};
+  options.name = options.name || "tmp";
+  const filepath = "/str/" + options.name;
+  if (img instanceof ArrayBuffer) {
+    cheerpjAddStringFile(filepath, new Uint8Array(img));
+    return await openImage(imagej, filepath);
+  } else {
+    const formats = {
+      uint8: "8-bit",
+      uint16: "16-bit Unsigned",
+      int16: "16-bit Signed",
+      uint32: "32-bit Unsigned",
+      int32: "32-bit Signed",
+      float32: "32-bit Real",
+      flaot64: "64-bit Real"
+    };
+    cheerpjAddStringFile(filepath, new Uint8Array(img._rvalue));
+    let format = formats[img._rdtype];
+
+    if (img._rshape.length === 3) {
+      let number = img._rshape[2];
+      if (img._rshape[2] === 3) {
+        format = "24-bit RGB";
+        number = 1;
+      }
+      return await imagej.run(
+        "Raw...",
+        `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} number=${number} little-endian`
+      );
+    } else if (img._rshape.length === 4) {
+      if (img._rshape[3] === 3) {
+        format = "24-bit RGB";
+      } else {
+        if (img._rshape[3] !== 1) {
+          throw "channel dimension (last) can only be 1 or 3";
+        }
+      }
+      return await imagej.run(
+        "Raw...",
+        `open=${filepath} image=[${format}] width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]} little-endian`
+      );
+    } else if (img._rshape.length === 2) {
+      return await imagej.run(
+        "Raw...",
+        `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} little-endian`
+      );
+    }
+  }
+}
 // Note: 'channel', 'slice' and 'frame' are one-based indexes
 async function getImageData(imagej, imp, all, channel, slice, frame) {
   // const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
@@ -611,11 +662,16 @@ async function fixMenu() {
     // }
   }
 
-  // addMenuItem({
-  //   label: "Debug",
-  //   async callback() {
-  //   }
-  // });
+  addMenuItem({
+    label: "Debug",
+    async callback() {
+      const bytes = new Uint8Array(new ArrayBuffer(100*100));
+      for(let i=0;i<1000;i++){
+        bytes[i] = i;
+      }
+      await ij.createImagePlus("test image", "8black", 100, 100, 1, 1, 1, cjTypedArrayToJava(bytes));
+    }
+  });
 }
 
 function setupDragDropPaste(imagej) {
@@ -1094,6 +1150,7 @@ window.onImageJInitialized = async () => {
     getPlugins: await cjResolveCall("ij.Menus", "getPlugins", []),
     getPlugInsPath: await cjResolveCall("ij.Menus", "getPlugInsPath", []),
     getImage: await cjResolveCall("ij.IJ", "getImage", []),
+    createImagePlus: await cjResolveCall("ij.IJ", "createImagePlus", null),
     save: await cjResolveCall("ij.IJ", "save", [
       "ij.ImagePlus",
       "java.lang.String"
@@ -1135,7 +1192,8 @@ window.onImageJInitialized = async () => {
     saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null),
     // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
-    getImageData
+    getImageData,
+    showImage
   };
   window.ij = imagej;
   setupDragDropPaste(imagej);
@@ -1198,10 +1256,3 @@ document.addEventListener(
   },
   false
 );
-
-// TODO: this will be removed, and use the `callPlugin` function instead
-// see here: https://github.com/deepimagej/deepimagej.JS/issues/1
-window.modelPredict = function(input) {
-  alert('predicting...')
-  debugger
-}
