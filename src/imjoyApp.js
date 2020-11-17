@@ -155,61 +155,57 @@ async function startImJoy(app, imjoy) {
       });
   };
 
-  window.callPlugin = async function (pluginName, functionName){
+  window.callPlugin = async function(pluginName, functionName) {
     let args = Array.prototype.slice.call(arguments).slice(2);
     let promise = null;
-    if(args.length>0){
-      promise = args[args.length-1]
-      args = args.slice(0, args.length-1)
+    if (args.length > 0) {
+      promise = args[args.length - 1];
+      args = args.slice(0, args.length - 1);
     }
-    const plugin = await imjoy.pm.imjoy_api.getPlugin(null, pluginName)
-    try{
-      for(let i=0;i<args.length;i++){
+    const plugin = await imjoy.pm.imjoy_api.getPlugin(null, pluginName);
+    try {
+      loader.style.display = "block";
+      for (let i = 0; i < args.length; i++) {
         // convert ImagePlus to numpy array
-        if(args[i].constructor.name.endsWith('ImagePlus')){
+        if (args[i].constructor.name.endsWith("ImagePlus")) {
           const imgData = await window.ij.getImageData(
             window.ij,
             args[i],
             false
           );
           args[i] = {
-            _rtype: 'ndarray',
+            _rtype: "ndarray",
             _rshape: imgData.shape,
             _rdtype: imgData.type,
             _rvalue: imgData.bytes
-          }
+          };
         }
       }
 
-      
       const result = await plugin[functionName].apply(plugin, args);
-      if(promise){
-        if( typeof result === 'string'){
+      if (promise) {
+        if (typeof result === "string") {
           await cjCall(promise, "resolveString", result);
-        }
-        else if(result._rtype === 'ndarray'){
+        } else if (result._rtype === "ndarray") {
           const ip = await ij.ndarrayToImagePlus(result);
           await cjCall(promise, "resolveImagePlus", ip);
-        }
-        else{
-          if(promise)
+        } else {
+          if (promise)
             await cjCall(promise, "reject", "unsupported result type");
-          else{
-            console.error("Unsupported result type:", result)
+          else {
+            console.error("Unsupported result type:", result);
           }
         }
       }
-    }
-    catch(e){
-      if(promise)
-        await cjCall(promise, "reject", e.toString());
-      else{
-        console.error(e)
+    } catch (e) {
+      if (promise) await cjCall(promise, "reject", e.toString());
+      else {
+        console.error(e);
       }
+    } finally {
+      loader.style.display = "none";
     }
-
-    
-  }
+  };
 }
 
 const CSStyle = `

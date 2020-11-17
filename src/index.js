@@ -163,7 +163,10 @@ document.createElement = function(type) {
         return;
       }
       // only apply to textarea in a window
-      if (elm.parentNode.nextSibling && elm.parentNode.nextSibling.classList[0] === "titleBar") {
+      if (
+        elm.parentNode.nextSibling &&
+        elm.parentNode.nextSibling.classList[0] === "titleBar"
+      ) {
         if (elm.style.display === "none") setTimeout(tryReplace, 200);
         else if (
           elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")
@@ -378,7 +381,7 @@ async function mountFile(file) {
   return filepath;
 }
 
-async function showImage(img, options){
+async function showImage(img, options) {
   const imagej = window.ij;
   options = options || {};
   options.name = options.name || "tmp";
@@ -431,51 +434,72 @@ async function showImage(img, options){
 }
 
 const typeMapping = {
-  "uint8": 0, //GRAY8 8-bit grayscale (unsigned)
-  "uint16": 1, //GRAY16 16-bit grayscale (unsigned)
-  "float32": 2, //	GRAY32 32-bit floating-point grayscale
+  uint8: 0, //GRAY8 8-bit grayscale (unsigned)
+  uint16: 1, //GRAY16 16-bit grayscale (unsigned)
+  float32: 2 //	GRAY32 32-bit floating-point grayscale
 };
 
 //convert numpy array to ImagePlus
-async function ndarrayToImagePlus(array){
-  if(!typeMapping[array._rdtype]){
-    if(promise)
-      await cjCall(promise, "reject", "unsupported array dtype: " + array._rdtype + ", valid dtypes: uint8, uint16, flat32");
-    else{
-      console.error("unsupported array dtype: " + array._rdtype + ", valid dtypes: uint8, uint16, flat32")
+async function ndarrayToImagePlus(array) {
+  if (!typeMapping[array._rdtype]) {
+    if (promise)
+      await cjCall(
+        promise,
+        "reject",
+        "unsupported array dtype: " +
+          array._rdtype +
+          ", valid dtypes: uint8, uint16, flat32"
+      );
+    else {
+      console.error(
+        "unsupported array dtype: " +
+          array._rdtype +
+          ", valid dtypes: uint8, uint16, flat32"
+      );
     }
   }
   const shape = Int16Array.from([1, 1, 1, 1, 1]);
-  if(array._rshape.length === 2){
+  if (array._rshape.length === 2) {
     shape[3] = array._rshape[0]; // height
     shape[4] = array._rshape[1]; // width
-  }
-  else if(array._rshape.length === 3){
+  } else if (array._rshape.length === 3) {
     shape[2] = array._rshape[0]; // channel
     shape[3] = array._rshape[1]; // height
     shape[4] = array._rshape[2]; // width
-  }
-  else if(array._rshape.length === 4){
+  } else if (array._rshape.length === 4) {
     shape[1] = array._rshape[0]; // stack
     shape[2] = array._rshape[1]; // channel
     shape[3] = array._rshape[2]; // height
     shape[4] = array._rshape[3]; // width
-  }
-  else if(array._rshape.length === 5){
+  } else if (array._rshape.length === 5) {
     shape[0] = array._rshape[0]; // frame
     shape[1] = array._rshape[1]; // stack
     shape[2] = array._rshape[2]; // channel
     shape[3] = array._rshape[3]; // height
     shape[4] = array._rshape[4]; // width
-  }
-  else{
-    if(promise)
-      await cjCall(promise, "reject", "unsupported array shape: " + array._rshape + ", allowed dimensions: 2-5");
-    else{
-      console.error("unsupported array shape: " + array._rshape + ", allowed dimensions: 2-5")
+  } else {
+    if (promise)
+      await cjCall(
+        promise,
+        "reject",
+        "unsupported array shape: " +
+          array._rshape +
+          ", allowed dimensions: 2-5"
+      );
+    else {
+      console.error(
+        "unsupported array shape: " +
+          array._rshape +
+          ", allowed dimensions: 2-5"
+      );
     }
   }
-  const ip = await ij.createImagePlus(cjTypedArrayToJava(new Uint8Array(array._rvalue)), typeMapping[array._rdtype], cjTypedArrayToJava(shape), "untitiled image");
+  const ip = await ij.createImagePlus(
+    cjTypedArrayToJava(new Uint8Array(array._rvalue)),
+    typeMapping[array._rdtype],
+    cjTypedArrayToJava(shape),
+    array.title || "untitiled image"
+  );
   return ip;
 }
 // Note: 'channel', 'slice' and 'frame' are one-based indexes
@@ -1248,20 +1272,20 @@ window.onImageJInitialized = async () => {
     ndarrayToImagePlus
   };
 
-  imagej.runMacroAsync = function(macro, args){
-    return new Promise((resolve)=>{
+  imagej.runMacroAsync = function(macro, args) {
+    return new Promise(resolve => {
       window.onMacroResolve = resolve;
       // TODO: handle reject
       window.onMacroReject = resolve;
       imagej.runMacro(macro, args);
     });
-  }
-  imagej.openAsync = function(url){
-    return new Promise((resolve)=>{
+  };
+  imagej.openAsync = function(url) {
+    return new Promise(resolve => {
       window.onOpenResolve = resolve;
       imagej.open(url);
     });
-  }
+  };
   window.ij = imagej;
   setupDragDropPaste(imagej);
   fixMenu();
@@ -1290,10 +1314,7 @@ window.onImageJInitialized = async () => {
   loader.style.display = "none";
 
   setTimeout(() => {
-    localStorage.setItem(
-      "cheepjPreload",
-      cjGetRuntimeResources()
-    );
+    localStorage.setItem("cheepjPreload", cjGetRuntimeResources());
   }, 1000);
   console.timeEnd("Loading ImageJ.JS");
 };

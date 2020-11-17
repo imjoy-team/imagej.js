@@ -84,7 +84,7 @@ export async function setupImJoyAPI(
     async viewImage(img, options) {
       loader.style.display = "block";
       try {
-        imagej.showImage(img, options)
+        imagej.showImage(img, options);
       } catch (e) {
         throw e;
       } finally {
