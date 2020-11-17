@@ -53,7 +53,7 @@ export async function setupImJoyAPI(
     },
     async runMacro(macro, args) {
       try {
-        await imagej.runMacro(macro, args || "");
+        return await imagej.runMacroAsync(macro, args || "");
       } catch (e) {
         throw e;
       } finally {

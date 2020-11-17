@@ -187,13 +187,16 @@ async function startImJoy(app, imjoy) {
         if( typeof result === 'string'){
           await cjCall(promise, "resolveString", result);
         }
+        else if(result._rtype === 'ndarray'){
+          const ip = await ij.ndarrayToImagePlus(result);
+          await cjCall(promise, "resolveImagePlus", ip);
+        }
         else{
-          //TODO: convert numpy array to ImagePlus
-          // if(result._rtype === 'ndarray'){
-          //   await window.ij.showImage(result)
-          // }
-          // ndarray definition: https://github.com/imjoy-team/imjoy-rpc/blob/master/README.md
-          await cjCall(promise, "resolveImagePlus", result._rvalue, result._rshape, result._rdtype);
+          if(promise)
+            await cjCall(promise, "reject", "unsupported result type");
+          else{
+            console.error("Unsupported result type:", result)
+          }
         }
       }
     }

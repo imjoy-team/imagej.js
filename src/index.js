@@ -429,6 +429,55 @@ async function showImage(img, options){
     }
   }
 }
+
+const typeMapping = {
+  "uint8": 0, //GRAY8 8-bit grayscale (unsigned)
+  "uint16": 1, //GRAY16 16-bit grayscale (unsigned)
+  "float32": 2, //	GRAY32 32-bit floating-point grayscale
+};
+
+//convert numpy array to ImagePlus
+async function ndarrayToImagePlus(array){
+  if(!typeMapping[array._rdtype]){
+    if(promise)
+      await cjCall(promise, "reject", "unsupported array dtype: " + array._rdtype + ", valid dtypes: uint8, uint16, flat32");
+    else{
+      console.error("unsupported array dtype: " + array._rdtype + ", valid dtypes: uint8, uint16, flat32")
+    }
+  }
+  const shape = Int16Array.from([1, 1, 1, 1, 1]);
+  if(array._rshape.length === 2){
+    shape[3] = array._rshape[0]; // height
+    shape[4] = array._rshape[1]; // width
+  }
+  else if(array._rshape.length === 3){
+    shape[2] = array._rshape[0]; // channel
+    shape[3] = array._rshape[1]; // height
+    shape[4] = array._rshape[2]; // width
+  }
+  else if(array._rshape.length === 4){
+    shape[1] = array._rshape[0]; // stack
+    shape[2] = array._rshape[1]; // channel
+    shape[3] = array._rshape[2]; // height
+    shape[4] = array._rshape[3]; // width
+  }
+  else if(array._rshape.length === 5){
+    shape[0] = array._rshape[0]; // frame
+    shape[1] = array._rshape[1]; // stack
+    shape[2] = array._rshape[2]; // channel
+    shape[3] = array._rshape[3]; // height
+    shape[4] = array._rshape[4]; // width
+  }
+  else{
+    if(promise)
+      await cjCall(promise, "reject", "unsupported array shape: " + array._rshape + ", allowed dimensions: 2-5");
+    else{
+      console.error("unsupported array shape: " + array._rshape + ", allowed dimensions: 2-5")
+    }
+  }
+  const ip = await ij.createImagePlus(cjTypedArrayToJava(new Uint8Array(array._rvalue)), typeMapping[array._rdtype], cjTypedArrayToJava(shape), "untitiled image");
+  return ip;
+}
 // Note: 'channel', 'slice' and 'frame' are one-based indexes
 async function getImageData(imagej, imp, all, channel, slice, frame) {
   // const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
@@ -536,7 +585,7 @@ function downloadBytesFile(fileByteArray, filename) {
 
 function openImage(imagej, path) {
   if (path) {
-    return imagej.open(path);
+    return imagej.openAsync(path);
   }
   return new Promise((resolve, reject) => {
     const fileInput = document.getElementById("open-file");
@@ -554,7 +603,7 @@ function openImage(imagej, path) {
           mountFile(files[i])
             .then(filepath => {
               imagej
-                .open(filepath)
+                .openAsync(filepath)
                 .then(resolve)
                 .catch(reject)
                 .finally(() => {
@@ -662,16 +711,18 @@ async function fixMenu() {
     // }
   }
 
-  addMenuItem({
-    label: "Debug",
-    async callback() {
-      const bytes = new Uint8Array(new ArrayBuffer(100*100));
-      for(let i=0;i<1000;i++){
-        bytes[i] = i;
-      }
-      await ij.createImagePlus("test image", "8black", 100, 100, 1, 1, 1, cjTypedArrayToJava(bytes));
-    }
-  });
+  // addMenuItem({
+  //   label: "Debug",
+  //   async callback() {
+  //     const bytes = new ArrayBuffer(100*100*2);
+  //     const pixels = new Uint16Array(bytes);
+  //     for(let i=0;i<1000;i++){
+  //       pixels[i] = i;
+  //     }
+  //     const shape = Int16Array.from([1, 1, 1, 100, 100]);
+  //     await ij.createImagePlus(cjTypedArrayToJava(new Uint8Array(bytes)), 1, cjTypedArrayToJava(shape), "test image");
+  //   }
+  // });
 }
 
 function setupDragDropPaste(imagej) {
@@ -698,7 +749,7 @@ function setupDragDropPaste(imagej) {
               type: "text/plain"
             });
             mountFile(file).then(filepath => {
-              imagej.open(filepath).finally(() => {
+              imagej.openAsync(filepath).finally(() => {
                 cheerpjRemoveStringFile(filepath);
               });
             });
@@ -710,7 +761,7 @@ function setupDragDropPaste(imagej) {
           saveFileToFS(imagej, file);
         } else {
           mountFile(file).then(filepath => {
-            imagej.open(filepath).finally(() => {
+            imagej.openAsync(filepath).finally(() => {
               cheerpjRemoveStringFile(filepath);
             });
           });
@@ -788,7 +839,7 @@ function setupDragDropPaste(imagej) {
                 { type: blob.type || type }
               );
               mountFile(file).then(filepath => {
-                imagej.open(filepath).finally(() => {
+                imagej.openAsync(filepath).finally(() => {
                   cheerpjRemoveStringFile(filepath);
                 });
               });
@@ -1036,7 +1087,7 @@ async function loadContentFromUrl(imagej, url) {
       url = tmp || url;
     }
 
-    await imagej.open(url);
+    await imagej.openAsync(url);
     Snackbar.show({
       text: "Successfully opened " + url,
       pos: "bottom-left"
@@ -1078,7 +1129,7 @@ async function processUrlParameters(imagej) {
 
         const blob = await fetch(url).then(r => r.blob());
         const macro = await new Response(blob).text();
-        await imagej.runMacro(macro, "");
+        await imagej.runMacroAsync(macro, "");
       } catch (e) {
         Snackbar.show({
           text: "Failed to run macro: " + e.toString(),
@@ -1193,8 +1244,24 @@ window.onImageJInitialized = async () => {
     // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
     getImageData,
-    showImage
+    showImage,
+    ndarrayToImagePlus
   };
+
+  imagej.runMacroAsync = function(macro, args){
+    return new Promise((resolve)=>{
+      window.onMacroResolve = resolve;
+      // TODO: handle reject
+      window.onMacroReject = resolve;
+      imagej.runMacro(macro, args);
+    });
+  }
+  imagej.openAsync = function(url){
+    return new Promise((resolve)=>{
+      window.onOpenResolve = resolve;
+      imagej.open(url);
+    });
+  }
   window.ij = imagej;
   setupDragDropPaste(imagej);
   fixMenu();
