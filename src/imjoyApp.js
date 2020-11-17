@@ -170,7 +170,7 @@ async function startImJoy(app, imjoy) {
           const imgData = await window.ij.getImageData(
             window.ij,
             args[i],
-            true
+            false
           );
           args[i] = {
             _rtype: 'ndarray',
