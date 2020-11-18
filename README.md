@@ -29,9 +29,11 @@ You can also use multple times the same option, for example open multiple `open`
 **Note for the URL**: not every url can be loaded into ImageJ.JS, it must be starts with `https` and the site should have [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) enabled. In general you can load files from Github repository,  [Gist](https://gist.github.com/) and [Zenodo](https://zenodo.org/). Typically, Github or Gist is suitable for storing macro files or small test images, if you have large images Zenodo is recommended.
 
 ### Encoding file directly to the URL
-For small script file, one can directly encode the content into the URL (so you don't need to upload it to a server). The easiest way to use this feature is to open the script/macro editor, then click "Share -> Share via URL" in the menu. You will get a long encoded string followed after `https://ij.imjoy/?open=`. 
+For small script file, one can directly encode the content into the URL (so you don't need to upload it to a server). The easiest way to use this feature is to open the script/macro editor, then click "Share -> Share via URL" in the menu. You will get a long encoded string followed after `https://ij.imjoy/?open=`.
 
-As a tip, if you want to run the script directly, simply change `open` to `run` in the url.
+As a tip, you can use URL shorten services such as [tiny.cc](https://tiny.cc/) to make a very short URL. This will make the url more readable and also fit in a tweet message for example.
+
+Another tip is, if you want to run the script directly, simply change `open` to `run` in the url.
 
 If you are a developer, this is implemented by decompress a long string (i.e. file name + content) encoded with a javascript library named [lz-string](https://github.com/pieroxy/lz-string). If you want to generate a valid string, you need to first make a json object with the file name and content: `{"name": <FILE_NAME>, "content": <FILE_CONTENT>}` then convert it a string and compress it via `LZString.compressToEncodedURIComponent`. Finally, add the compressed string after `https://ij.imjoy/?open=` or `https://ij.imjoy/?run=`. 
 
