@@ -154,6 +154,58 @@ async function startImJoy(app, imjoy) {
         loader.style.display = "none";
       });
   };
+
+  window.callPlugin = async function(pluginName, functionName) {
+    let args = Array.prototype.slice.call(arguments).slice(2);
+    let promise = null;
+    if (args.length > 0) {
+      promise = args[args.length - 1];
+      args = args.slice(0, args.length - 1);
+    }
+    const plugin = await imjoy.pm.imjoy_api.getPlugin(null, pluginName);
+    try {
+      loader.style.display = "block";
+      for (let i = 0; i < args.length; i++) {
+        // convert ImagePlus to numpy array
+        if (args[i].constructor.name.endsWith("ImagePlus")) {
+          const imgData = await window.ij.getImageData(
+            window.ij,
+            args[i],
+            false
+          );
+          args[i] = {
+            _rtype: "ndarray",
+            _rshape: imgData.shape,
+            _rdtype: imgData.type,
+            _rvalue: imgData.bytes
+          };
+        }
+      }
+
+      const result = await plugin[functionName].apply(plugin, args);
+      if (promise) {
+        if (typeof result === "string") {
+          await cjCall(promise, "resolveString", result);
+        } else if (result._rtype === "ndarray") {
+          const ip = await ij.ndarrayToImagePlus(result);
+          await cjCall(promise, "resolveImagePlus", ip);
+        } else {
+          if (promise)
+            await cjCall(promise, "reject", "unsupported result type");
+          else {
+            console.error("Unsupported result type:", result);
+          }
+        }
+      }
+    } catch (e) {
+      if (promise) await cjCall(promise, "reject", e.toString());
+      else {
+        console.error(e);
+      }
+    } finally {
+      loader.style.display = "none";
+    }
+  };
 }
 
 const CSStyle = `

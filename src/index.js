@@ -1,7 +1,7 @@
 import { setupImJoyApp } from "./imjoyApp.js";
 import { setupImJoyAPI } from "./imjoyAPI.js";
 import { githubUrlRaw, convertZenodoFileUrl } from "./utils.js";
-
+import LZString from "lz-string";
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
@@ -51,11 +51,51 @@ window.onEditorResized = () => {
   }, 1);
 };
 
-window.onEditorTextChanged = () => {
-  // for(let id in codeEditors){
-  //   const textArea = document.getElementById(id);
-  //   codeEditors[id].setValue(textArea.value);
-  // }
+window.onEditorTextChanged = (name, content) => {
+  // update the sharing url
+  if (name === sharingScript.name) {
+    const compressed = LZString.compressToEncodedURIComponent(
+      JSON.stringify({ name, content })
+    );
+    insertUrlParam("open", compressed);
+  }
+};
+
+function insertUrlParam(key, value) {
+  if (history.pushState) {
+    let searchParams = new URLSearchParams(window.location.search);
+    searchParams.set(key, value);
+    let newurl =
+      window.location.protocol +
+      "//" +
+      window.location.host +
+      window.location.pathname +
+      "?" +
+      searchParams.toString();
+    window.history.pushState({ path: newurl }, "", newurl);
+  }
+}
+
+let sharingScript = null;
+window.shareViaURL = (name, content) => {
+  const compressed = LZString.compressToEncodedURIComponent(
+    JSON.stringify({ name, content })
+  );
+  insertUrlParam("open", compressed);
+  sharingScript = { name, content };
+  let message = `The script is encoded as URL, you can now copy and share the URL in the address bar!`;
+  if (compressed.length > 8192 - 100) {
+    message =
+      message +
+      "\nWARNING: the generated URL might be too long for some browser, you may want to share it via Github or Gist instead.";
+  }
+  alert(message);
+};
+
+window.shareViaGithub = () => {
+  window.open(
+    "https://github.com/imjoy-team/imagej.js#sharing-images-macro-or-plugins-with-url-parameters"
+  );
 };
 
 // setup a hook for fixing mobile touch event
@@ -163,7 +203,10 @@ document.createElement = function(type) {
         return;
       }
       // only apply to textarea in a window
-      if (elm.parentNode.nextSibling.classList[0] === "titleBar") {
+      if (
+        elm.parentNode.nextSibling &&
+        elm.parentNode.nextSibling.classList[0] === "titleBar"
+      ) {
         if (elm.style.display === "none") setTimeout(tryReplace, 200);
         else if (
           elm.parentNode.nextSibling.children[0].innerText.endsWith(".html")
@@ -378,6 +421,127 @@ async function mountFile(file) {
   return filepath;
 }
 
+async function showImage(img, options) {
+  const imagej = window.ij;
+  options = options || {};
+  options.name = options.name || "tmp";
+  const filepath = "/str/" + options.name;
+  if (img instanceof ArrayBuffer) {
+    cheerpjAddStringFile(filepath, new Uint8Array(img));
+    return await openImage(imagej, filepath);
+  } else {
+    const formats = {
+      uint8: "8-bit",
+      uint16: "16-bit Unsigned",
+      int16: "16-bit Signed",
+      uint32: "32-bit Unsigned",
+      int32: "32-bit Signed",
+      float32: "32-bit Real",
+      flaot64: "64-bit Real"
+    };
+    cheerpjAddStringFile(filepath, new Uint8Array(img._rvalue));
+    let format = formats[img._rdtype];
+
+    if (img._rshape.length === 3) {
+      let number = img._rshape[2];
+      if (img._rshape[2] === 3) {
+        format = "24-bit RGB";
+        number = 1;
+      }
+      return await imagej.run(
+        "Raw...",
+        `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} number=${number} little-endian`
+      );
+    } else if (img._rshape.length === 4) {
+      if (img._rshape[3] === 3) {
+        format = "24-bit RGB";
+      } else {
+        if (img._rshape[3] !== 1) {
+          throw "channel dimension (last) can only be 1 or 3";
+        }
+      }
+      return await imagej.run(
+        "Raw...",
+        `open=${filepath} image=[${format}] width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]} little-endian`
+      );
+    } else if (img._rshape.length === 2) {
+      return await imagej.run(
+        "Raw...",
+        `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} little-endian`
+      );
+    }
+  }
+}
+
+const typeMapping = {
+  uint8: 0, //GRAY8 8-bit grayscale (unsigned)
+  uint16: 1, //GRAY16 16-bit grayscale (unsigned)
+  float32: 2 //	GRAY32 32-bit floating-point grayscale
+};
+
+//convert numpy array to ImagePlus
+async function ndarrayToImagePlus(array) {
+  if (!typeMapping[array._rdtype]) {
+    if (promise)
+      await cjCall(
+        promise,
+        "reject",
+        "unsupported array dtype: " +
+          array._rdtype +
+          ", valid dtypes: uint8, uint16, flat32"
+      );
+    else {
+      console.error(
+        "unsupported array dtype: " +
+          array._rdtype +
+          ", valid dtypes: uint8, uint16, flat32"
+      );
+    }
+  }
+  const shape = Int16Array.from([1, 1, 1, 1, 1]);
+  if (array._rshape.length === 2) {
+    shape[3] = array._rshape[0]; // height
+    shape[4] = array._rshape[1]; // width
+  } else if (array._rshape.length === 3) {
+    shape[2] = array._rshape[0]; // channel
+    shape[3] = array._rshape[1]; // height
+    shape[4] = array._rshape[2]; // width
+  } else if (array._rshape.length === 4) {
+    shape[1] = array._rshape[0]; // stack
+    shape[2] = array._rshape[1]; // channel
+    shape[3] = array._rshape[2]; // height
+    shape[4] = array._rshape[3]; // width
+  } else if (array._rshape.length === 5) {
+    shape[0] = array._rshape[0]; // frame
+    shape[1] = array._rshape[1]; // stack
+    shape[2] = array._rshape[2]; // channel
+    shape[3] = array._rshape[3]; // height
+    shape[4] = array._rshape[4]; // width
+  } else {
+    if (promise)
+      await cjCall(
+        promise,
+        "reject",
+        "unsupported array shape: " +
+          array._rshape +
+          ", allowed dimensions: 2-5"
+      );
+    else {
+      console.error(
+        "unsupported array shape: " +
+          array._rshape +
+          ", allowed dimensions: 2-5"
+      );
+    }
+  }
+  const ip = await ij.createImagePlus(
+    cjTypedArrayToJava(new Uint8Array(array._rvalue)),
+    typeMapping[array._rdtype],
+    cjTypedArrayToJava(shape),
+    array.title || "untitiled image"
+  );
+  return ip;
+}
 // Note: 'channel', 'slice' and 'frame' are one-based indexes
 async function getImageData(imagej, imp, all, channel, slice, frame) {
   // const name = cjStringJavaToJs(await cjCall(imp, "getTitle"));
@@ -485,7 +649,7 @@ function downloadBytesFile(fileByteArray, filename) {
 
 function openImage(imagej, path) {
   if (path) {
-    return imagej.open(path);
+    return imagej.openAsync(path);
   }
   return new Promise((resolve, reject) => {
     const fileInput = document.getElementById("open-file");
@@ -503,7 +667,7 @@ function openImage(imagej, path) {
           mountFile(files[i])
             .then(filepath => {
               imagej
-                .open(filepath)
+                .openAsync(filepath)
                 .then(resolve)
                 .catch(reject)
                 .finally(() => {
@@ -614,6 +778,13 @@ async function fixMenu() {
   // addMenuItem({
   //   label: "Debug",
   //   async callback() {
+  //     const bytes = new ArrayBuffer(100*100*2);
+  //     const pixels = new Uint16Array(bytes);
+  //     for(let i=0;i<1000;i++){
+  //       pixels[i] = i;
+  //     }
+  //     const shape = Int16Array.from([1, 1, 1, 100, 100]);
+  //     await ij.createImagePlus(cjTypedArrayToJava(new Uint8Array(bytes)), 1, cjTypedArrayToJava(shape), "test image");
   //   }
   // });
 }
@@ -642,7 +813,7 @@ function setupDragDropPaste(imagej) {
               type: "text/plain"
             });
             mountFile(file).then(filepath => {
-              imagej.open(filepath).finally(() => {
+              imagej.openAsync(filepath).finally(() => {
                 cheerpjRemoveStringFile(filepath);
               });
             });
@@ -654,7 +825,7 @@ function setupDragDropPaste(imagej) {
           saveFileToFS(imagej, file);
         } else {
           mountFile(file).then(filepath => {
-            imagej.open(filepath).finally(() => {
+            imagej.openAsync(filepath).finally(() => {
               cheerpjRemoveStringFile(filepath);
             });
           });
@@ -732,7 +903,7 @@ function setupDragDropPaste(imagej) {
                 { type: blob.type || type }
               );
               mountFile(file).then(filepath => {
-                imagej.open(filepath).finally(() => {
+                imagej.openAsync(filepath).finally(() => {
                   cheerpjRemoveStringFile(filepath);
                 });
               });
@@ -980,7 +1151,7 @@ async function loadContentFromUrl(imagej, url) {
       url = tmp || url;
     }
 
-    await imagej.open(url);
+    await imagej.openAsync(url);
     Snackbar.show({
       text: "Successfully opened " + url,
       pos: "bottom-left"
@@ -1000,29 +1171,64 @@ async function processUrlParameters(imagej) {
   if (urlParams.has("open")) {
     const urls = urlParams.getAll("open");
     for (let url of urls) {
-      await loadContentFromUrl(imagej, url);
+      if (url.startsWith("http")) await loadContentFromUrl(imagej, url);
+      else {
+        const decompressed = LZString.decompressFromEncodedURIComponent(url);
+        if (decompressed) {
+          const data = JSON.parse(decompressed);
+          const blob = new Blob([data.content]);
+          const file = new File([blob], data.name, {
+            type: "text/plain"
+          });
+          mountFile(file).then(filepath => {
+            imagej.openAsync(filepath).finally(() => {
+              cheerpjRemoveStringFile(filepath);
+            });
+          });
+          Snackbar.show({
+            text: "Script loaded from URL",
+            pos: "bottom-left"
+          });
+        } else {
+          console.error("Failed to decompress url: ", url);
+        }
+      }
     }
   }
   if (urlParams.has("run")) {
     const urls = urlParams.getAll("run");
     for (let url of urls) {
       try {
-        Snackbar.show({
-          text: "Fetching and running macro from: " + url,
-          pos: "bottom-left"
-        });
-        if (url.includes("//zenodo.org/record")) {
-          url = await convertZenodoFileUrl(url);
-          if (!url.endsWith(".ijm")) throw new Error("not an imagej macro");
-        } else {
-          // convert to raw if we can
-          const tmp = await githubUrlRaw(url, ".ijm");
-          url = tmp || url;
-        }
+        if (url.startsWith("http")) {
+          Snackbar.show({
+            text: "Fetching and running macro from: " + url,
+            pos: "bottom-left"
+          });
+          if (url.includes("//zenodo.org/record")) {
+            url = await convertZenodoFileUrl(url);
+            if (!url.endsWith(".ijm")) throw new Error("not an imagej macro");
+          } else {
+            // convert to raw if we can
+            const tmp = await githubUrlRaw(url, ".ijm");
+            url = tmp || url;
+          }
 
-        const blob = await fetch(url).then(r => r.blob());
-        const macro = await new Response(blob).text();
-        await imagej.runMacro(macro, "");
+          const blob = await fetch(url).then(r => r.blob());
+          const macro = await new Response(blob).text();
+          await imagej.runMacroAsync(macro, "");
+        } else {
+          const decompressed = LZString.decompressFromEncodedURIComponent(url);
+          if (decompressed) {
+            const data = JSON.parse(decompressed);
+            await imagej.runMacroAsync(data.content, "");
+            Snackbar.show({
+              text: "Executed script from URL",
+              pos: "bottom-left"
+            });
+          } else {
+            console.error("Failed to decompress url: ", url);
+          }
+        }
       } catch (e) {
         Snackbar.show({
           text: "Failed to run macro: " + e.toString(),
@@ -1094,6 +1300,7 @@ window.onImageJInitialized = async () => {
     getPlugins: await cjResolveCall("ij.Menus", "getPlugins", []),
     getPlugInsPath: await cjResolveCall("ij.Menus", "getPlugInsPath", []),
     getImage: await cjResolveCall("ij.IJ", "getImage", []),
+    createImagePlus: await cjResolveCall("ij.IJ", "createImagePlus", null),
     save: await cjResolveCall("ij.IJ", "save", [
       "ij.ImagePlus",
       "java.lang.String"
@@ -1132,9 +1339,27 @@ window.onImageJInitialized = async () => {
     openAsBytes: await cjResolveCall("ij.IJ", "openAsBytes", [
       "java.lang.String"
     ]),
-    saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null)
+    saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null),
     // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
+    getImageData,
+    showImage,
+    ndarrayToImagePlus
+  };
+
+  imagej.runMacroAsync = function(macro, args) {
+    return new Promise(resolve => {
+      window.onMacroResolve = resolve;
+      // TODO: handle reject
+      window.onMacroReject = resolve;
+      imagej.runMacro(macro, args);
+    });
+  };
+  imagej.openAsync = function(url) {
+    return new Promise(resolve => {
+      window.onOpenResolve = resolve;
+      imagej.open(url);
+    });
   };
   window.ij = imagej;
   setupDragDropPaste(imagej);
@@ -1146,7 +1371,6 @@ window.onImageJInitialized = async () => {
       core_api,
       imagej,
       loader,
-      getImageData,
       javaBytesToArrayBuffer,
       saveImage,
       openImage,
@@ -1165,10 +1389,7 @@ window.onImageJInitialized = async () => {
   loader.style.display = "none";
 
   setTimeout(() => {
-    localStorage.setItem(
-      "cheepjPreload",
-      cjGetRuntimeResources()
-    );
+    localStorage.setItem("cheepjPreload", cjGetRuntimeResources());
   }, 1000);
   console.timeEnd("Loading ImageJ.JS");
 };
