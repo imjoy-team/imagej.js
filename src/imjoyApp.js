@@ -321,15 +321,6 @@ export async function setupImJoyApp(setAPI) {
   elem.id = "imjoy-menu";
   elem.innerHTML = APP_TEMPLATE;
   document.body.appendChild(elem);
-
-  // const titleBar = document.querySelector(".titleBar");
-  // const updateImJoyIconPos = () => {
-  //   const bbox = titleBar.getBoundingClientRect();
-  //   const elem = document.getElementById("imjoy-menu");
-  //   elem.style.left = bbox.left - 4 + "px";
-  //   elem.style.top = bbox.top + 1 + "px";
-  // };
-  // titleBar.addEventListener("drag", updateImJoyIconPos);
   document.head.insertAdjacentHTML("beforeend", CSStyle);
 
   const app = new Vue({
