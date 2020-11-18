@@ -63,8 +63,8 @@ async function startImJoy(app, imjoy) {
         width = -1;
         height = -1;
       } else {
-        width = w.w * 30;
-        height = w.h * 30;
+        width = Math.min(w.w * 30, window.screen.width);
+        height = Math.min(w.h * 30, window.screen.height);
       }
       await window.ij.createPlugInFrame(title, 0, 100, width, height);
       // find the window element by the title
@@ -243,9 +243,7 @@ const CSStyle = `
 </style>`;
 
 const APP_TEMPLATE = `
-
-
-<div style="padding-left: 5px;">
+<div style="padding-left: 1px;padding-top: 1px;">
 <div class="dropdown">
   <img class="dropbtn" src="https://imjoy.io/static/img/imjoy-icon-white.svg">
   <span class="dropbtn dropbtn-ext">ImJoy</span>
@@ -322,22 +320,18 @@ export async function setupImJoyApp(setAPI) {
   var elem = document.createElement("div");
   elem.id = "imjoy-menu";
   elem.innerHTML = APP_TEMPLATE;
-  elem.style.position = "absolute";
   document.body.appendChild(elem);
 
-  const titleBar = document.querySelector(".titleBar");
-  const updateImJoyIconPos = () => {
-    const bbox = titleBar.getBoundingClientRect();
-    const elem = document.getElementById("imjoy-menu");
-    elem.style.left = bbox.left - 4 + "px";
-    elem.style.top = bbox.top + 1 + "px";
-  };
-  titleBar.addEventListener("drag", updateImJoyIconPos);
-  updateImJoyIconPos();
-  setTimeout(() => {
-    titleBar.dispatchEvent(new Event("drag"));
-  }, 1000);
+  // const titleBar = document.querySelector(".titleBar");
+  // const updateImJoyIconPos = () => {
+  //   const bbox = titleBar.getBoundingClientRect();
+  //   const elem = document.getElementById("imjoy-menu");
+  //   elem.style.left = bbox.left - 4 + "px";
+  //   elem.style.top = bbox.top + 1 + "px";
+  // };
+  // titleBar.addEventListener("drag", updateImJoyIconPos);
   document.head.insertAdjacentHTML("beforeend", CSStyle);
+
   const app = new Vue({
     el: "#imjoy-menu",
     data: {

@@ -1085,7 +1085,7 @@ function fixStyle() {
       margin-top: -14px!important;
     }
     #imjoy-menu {
-      margin-top: -1px;
+      margin-top: -2px;
     }
     `;
     // Get the first script tag
@@ -1402,7 +1402,10 @@ window.onImageJInitialized = async () => {
   if (window.self !== window.top) {
     setAPI(null);
   } else {
-    setupImJoyApp(setAPI);
+    await setupImJoyApp(setAPI);
+    const titleBar = document.querySelector(".titleBar");
+    const elem = document.getElementById("imjoy-menu");
+    titleBar.parentNode.insertBefore(elem, titleBar.nextSibling);
   }
 
   processUrlParameters(imagej);
