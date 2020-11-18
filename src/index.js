@@ -109,7 +109,10 @@ window.shareViaQRCode = (name, content) => {
     function(err, canvas) {
       if (err) throw err;
       canvas.toBlob(function(blob) {
-        mountFile(blob).then(filepath => {
+        const file = new File([blob], "QRCode_" + name.split(".")[0] + ".png", {
+          type: "text/plain"
+        });
+        mountFile(file).then(filepath => {
           ij.openAsync(filepath).finally(() => {
             cheerpjRemoveStringFile(filepath);
           });
