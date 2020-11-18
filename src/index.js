@@ -1,7 +1,7 @@
 import { setupImJoyApp } from "./imjoyApp.js";
 import { setupImJoyAPI } from "./imjoyAPI.js";
 import { githubUrlRaw, convertZenodoFileUrl } from "./utils.js";
-
+import LZString from "lz-string";
 import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
@@ -51,12 +51,38 @@ window.onEditorResized = () => {
   }, 1);
 };
 
-window.onEditorTextChanged = () => {
-  // for(let id in codeEditors){
-  //   const textArea = document.getElementById(id);
-  //   codeEditors[id].setValue(textArea.value);
-  // }
+window.onEditorTextChanged = (name, content) => {
+  // update the sharing url
+  if(name === sharingScript.name){
+    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify({name, content}))
+    insertUrlParam("open", compressed);
+  }
 };
+
+function insertUrlParam(key, value) {
+  if (history.pushState) {
+      let searchParams = new URLSearchParams(window.location.search);
+      searchParams.set(key, value);
+      let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + searchParams.toString();
+      window.history.pushState({path: newurl}, '', newurl);
+  }
+}
+
+let sharingScript = null;
+window.shareViaURL = (name, content)=>{
+  const compressed = LZString.compressToEncodedURIComponent(JSON.stringify({name, content}))
+  insertUrlParam("open", compressed);
+  sharingScript = {name, content};
+  let message = `The script is encoded as URL, you can now copy and share the URL in the address bar!`;
+  if(compressed.length > (8192-100)){
+    message = message + "\nWARNING: the generated URL might be too long for some browser, you may want to share it via Github or Gist instead.";
+  }
+  alert(message);
+}
+
+window.shareViaGithub = ()=>{
+  window.open("https://github.com/imjoy-team/imagej.js#sharing-images-macro-or-plugins-with-url-parameters")
+}
 
 // setup a hook for fixing mobile touch event
 const _createElement = document.createElement;
@@ -1131,29 +1157,67 @@ async function processUrlParameters(imagej) {
   if (urlParams.has("open")) {
     const urls = urlParams.getAll("open");
     for (let url of urls) {
-      await loadContentFromUrl(imagej, url);
+      if(url.startsWith('http'))
+        await loadContentFromUrl(imagej, url);
+      else{
+        const decompressed = LZString.decompressFromEncodedURIComponent(url);
+        if(decompressed){
+          const data = JSON.parse(decompressed);
+          const blob = new Blob([data.content]);
+          const file = new File([blob], data.name, {
+            type: "text/plain"
+          });
+          mountFile(file).then(filepath => {
+            imagej.openAsync(filepath).finally(() => {
+              cheerpjRemoveStringFile(filepath);
+            });
+          });
+          Snackbar.show({
+            text: "Script loaded from URL",
+            pos: "bottom-left"
+          });
+        }else{
+          console.error('Failed to decompress url: ', url)
+        }
+      }
     }
   }
   if (urlParams.has("run")) {
     const urls = urlParams.getAll("run");
     for (let url of urls) {
       try {
-        Snackbar.show({
-          text: "Fetching and running macro from: " + url,
-          pos: "bottom-left"
-        });
-        if (url.includes("//zenodo.org/record")) {
-          url = await convertZenodoFileUrl(url);
-          if (!url.endsWith(".ijm")) throw new Error("not an imagej macro");
-        } else {
-          // convert to raw if we can
-          const tmp = await githubUrlRaw(url, ".ijm");
-          url = tmp || url;
+        if(url.startsWith('http')){
+          Snackbar.show({
+            text: "Fetching and running macro from: " + url,
+            pos: "bottom-left"
+          });
+          if (url.includes("//zenodo.org/record")) {
+            url = await convertZenodoFileUrl(url);
+            if (!url.endsWith(".ijm")) throw new Error("not an imagej macro");
+          } else {
+            // convert to raw if we can
+            const tmp = await githubUrlRaw(url, ".ijm");
+            url = tmp || url;
+          }
+  
+          const blob = await fetch(url).then(r => r.blob());
+          const macro = await new Response(blob).text();
+          await imagej.runMacroAsync(macro, "");
         }
-
-        const blob = await fetch(url).then(r => r.blob());
-        const macro = await new Response(blob).text();
-        await imagej.runMacroAsync(macro, "");
+        else{
+          const decompressed = LZString.decompressFromEncodedURIComponent(url);
+          if(decompressed){
+            const data = JSON.parse(decompressed);
+            await imagej.runMacroAsync(data.content, "");
+            Snackbar.show({
+              text: "Executed script from URL",
+              pos: "bottom-left"
+            });
+          }else{
+            console.error('Failed to decompress url: ', url)
+          }
+        }
+       
       } catch (e) {
         Snackbar.show({
           text: "Failed to run macro: " + e.toString(),

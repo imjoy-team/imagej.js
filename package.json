@@ -38,6 +38,7 @@
     "a11y-dialog": "^5.3.2",
     "imjoy-core": "0.13.35",
     "imjoy-rpc": "^0.2.22",
+    "lz-string": "^1.4.4",
     "mobile-drag-drop": "^2.3.0-rc.2",
     "node-snackbar": "^0.1.16",
     "vue": "^2.5.17",
