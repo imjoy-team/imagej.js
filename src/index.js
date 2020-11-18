@@ -109,7 +109,7 @@ window.shareViaQRCode = (name, content) => {
     function(err, canvas) {
       if (err) {
         alert(err.toString());
-        throw err;
+        return
       }
       canvas.toBlob(function(blob) {
         const file = new File([blob], "QRCode_" + name.split(".")[0] + ".png", {
