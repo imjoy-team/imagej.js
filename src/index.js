@@ -53,36 +53,50 @@ window.onEditorResized = () => {
 
 window.onEditorTextChanged = (name, content) => {
   // update the sharing url
-  if(name === sharingScript.name){
-    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify({name, content}))
+  if (name === sharingScript.name) {
+    const compressed = LZString.compressToEncodedURIComponent(
+      JSON.stringify({ name, content })
+    );
     insertUrlParam("open", compressed);
   }
 };
 
 function insertUrlParam(key, value) {
   if (history.pushState) {
-      let searchParams = new URLSearchParams(window.location.search);
-      searchParams.set(key, value);
-      let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + searchParams.toString();
-      window.history.pushState({path: newurl}, '', newurl);
+    let searchParams = new URLSearchParams(window.location.search);
+    searchParams.set(key, value);
+    let newurl =
+      window.location.protocol +
+      "//" +
+      window.location.host +
+      window.location.pathname +
+      "?" +
+      searchParams.toString();
+    window.history.pushState({ path: newurl }, "", newurl);
   }
 }
 
 let sharingScript = null;
-window.shareViaURL = (name, content)=>{
-  const compressed = LZString.compressToEncodedURIComponent(JSON.stringify({name, content}))
+window.shareViaURL = (name, content) => {
+  const compressed = LZString.compressToEncodedURIComponent(
+    JSON.stringify({ name, content })
+  );
   insertUrlParam("open", compressed);
-  sharingScript = {name, content};
+  sharingScript = { name, content };
   let message = `The script is encoded as URL, you can now copy and share the URL in the address bar!`;
-  if(compressed.length > (8192-100)){
-    message = message + "\nWARNING: the generated URL might be too long for some browser, you may want to share it via Github or Gist instead.";
+  if (compressed.length > 8192 - 100) {
+    message =
+      message +
+      "\nWARNING: the generated URL might be too long for some browser, you may want to share it via Github or Gist instead.";
   }
   alert(message);
-}
+};
 
-window.shareViaGithub = ()=>{
-  window.open("https://github.com/imjoy-team/imagej.js#sharing-images-macro-or-plugins-with-url-parameters")
-}
+window.shareViaGithub = () => {
+  window.open(
+    "https://github.com/imjoy-team/imagej.js#sharing-images-macro-or-plugins-with-url-parameters"
+  );
+};
 
 // setup a hook for fixing mobile touch event
 const _createElement = document.createElement;
@@ -1157,11 +1171,10 @@ async function processUrlParameters(imagej) {
   if (urlParams.has("open")) {
     const urls = urlParams.getAll("open");
     for (let url of urls) {
-      if(url.startsWith('http'))
-        await loadContentFromUrl(imagej, url);
-      else{
+      if (url.startsWith("http")) await loadContentFromUrl(imagej, url);
+      else {
         const decompressed = LZString.decompressFromEncodedURIComponent(url);
-        if(decompressed){
+        if (decompressed) {
           const data = JSON.parse(decompressed);
           const blob = new Blob([data.content]);
           const file = new File([blob], data.name, {
@@ -1176,8 +1189,8 @@ async function processUrlParameters(imagej) {
             text: "Script loaded from URL",
             pos: "bottom-left"
           });
-        }else{
-          console.error('Failed to decompress url: ', url)
+        } else {
+          console.error("Failed to decompress url: ", url);
         }
       }
     }
@@ -1186,7 +1199,7 @@ async function processUrlParameters(imagej) {
     const urls = urlParams.getAll("run");
     for (let url of urls) {
       try {
-        if(url.startsWith('http')){
+        if (url.startsWith("http")) {
           Snackbar.show({
             text: "Fetching and running macro from: " + url,
             pos: "bottom-left"
@@ -1199,25 +1212,23 @@ async function processUrlParameters(imagej) {
             const tmp = await githubUrlRaw(url, ".ijm");
             url = tmp || url;
           }
-  
+
           const blob = await fetch(url).then(r => r.blob());
           const macro = await new Response(blob).text();
           await imagej.runMacroAsync(macro, "");
-        }
-        else{
+        } else {
           const decompressed = LZString.decompressFromEncodedURIComponent(url);
-          if(decompressed){
+          if (decompressed) {
             const data = JSON.parse(decompressed);
             await imagej.runMacroAsync(data.content, "");
             Snackbar.show({
               text: "Executed script from URL",
               pos: "bottom-left"
             });
-          }else{
-            console.error('Failed to decompress url: ', url)
+          } else {
+            console.error("Failed to decompress url: ", url);
           }
         }
-       
       } catch (e) {
         Snackbar.show({
           text: "Failed to run macro: " + e.toString(),
