@@ -6,6 +6,7 @@ import Snackbar from "node-snackbar/dist/snackbar";
 import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
 import { polyfill } from "mobile-drag-drop";
+import QRCode from "qrcode";
 
 // optional import of scroll behaviour
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
@@ -93,10 +94,34 @@ function insertUrlParam(key, value) {
       "?" +
       searchParams.toString();
     window.history.pushState({ path: newurl }, "", newurl);
+    return window.location.href;
   }
 }
 
 let sharingScript = null;
+window.shareViaQRCode = (name, content) => {
+  const compressed = LZString.compressToEncodedURIComponent(
+    JSON.stringify({ name, content })
+  );
+  QRCode.toCanvas(
+    insertUrlParam("open", compressed),
+    { errorCorrectionLevel: "M" },
+    function(err, canvas) {
+      if (err) throw err;
+      canvas.toBlob(function(blob) {
+        const file = new File([blob], "QRCode_" + name.split(".")[0] + ".png", {
+          type: "text/plain"
+        });
+        mountFile(file).then(filepath => {
+          ij.openAsync(filepath).finally(() => {
+            cheerpjRemoveStringFile(filepath);
+          });
+        });
+      });
+    }
+  );
+};
+
 window.shareViaURL = (name, content) => {
   const compressed = LZString.compressToEncodedURIComponent(
     JSON.stringify({ name, content })
