@@ -72,8 +72,8 @@ function debounce(func, wait, immediate) {
   };
 }
 
-window.onEditorClose = () => {
-  if (sharingScript) {
+window.onEditorClose = (name) => {
+  if (sharingScript && name === sharingScript.name) {
     sharingScript = null;
     insertUrlParam("open", null);
   }
