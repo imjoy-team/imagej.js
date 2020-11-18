@@ -1093,6 +1093,19 @@ function fixStyle() {
 
     // Insert our new styles before the first script tag
     ref.parentNode.insertBefore(style, ref);
+  } else if (isFirefox) {
+    // Create our stylesheet
+    var style = document.createElement("style");
+    style.innerHTML = `
+    #imjoy-menu {
+      margin-top: 2px;
+    }
+    `;
+    // Get the first script tag
+    var ref = document.querySelector("script");
+
+    // Insert our new styles before the first script tag
+    ref.parentNode.insertBefore(style, ref);
   }
 }
 
