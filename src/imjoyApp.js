@@ -63,8 +63,8 @@ async function startImJoy(app, imjoy) {
         width = -1;
         height = -1;
       } else {
-        width = Math.min(w.w * 30, window.screen.width);
-        height = Math.min(w.h * 30, window.screen.height);
+        width = Math.min(w.w * 30, document.body.clientWidth);
+        height = Math.min(w.h * 30, document.body.clientHeight);
       }
       await window.ij.createPlugInFrame(title, 0, 100, width, height);
       // find the window element by the title
