@@ -105,9 +105,12 @@ window.shareViaQRCode = (name, content) => {
   );
   QRCode.toCanvas(
     insertUrlParam("open", compressed),
-    { errorCorrectionLevel: "M" },
+    { errorCorrectionLevel: "L" },
     function(err, canvas) {
-      if (err) throw err;
+      if (err) {
+        alert(err.toString());
+        throw err;
+      }
       canvas.toBlob(function(blob) {
         const file = new File([blob], "QRCode_" + name.split(".")[0] + ".png", {
           type: "text/plain"
