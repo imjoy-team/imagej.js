@@ -2,19 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="/imagej.js/manifest.webmanifest" />
     <meta name="ResourceLoaderDynamicStyles" content="" />
     <meta name="generator" content="MediaWiki 1.28.0" />
     <meta
       name="description"
       content="ImageJ is an open source image processing program designed for scientific multidimensional images."
     />
-    <link rel="shortcut icon" href="assets/img/ij2.ico" />
+    <link rel="shortcut icon" href="imagej.js/assets/img/ij2.ico" />
     <meta property="og:type" content="website" />
 
     <meta property="og:title" content="ImageJ.JS" />
 
-    <meta property="og:image" content="assets/img/imagej-js-imjoy.png" />
+    <meta property="og:image" content="imagej.js/assets/img/imagej-js-imjoy.png" />
 
     <meta
       property="og:description"
@@ -26,67 +26,19 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>ImageJ.JS</title>
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/imagej.js/style.css" />
     <script src="https://cjrtnc.leaningtech.com/20201103/loader.js"></script>
-    <link
-      rel="apple-touch-icon"
-      sizes="48x48"
-      href="assets/icons/android/android-launchericon-48-48.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="72x72"
-      href="assets/icons/android/android-launchericon-72-72.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="96x96"
-      href="assets/icons/android/android-launchericon-96-96.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="144x144"
-      href="assets/icons/android/android-launchericon-144-144.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="192x192"
-      href="assets/icons/android/android-launchericon-192-192.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="512x512"
-      href="assets/icons/android/android-launchericon-512-512.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="192x192"
-      href="assets/icons/android/android-launchericon-192-192.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="assets/icons/firefox/firefox-general-32-32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="96x96"
-      href="assets/icons/android/android-launchericon-96-96.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="assets/icons/chrome/chrome-favicon-16-16.png"
-    />
-    <script
-      async
-      src="https://cdn.jsdelivr.net/npm/pwacompat"
-      crossorigin="anonymous"
-    ></script>
+    <link rel="apple-touch-icon" sizes="48x48" href="imagej.js/assets/icons/android/android-launchericon-48-48.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="imagej.js/assets/icons/android/android-launchericon-72-72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="imagej.js/assets/icons/android/android-launchericon-96-96.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="imagej.js/assets/icons/android/android-launchericon-144-144.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="imagej.js/assets/icons/android/android-launchericon-192-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="imagej.js/assets/icons/android/android-launchericon-512-512.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="imagej.js/assets/icons/android/android-launchericon-192-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="imagej.js/assets/icons/firefox/firefox-general-32-32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="imagej.js/assets/icons/android/android-launchericon-96-96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="imagej.js/assets/icons/chrome/chrome-favicon-16-16.png">
+    <script async src="https://cdn.jsdelivr.net/npm/pwacompat" crossorigin="anonymous"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/codemirror.min.js"
       integrity="sha512-K8GMktcEqOI28I3f5C6kraFm1F4wVLvnBxGU+imS/zOLT1COAT799Ln4DJyAbpdyNt6LgMIWcwy4ptCYXCIDqA=="
@@ -152,10 +104,10 @@
   </head>
 
   <body>
-    <div id="drag-overlay">
+    <!-- <div id="drag-overlay">
       <input type="file" id="open-file" style="display: none;" />
       <span>Drop file here to open</span>
-    </div>
+    </div> -->
     <div class="container" id="imagej-container"></div>
 
     <div class="lds-ellipsis" id="loader">

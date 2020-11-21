@@ -407,7 +407,7 @@ async function startImageJ() {
     clipboardMode: "java",
     enablePreciseClassLoaders: true,
     disableErrorReporting: true,
-    javaProperties: ["user.dir=/files", "plugins.dir=/app/ij153/plugins"]
+    javaProperties: ["user.dir=/files", "plugins.dir=/app/imagej.js/ij153/plugins"]
   });
   const appContainer = document.getElementById("imagej-container");
   const elm = cheerpjCreateDisplay(-1, -1, appContainer);
@@ -428,7 +428,7 @@ async function startImageJ() {
             e.target.nodeName !== "TEXTAREA" &&
             e.target.getAttribute("role") !== "presentation"
           ) {
-            handler.apply(null, [e]);
+            handler.apply(e.target, [e]);
           } else {
             switchMenu(null);
           }
@@ -441,7 +441,7 @@ async function startImageJ() {
           // fix for mobile
           if (e.dataTransfer && !e.dataTransfer.items)
             e.dataTransfer.items = [];
-          handler.apply(null, [e]);
+          handler.apply(e.target, [e]);
         },
         options
       ]);
@@ -457,7 +457,7 @@ async function startImageJ() {
               e.target.parentNode.classList.contains("titleBar")
             )
           ) {
-            handler.apply(null, [e]);
+            handler.apply(e.target, [e]);
           } else if (
             e.target.parentNode &&
             e.target.parentNode.classList.contains("titleBar")
@@ -466,7 +466,7 @@ async function startImageJ() {
             setTimeout(() => {
               e.target.style.display = "inline-block";
             }, 2000);
-            handler.apply(null, [e]);
+            handler.apply(e.target, [e]);
           }
         },
         options
@@ -476,7 +476,7 @@ async function startImageJ() {
     }
   };
   fixWindowOrder();
-  cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53f.jar");
+  cheerpjRunMain("ij.ImageJ", "/app/imagej.js/ij153/ij-1.53f.jar");
 }
 
 async function listFiles(imagej, path) {
