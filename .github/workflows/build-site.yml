@@ -55,7 +55,7 @@ jobs:
       - name: Setup aliyun oss
         uses: manyuanrong/setup-ossutil@v2.0
         with:
-          endpoint: "imagej.oss-cn-hongkong.aliyuncs.com"
+          endpoint: "oss-cn-hongkong.aliyuncs.com"
           access-key-id: ${{ secrets.OSS_ACCESSKEYID }}
           access-key-secret: ${{ secrets.OSS_ACCESSKEYSECRET }}
       - name: Deploy to aliyun
