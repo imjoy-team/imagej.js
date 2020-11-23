@@ -144,18 +144,8 @@ textarea {
 }
 
 .cjScrollbarButton{
-  height: 16px!important;
-  width: 16px!important;
-  line-height: 16px!important;
+  color: #5d5e5f;
 }
-.cjScrollBar{
-  height: 16px!important;
-}
-
-.cjScrollBar>div {
-  height: 16px!important;
-}
-
 
 .window > div > input {
   height: 15px !important;
