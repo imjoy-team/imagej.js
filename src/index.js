@@ -407,7 +407,7 @@ async function startImageJ() {
     clipboardMode: "java",
     enablePreciseClassLoaders: true,
     disableErrorReporting: true,
-    javaProperties: ["user.dir=/files", "plugins.dir=/app/ij153/plugins"]
+    javaProperties: ["java.protocol.handler.pkgs=com.leaningtech.handlers", "user.dir=/files", "plugins.dir=/app/ij153/plugins"]
   });
   const appContainer = document.getElementById("imagej-container");
   const elm = cheerpjCreateDisplay(-1, -1, appContainer);
