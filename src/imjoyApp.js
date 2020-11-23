@@ -254,7 +254,8 @@ const APP_TEMPLATE = `
     <a href="#" title="Show ImJoy API documentation" @click="loadImJoyApp()"><i class="fa-rocket fa"></i>&nbsp;ImJoy App</a>
     <a title="Show ImJoy API documentation" href="#" @click="showAPIDocs()"><i class="fa-book fa"></i>&nbsp;ImJoy Docs</a>
     <a title="About ImJoy" href="#" @click="aboutImJoy()"><i class="fa-info-circle fa"></i>&nbsp;About ImJoy</a>
-    <a v-for="wdialog in dialogWindows" :title="wdialog.name" class="btn btn-default" @click="showWindow(wdialog)">{{wdialog.name}}</a>
+    <hr class="solid"  v-if="dialogWindows && dialogWindows.length>0">
+    <a v-for="wdialog in dialogWindows" :title="wdialog.name" style="font-size: 14px;" class="btn btn-default" @click="showWindow(wdialog)"><i class="fa-window-maximize fa"></i>&nbsp;{{wdialog.name}}</a>
     <hr class="solid">
     <a class="badge" href="https://github.com/imjoy-team/imagej.js" target="_blank"><img src="https://img.shields.io/badge/Github-ImageJ.JS-blue" alt="Github"></img></a>
   </div>

@@ -72,7 +72,7 @@ function debounce(func, wait, immediate) {
   };
 }
 
-window.onEditorClose = (name) => {
+window.onEditorClose = name => {
   if (sharingScript && name === sharingScript.name) {
     sharingScript = null;
     insertUrlParam("open", null);
@@ -407,7 +407,11 @@ async function startImageJ() {
     clipboardMode: "java",
     enablePreciseClassLoaders: true,
     disableErrorReporting: true,
-    javaProperties: ["java.protocol.handler.pkgs=com.leaningtech.handlers", "user.dir=/files", "plugins.dir=/app/ij153/plugins"]
+    javaProperties: [
+      "java.protocol.handler.pkgs=com.leaningtech.handlers",
+      "user.dir=/files",
+      "plugins.dir=/app/ij153/plugins"
+    ]
   });
   const appContainer = document.getElementById("imagej-container");
   const elm = cheerpjCreateDisplay(-1, -1, appContainer);
@@ -426,7 +430,9 @@ async function startImageJ() {
           if (
             e.target !== elm &&
             e.target.nodeName !== "TEXTAREA" &&
-            e.target.getAttribute("role") !== "presentation"
+            e.target.getAttribute("role") !== "presentation" &&
+            window._imjoy_menu_element &&
+              !window._imjoy_menu_element.contains(e.target)
           ) {
             handler.apply(null, [e]);
           } else {
@@ -1468,6 +1474,7 @@ window.onImageJInitialized = async () => {
     await setupImJoyApp(setAPI);
     const titleBar = document.querySelector(".titleBar");
     const elem = document.getElementById("imjoy-menu");
+    window._imjoy_menu_element = elem;
     titleBar.parentNode.insertBefore(elem, titleBar.nextSibling);
   }
 
