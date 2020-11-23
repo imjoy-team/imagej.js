@@ -1,5 +1,9 @@
 import Snackbar from "node-snackbar/dist/snackbar";
 
+const builtinPlugins = [
+  "https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html",
+  "https://gist.githubusercontent.com/oeway/e5c980fbf6582f25fde795262a7e33ec/raw/itk-vtk-viewer-imagej.imjoy.html"
+];
 async function startImJoy(app, imjoy) {
   await imjoy.start();
   imjoy.event_bus.on("show_message", msg => {
@@ -13,7 +17,12 @@ async function startImJoy(app, imjoy) {
     app.$forceUpdate();
   });
   imjoy.event_bus.on("plugin_loaded", p => {
-    app.showMenu();
+    if (
+      !builtinPlugins.includes(p.config.origin) &&
+      p.type !== "window" &&
+      p.type !== "rpc-window"
+    )
+      app.showMenu();
   });
   let windowCount = 0;
   imjoy.event_bus.on("add_window", async w => {
@@ -54,8 +63,8 @@ async function startImJoy(app, imjoy) {
         width = -1;
         height = -1;
       } else {
-        width = w.w * 30;
-        height = w.h * 30;
+        width = Math.min(w.w * 30, document.body.clientWidth);
+        height = Math.min(w.h * 30, document.body.clientHeight);
       }
       await window.ij.createPlugInFrame(title, 0, 100, width, height);
       // find the window element by the title
@@ -99,7 +108,10 @@ async function startImJoy(app, imjoy) {
       }, 2000);
     }
   });
-
+  // load built-in plugins
+  for (const p of builtinPlugins) {
+    app.loadPlugin(p);
+  }
   app.loadPluginByQuery();
   window.runImJoyPlugin = code => {
     loader.style.display = "block";
@@ -142,6 +154,58 @@ async function startImJoy(app, imjoy) {
         loader.style.display = "none";
       });
   };
+
+  window.callPlugin = async function(pluginName, functionName) {
+    let args = Array.prototype.slice.call(arguments).slice(2);
+    let promise = null;
+    if (args.length > 0) {
+      promise = args[args.length - 1];
+      args = args.slice(0, args.length - 1);
+    }
+    const plugin = await imjoy.pm.imjoy_api.getPlugin(null, pluginName);
+    try {
+      loader.style.display = "block";
+      for (let i = 0; i < args.length; i++) {
+        // convert ImagePlus to numpy array
+        if (args[i].constructor.name.endsWith("ImagePlus")) {
+          const imgData = await window.ij.getImageData(
+            window.ij,
+            args[i],
+            false
+          );
+          args[i] = {
+            _rtype: "ndarray",
+            _rshape: imgData.shape,
+            _rdtype: imgData.type,
+            _rvalue: imgData.bytes
+          };
+        }
+      }
+
+      const result = await plugin[functionName].apply(plugin, args);
+      if (promise) {
+        if (typeof result === "string") {
+          await cjCall(promise, "resolveString", result);
+        } else if (result._rtype === "ndarray") {
+          const ip = await ij.ndarrayToImagePlus(result);
+          await cjCall(promise, "resolveImagePlus", ip);
+        } else {
+          if (promise)
+            await cjCall(promise, "reject", "unsupported result type");
+          else {
+            console.error("Unsupported result type:", result);
+          }
+        }
+      }
+    } catch (e) {
+      if (promise) await cjCall(promise, "reject", e.toString());
+      else {
+        console.error(e);
+      }
+    } finally {
+      loader.style.display = "none";
+    }
+  };
 }
 
 const CSStyle = `
@@ -179,9 +243,7 @@ const CSStyle = `
 </style>`;
 
 const APP_TEMPLATE = `
-
-
-<div style="padding-left: 5px;">
+<div style="padding-left: 1px;padding-top: 1px;">
 <div class="dropdown">
   <img class="dropbtn" src="https://imjoy.io/static/img/imjoy-icon-white.svg">
   <span class="dropbtn dropbtn-ext">ImJoy</span>
@@ -232,8 +294,8 @@ function promisify_functions(obj, bind) {
   for (let k in obj) {
     if (typeof obj[k] === "function") {
       // make sure it returns a promise
-      const func = obj[k];
-      if (bind) func.bind(null, bind);
+      let func = obj[k];
+      if (bind) func = func.bind(null, bind);
       if (func.constructor.name !== "AsyncFunction") {
         ret[k] = function(...args) {
           return Promise.resolve(func(...args));
@@ -258,22 +320,9 @@ export async function setupImJoyApp(setAPI) {
   var elem = document.createElement("div");
   elem.id = "imjoy-menu";
   elem.innerHTML = APP_TEMPLATE;
-  elem.style.position = "absolute";
   document.body.appendChild(elem);
-
-  const titleBar = document.querySelector(".titleBar");
-  const updateImJoyIconPos = () => {
-    const bbox = titleBar.getBoundingClientRect();
-    const elem = document.getElementById("imjoy-menu");
-    elem.style.left = bbox.left - 4 + "px";
-    elem.style.top = bbox.top + 1 + "px";
-  };
-  titleBar.addEventListener("drag", updateImJoyIconPos);
-  updateImJoyIconPos();
-  setTimeout(() => {
-    titleBar.dispatchEvent(new Event("drag"));
-  }, 1000);
   document.head.insertAdjacentHTML("beforeend", CSStyle);
+
   const app = new Vue({
     el: "#imjoy-menu",
     data: {
@@ -295,8 +344,11 @@ export async function setupImJoyApp(setAPI) {
                 config.name === "ImageJ.JS" ||
                 config.type === "ImageJ.JS"
               ) {
+                if (config === "ImageJ.JS") {
+                  config = { name: "ImageJ.JS", type: "ImageJ.JS" };
+                }
                 const api = Object.assign({}, imjoy.pm.imjoy_api);
-                api.export = service_api => {
+                api.export = (_plugin, service_api) => {
                   resolve(promisify_functions(service_api));
                 };
                 api.registerCodec = () => {
@@ -419,9 +471,10 @@ export async function setupImJoyApp(setAPI) {
           })
           .then(async plugin => {
             this.plugins[plugin.name] = plugin;
-            this.showMessage(
-              `Plugin ${plugin.name} successfully loaded, you can now run it from the ImJoy plugin menu.`
-            );
+            if (!builtinPlugins.includes(plugin.config.origin))
+              this.showMessage(
+                `Plugin ${plugin.name} successfully loaded, you can now run it from the ImJoy plugin menu.`
+              );
             this.$forceUpdate();
           })
           .catch(e => {
@@ -444,8 +497,10 @@ export async function setupImJoyApp(setAPI) {
         this.$modal.show("window-modal-dialog");
       },
       closeWindow(w) {
-        this.selected_dialog_window = null;
-        this.$modal.hide("window-modal-dialog");
+        if (this.selected_dialog_window === w) {
+          this.selected_dialog_window = null;
+          this.$modal.hide("window-modal-dialog");
+        }
         const idx = this.dialogWindows.indexOf(w);
         if (idx >= 0) this.dialogWindows.splice(idx, 1);
       },

@@ -17,7 +17,7 @@ This project is currently under development, please expect frequent changes.
 
 ## Sharing images, macro or plugins with URL parameters
 
-ImageJ.JS web app supports loading predefined images, macro or plugin by constructing a URL. The following options are supported:
+To facilitate the sharing of images, macro, and plugins, ImageJ.JS web app supports loading predefined images, macro or plugin by constructing a URL. The following options are supported:
 1. `open`: used to open an image or macro script automatically when the user click the link. For example: `https://ij.imjoy.io/?open=https://github.com/imjoy-team/imagej.js/blob/master/src/assets/img/screenshot-1.png`.
 2. `run`: used to directly run a macro script stored under a url, e.g. on Github or Gist. For example: `https://ij.imjoy.io/?run=https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac`.
 2. `plugin`: used to load an ImJoy plugin when the user click the link. For example: `https://ij.imjoy.io/?plugin=https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html`
@@ -27,6 +27,49 @@ If you want to use two options `open` and `run`, then use `&` to connect them: `
 You can also use multple times the same option, for example open multiple `open`, you just need to connect them with `&` as the above example.
 
 **Note for the URL**: not every url can be loaded into ImageJ.JS, it must be starts with `https` and the site should have [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) enabled. In general you can load files from Github repository,  [Gist](https://gist.github.com/) and [Zenodo](https://zenodo.org/). Typically, Github or Gist is suitable for storing macro files or small test images, if you have large images Zenodo is recommended.
+
+### Encoding file directly to the URL
+For small script file, one can directly encode the content into the URL (so you don't need to upload it to a server). The easiest way to use this feature is to open the script/macro editor, then click "Share -> Share via URL" in the menu. You will get a long encoded string followed after `https://ij.imjoy/?open=`.
+
+As a tip, you can use URL shorten services such as [tiny.cc](https://tiny.cc/) to make a very short URL. This will make the url more readable and also fit in a tweet message for example.
+
+Another tip is, if you want to run the script directly, simply change `open` to `run` in the url.
+
+If you are a developer, this is implemented by decompress a long string (i.e. file name + content) encoded with a javascript library named [lz-string](https://github.com/pieroxy/lz-string). If you want to generate a valid string, you need to first make a json object with the file name and content: `{"name": <FILE_NAME>, "content": <FILE_CONTENT>}` then convert it a string and compress it via `LZString.compressToEncodedURIComponent`. Finally, add the compressed string after `https://ij.imjoy/?open=` or `https://ij.imjoy/?run=`. 
+
+Besides Javascript, you can find `lz-string` implementation in other programming languages [here](https://github.com/pieroxy/lz-string#other-languages).
+
+## ImageJ.JS badges
+
+If you use ImageJ.JS in your project, it is recommended to add one of our ImageJ.JS badge to your project repository (e.g. on Github) or website. We have two official badges: ![launch ImageJ.JS](https://ij.imjoy.io/assets/badge/launch-imagej-js-badge.svg) and ![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg). A typical use case is to use the badges with the custom ImageJ.JS URL in a Github repo.
+
+For starting ImageJ.JS (e.g. with preloaded macro or image), you can use the ![launch ImageJ.JS](https://ij.imjoy.io/assets/badge/launch-imagej-js-badge.svg) badge.
+
+Markdown:
+```
+[![launch ImageJ.JS](https://ij.imjoy.io/assets/badge/launch-imagej-js-badge.svg)](https://ij.imjoy.io)
+```
+
+reStructuredText:
+```
+.. image:: https://ij.imjoy.io/assets/badge/launch-imagej-js-badge.svg
+ :target: https://ij.imjoy.io
+```
+
+For opening images or macro, you can use the ![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg) badge.
+
+
+Markdown:
+```
+[![open in ImageJ.JS](https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg)](https://ij.imjoy.io/?open=YOUR_IMAGE_URL)
+```
+
+reStructuredText:
+```
+.. image:: https://ij.imjoy.io/assets/badge/open-in-imagej-js-badge.svg
+ :target: https://ij.imjoy.io/?open=YOUR_IMAGE_URL
+```
+
 
 ### Example usage: sharing macro via Github/Gist
 If you made a ImageJ macro that you want to share, you can store them in your project repo on Github, or simply go to Gist(https://gist.github.com), paste it and get the URL. For example, we stored a demo macro here: https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac. Note: set the file extension as `.ijm`.
@@ -104,7 +147,26 @@ img = await ij.getImage("ndarray")
 ```
 Optionally, you can specify it as "tiff", "png", "jpeg", "gif", "zip", "raw", "avi", "bmp", "fits", "pgm", "text image", "lut", "selection", "measurements", "xy Coordinates" or "text".
 
-For a stack, `format` can be set as an object with keys: `channel`, `slice`, `frame` (the values are one-based indexes), otherwise it will return the data of the current slice. 
+For a stack, `format` can be set as an object with keys: `channel`, `slice`, `frame` (the values are one-based indexes), otherwise it will return the data of the current slice. If you want to get whole image with all the dimensions, pass `{"all": true}` as `format`.
+
+The following example plugin shows how to get a stack of image and visualize it in the itk-vtk-viewer:
+```js
+class ImJoyPlugin {
+  async setup() {
+     const ij = await api.getWindow('ImageJ.JS')
+     await ij.runMacro('run("Fly Brain");')
+  }
+
+  async run(ctx) {
+    const ij = await api.getWindow('ImageJ.JS')
+    const img = await ij.getImage({format: 'ndarray', all: true})
+    const viewer = await api.createWindow({src: "https://kitware.github.io/itk-vtk-viewer/app/"})
+    await viewer.setImage(img)
+  }
+}
+
+api.export(new ImJoyPlugin())
+```
 
 ### getDimensions()
 Return the dimensions of the image as an array of [`width`, `height`, `nChannels`, `nSlices`, `nFrames`].
