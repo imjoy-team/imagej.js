@@ -139,6 +139,20 @@ textarea {
   border-radius: 0 0 4px 4px;
 }
 
+.cjScrollbarButton{
+  height: 16px!important;
+  width: 16px!important;
+  line-height: 16px!important;
+}
+.cjScrollBar{
+  height: 16px!important;
+}
+
+.cjScrollBar>div {
+  height: 16px!important;
+}
+
+
 .window > div > input {
   height: 15px !important;
 }
