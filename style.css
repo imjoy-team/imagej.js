@@ -126,6 +126,10 @@ textarea {
   outline-width: thin;
 }
 
+#cheerpjDisplay {
+ font-family: Arial, Helvetica, sans-serif!important;
+}
+
 #cheerpjDisplay > div.bordered {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3) !important;
   border-radius: 0 0 4px 4px;
