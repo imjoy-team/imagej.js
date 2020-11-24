@@ -1099,6 +1099,10 @@ function registerServiceWorker() {
   }
 }
 
+function isIpadOS() {
+  return (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 0) || navigator.platform === 'iPad';
+}
+
 function iOS() {
   return (
     [
@@ -1130,7 +1134,7 @@ function getCSSRule(search) {
 }
 
 function fixStyle() {
-  if (iOS()) {
+  if (iOS() && !isIpadOS()) {
     // Create our stylesheet
     var style = document.createElement("style");
     style.innerHTML = `.titleBar>.controls {
