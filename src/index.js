@@ -224,6 +224,32 @@ function replaceTextArea(elm, fileName) {
     mode = {
       name: "javascript"
     };
+    elm.classList.add("prism-live");
+    elm.classList.add("language-js"); 
+    const script = document.createElement("script");  
+    script.type = "text/javascript";  
+    script.src = "https://live.prismjs.com/src/prism-live.js";  
+    document.body.appendChild(script); 
+    script.onload = ()=>{
+      document.body.removeChild(script);
+      
+      setTimeout(()=>{
+        elm.style.color = "transparent";
+        elm.style.backgroundColor = "transparent";
+        elm.style.zIndex = "11";
+        elm.style.height = "100%";
+        // pre code block
+        elm.previousSibling.style.zIndex = "10"
+        elm.previousSibling.style.top = "45px"
+        
+        elm.parentNode.style.overflow = "auto";
+        elm.parentNode.parentNode.nextSibling.style.zIndex = "12";
+        elm.parentNode.parentNode.nextSibling.nextSibling.nextSibling.style.zIndex = "12";
+
+      }, 500)
+      
+    }
+
   } else if (fileName.endsWith(".py")) {
     mode = {
       name: "python"
@@ -231,35 +257,35 @@ function replaceTextArea(elm, fileName) {
   } else {
     return;
   }
-  const editorDiv = _createElement.call(document, "DIV");
-  editorDiv.setAttribute("style", elm.getAttribute("style"));
-  editorDiv.style["z-index"] = 0;
-  const myCodeMirror = CodeMirror(editorDiv, {
-    value: elm.value,
-    mode,
-    lineNumbers: false,
-    matchBrackets: true
-  });
-  const bbox = elm.getBoundingClientRect();
-  myCodeMirror.setSize(bbox.width - 8, bbox.height - 7);
-  setTimeout(function() {
-    myCodeMirror.refresh();
-  }, 1);
-  elm.parentNode.appendChild(editorDiv);
-  elm.id =
-    "_" +
-    Math.random()
-      .toString(36)
-      .substr(2, 9);
-  codeEditors[elm.id] = myCodeMirror;
-  myCodeMirror.on("change", () => {
-    elm.value = myCodeMirror.getValue();
-    const event = new Event("input", {
-      bubbles: true,
-      cancelable: true
-    });
-    elm.dispatchEvent(event);
-  });
+  // const editorDiv = _createElement.call(document, "DIV");
+  // editorDiv.setAttribute("style", elm.getAttribute("style"));
+  // editorDiv.style["z-index"] = 0;
+  // const myCodeMirror = CodeMirror(editorDiv, {
+  //   value: elm.value,
+  //   mode,
+  //   lineNumbers: false,
+  //   matchBrackets: true
+  // });
+  // const bbox = elm.getBoundingClientRect();
+  // myCodeMirror.setSize(bbox.width - 8, bbox.height - 7);
+  // setTimeout(function() {
+  //   myCodeMirror.refresh();
+  // }, 1);
+  // elm.parentNode.appendChild(editorDiv);
+  // elm.id =
+  //   "_" +
+  //   Math.random()
+  //     .toString(36)
+  //     .substr(2, 9);
+  // codeEditors[elm.id] = myCodeMirror;
+  // myCodeMirror.on("change", () => {
+  //   elm.value = myCodeMirror.getValue();
+  //   const event = new Event("input", {
+  //     bubbles: true,
+  //     cancelable: true
+  //   });
+  //   elm.dispatchEvent(event);
+  // });
 }
 
 document.createElement = function(type) {
@@ -430,7 +456,7 @@ async function startImageJ() {
           if (
             e.target !== elm &&
             e.target.nodeName !== "TEXTAREA" &&
-            e.target.getAttribute("role") !== "presentation" &&
+            e.target.nodeName !== "PRE"  &&
             window._imjoy_menu_element &&
               !window._imjoy_menu_element.contains(e.target)
           ) {
