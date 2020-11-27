@@ -1374,6 +1374,7 @@ window.onImageJInitialized = async () => {
     showStatus: await cjResolveCall("ij.IJ", "showStatus", [
       "java.lang.String"
     ]),
+    showProgress: await cjResolveCall("ij.IJ", "showProgress", ["double"]),
     showMessage: await cjResolveCall("ij.IJ", "showMessage", [
       "java.lang.String",
       "java.lang.String"

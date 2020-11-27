@@ -367,12 +367,20 @@ export async function setupImJoyApp(setAPI) {
               }
             });
           },
+          async showStatus(_plugin, msg) {
+            await window.ij.showStatus(msg);
+          },
+          async showProgress(_plugin, p) {
+            if (p > 1) p = p / 100;
+            await window.ij.showProgress(p);
+          },
           async showMessage(_plugin, msg, duration) {
             duration = duration || 5;
             Snackbar.show({
               text: msg,
               pos: "bottom-left"
             });
+            await window.ij.showStatus(msg);
           },
           async showDialog(_plugin, config) {
             config.dialog = true;
