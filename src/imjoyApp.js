@@ -381,7 +381,12 @@ export async function setupImJoyApp(setAPI) {
         }
       });
       this.imjoy = imjoy;
-      startImJoy(this, this.imjoy);
+      startImJoy(this, this.imjoy).then(() => {
+        imjoy.pm.reloadPluginRecursively({
+          uri:
+            "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html"
+        });
+      });
     },
     methods: {
       showMenu() {

@@ -432,7 +432,7 @@ async function startImageJ() {
             e.target.nodeName !== "TEXTAREA" &&
             e.target.getAttribute("role") !== "presentation" &&
             window._imjoy_menu_element &&
-              !window._imjoy_menu_element.contains(e.target)
+            !window._imjoy_menu_element.contains(e.target)
           ) {
             handler.apply(null, [e]);
           } else {
@@ -1100,7 +1100,10 @@ function registerServiceWorker() {
 }
 
 function isIpadOS() {
-  return (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 0) || navigator.platform === 'iPad';
+  return (
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 0) ||
+    navigator.platform === "iPad"
+  );
 }
 
 function iOS() {
