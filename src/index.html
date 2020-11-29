@@ -152,6 +152,9 @@
   </head>
 
   <body>
+    <div class="site-tips">
+      中国用户请使用镜像站点 <a href="https://cnij.imjoy.io">https://cnij.imjoy.io</a>
+    </div>
     <div id="drag-overlay">
       <input type="file" id="open-file" style="display: none;" />
       <span>Drop file here to open</span>
@@ -213,6 +216,12 @@
       integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
       crossorigin="anonymous"
     />
+    <script>
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timeZone === 'Asia/Shanghai' && window.location.hostname !== 'cnij.imjoy.io') {
+        document.getElementsByClassName('site-tips')[0].style.display = 'block';
+      }
+    </script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script
       async
