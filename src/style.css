@@ -2,6 +2,7 @@ body {
   width: 100vw;
   height: 100vh;
   margin: 0px;
+  overflow: hidden;
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -149,6 +150,11 @@ textarea {
 
 .window > div > input {
   height: 15px !important;
+}
+
+#site-tips-container a {
+  color: #448aff;
+  text-decoration: none;
 }
 
 #drag-overlay {

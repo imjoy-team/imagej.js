@@ -267,7 +267,7 @@ Before start, please make sure you have [nodejs](https://nodejs.org/en/download/
 git clone https://github.com/imjoy-team/imagej.js
 cd imagej.js
 npm install
-npm build # files will be saved into ./dist folder
+npm run build # files will be saved into ./dist folder
 sh get-imagej.sh # fetch precompiled imagej
 npm run serve
 ```
