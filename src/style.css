@@ -152,12 +152,7 @@ textarea {
   height: 15px !important;
 }
 
-.site-tips {
-  text-align: center;
-  display: none;
-}
-
-.site-tips a {
+#site-tips-container a {
   color: #448aff;
   text-decoration: none;
 }

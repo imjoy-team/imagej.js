@@ -1337,7 +1337,7 @@ async function processUrlParameters(imagej) {
 }
 
 window.onImageJInitialized = async () => {
-  document.getElementsByClassName('site-tips')[0].style.display = 'none';
+  document.getElementById('site-tips-container').style.display = 'none';
   const _cheerpjCloseAsync = window.cheerpjCloseAsync;
   window.cheerpjCloseAsync = function(fds, fd, p) {
     const fdObj = fds[fd];
