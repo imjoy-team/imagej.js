@@ -44,7 +44,7 @@ window.onEditorResized = () => {
       const textArea = document.getElementById(id);
       if (textArea) {
         const bbox = textArea.getBoundingClientRect();
-        codeEditors[id].setSize(bbox.width - 8, bbox.height - 7);
+        codeEditors[id].setSize(bbox.width, bbox.height);
       } else {
         delete codeEditors[id];
       }
@@ -241,7 +241,7 @@ function replaceTextArea(elm, fileName) {
     matchBrackets: true
   });
   const bbox = elm.getBoundingClientRect();
-  myCodeMirror.setSize(bbox.width - 8, bbox.height - 7);
+  myCodeMirror.setSize(bbox.width, bbox.height);
   setTimeout(function() {
     myCodeMirror.refresh();
   }, 1);
