@@ -17,12 +17,14 @@ async function startImJoy(app, imjoy) {
     app.$forceUpdate();
   });
   imjoy.event_bus.on("plugin_loaded", p => {
+    app.plugins[p.name] = p;
     if (
       !builtinPlugins.includes(p.config.origin) &&
       p.type !== "window" &&
       p.type !== "rpc-window"
     )
       app.showMenu();
+    app.$forceUpdate();
   });
   let windowCount = 0;
   imjoy.event_bus.on("add_window", async w => {
@@ -248,7 +250,7 @@ const APP_TEMPLATE = `
   <img class="dropbtn" src="https://imjoy.io/static/img/imjoy-icon-white.svg">
   <span class="dropbtn dropbtn-ext">ImJoy</span>
   <div class="dropdown-content">
-    <a href="#" v-for="(p, name) in plugins" :key="p.id" :title="p.config.description" :style="{color: p.api.run?'#0456ef':'gray'}" @click="run(p)">{{p.name}}</a>
+    <a href="#" v-for="(p, name) in plugins" v-show="p.config.runnable!==false" :key="p.id" :title="p.config.description" :style="{color: p.api.run?'#0456ef':'gray'}" @click="run(p)">{{p.name}}</a>
     <hr class="solid"  v-if="plugins&&Object.keys(plugins).length>0">
     <a href="#" title="Load a new plugin" @click="loadPlugin()"><i class="fa-plus fa"></i>&nbsp;ImJoy Plugin</a>
     <a href="#" title="Show ImJoy API documentation" @click="loadImJoyApp()"><i class="fa-rocket fa"></i>&nbsp;ImJoy App</a>
@@ -478,6 +480,7 @@ export async function setupImJoyApp(setAPI) {
             `Please type a ImJoy plugin URL`,
             "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
           );
+          if (!p) return;
         }
         this.imjoy.pm
           .reloadPluginRecursively({
