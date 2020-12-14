@@ -2,4 +2,4 @@ node_modules
 dist
 .DS_Store
 ._imagej-js-dist
-imagej-js-dist-153e.tgz
+imagej-js-dist-*.tgz
