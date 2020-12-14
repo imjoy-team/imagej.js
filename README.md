@@ -299,7 +299,7 @@ Before start, you need to:
  1. compile imagej jar into js
     ```bash
     cd target
-    mv ij-1.53f.jar ij.jar
+    mv ij-1.53g.jar ij.jar
     # compile ij.jar and we should get
     ${CHEERPJ_DIR}/cheerpjfy.py ij.jar
     ```

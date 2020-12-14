@@ -482,7 +482,7 @@ async function startImageJ() {
     }
   };
   fixWindowOrder();
-  cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53f.jar");
+  cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53g.jar");
 }
 
 async function listFiles(imagej, path) {
@@ -1337,7 +1337,7 @@ async function processUrlParameters(imagej) {
 }
 
 window.onImageJInitialized = async () => {
-  document.getElementById('site-tips-container').style.display = 'none';
+  document.getElementById("site-tips-container").style.display = "none";
   const _cheerpjCloseAsync = window.cheerpjCloseAsync;
   window.cheerpjCloseAsync = function(fds, fd, p) {
     const fdObj = fds[fd];
