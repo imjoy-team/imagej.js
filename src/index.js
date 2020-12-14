@@ -224,6 +224,9 @@ function replaceTextArea(elm, fileName) {
     mode = {
       name: "javascript"
     };
+    elm.style.left = "-1px";
+    elm.style.top = "10px";
+    elm.style.minHeight = "100%";
     elm.classList.add("prism-live");
     elm.classList.add("language-js"); 
     const script = document.createElement("script");  
@@ -238,12 +241,14 @@ function replaceTextArea(elm, fileName) {
         elm.style.backgroundColor = "transparent";
         elm.style.zIndex = "11";
         elm.style.height = "100%";
+        elm.style.overflow = "hidden";
         // pre code block
         elm.previousSibling.style.zIndex = "10"
-        elm.previousSibling.style.top = "45px"
+        elm.previousSibling.style.top = "67px"
         
         elm.parentNode.style.overflow = "auto";
-        elm.parentNode.parentNode.nextSibling.style.zIndex = "12";
+        elm.parentNode.nextSibling.style.zIndex = "12";
+        elm.parentNode.parentNode.nextSibling.style.zIndex = "13";
         elm.parentNode.parentNode.nextSibling.nextSibling.nextSibling.style.zIndex = "12";
 
       }, 500)
