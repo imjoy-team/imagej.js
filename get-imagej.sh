@@ -12,7 +12,7 @@ rm imagej-js-dist.tgz
 
 # download imagej 1.53g
 curl -OL https://github.com/imjoy-team/ImageJA.JS/releases/download/1.53g/imagej-js-dist-153g.tgz
-tar -xvzf imagej-js-dist-153e.tgz
+tar -xvzf imagej-js-dist-153g.tgz
 
 mkdir -p dist
 
