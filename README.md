@@ -19,9 +19,10 @@ This project is currently under development, please expect frequent changes.
 
 To facilitate the sharing of images, macro, and plugins, ImageJ.JS web app supports loading predefined images, macro or plugin by constructing a URL. The following options are supported:
 1. `open`: used to open an image or macro script automatically when the user click the link. For example: `https://ij.imjoy.io/?open=https://github.com/imjoy-team/imagej.js/blob/master/src/assets/img/screenshot-1.png`.
-2. `run`: used to directly run a macro script stored under a url, e.g. on Github or Gist. For example: `https://ij.imjoy.io/?run=https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac`.
-2. `plugin`: used to load an ImJoy plugin when the user click the link. For example: `https://ij.imjoy.io/?plugin=https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html`
-
+1. `run`: used to directly run a macro script stored under a url, e.g. on Github or Gist. For example: `https://ij.imjoy.io/?run=https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac`.
+1. `plugin`: used to load an ImJoy plugin when the user click the link. For example: `https://ij.imjoy.io/?plugin=https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html`
+1. `spec`: For ImJoy plugins in Python, by default a free compute service MyBinder will be used to run Python plugins, this `spec` is used to specify the specification of MyBinder server (see details in the **ImJoy Plugin Development**)
+1. `engine`: For ImJoy plugins in Python, to specify a local Jupyter notebook server as the ImJoy plugin engine (see details **ImJoy Plugin Development**)
 If you want to use two options `open` and `run`, then use `&` to connect them: `https://ij.imjoy.io/?open=https://github.com/imjoy-team/imagej.js/blob/master/src/assets/img/screenshot-1.png&run=https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac`
 
 You can also use multple times the same option, for example open multiple `open`, you just need to connect them with `&` as the above example.
@@ -227,7 +228,22 @@ Note, you can also pass an optional path, but since ImageJ.JS won't be able to a
 
 ### save()
 Save the current image.
+## ImJoy Plugin Development
 
+Tutorial: https://imjoy.io/docs/#/i2k_tutorial
+### Run Python code with Pyodide or Jupyter notebook server
+
+ImageJ.JS supports all the ImJoy plugin types, including those written in Python.
+
+The Python plugin type can be either `web-python` or `native-python`. If you choose `web-python`, then [Pyodide](https://github.com/iodide-project/pyodide) will be used to run Python directly in the browser (no server needed).
+
+?> You can specify python packages via `requirements`(e.g. `{"type": "web-python", "requirements": ["numpy", "pandas"]}`). However, Pyodide only support limited number of libraries, including `numpy`, `scipy`, `pandas`, `scikit-learn`, `pillow` etc.
+
+For accessing more Python libraries, you need to use another type of python which is `native-python`. In order to run it, ImJoy will need to connect to a Jupyter notebook server (JupyterHub or BinderHub). By default, it will automatically connect to MyBinder.org which is a free online Jupyter service. 
+
+?> MyBinder works by building a Docker image based on a specified Github Repo with specification files (e.g. `requirements.txt` for pip, or `environment.yml` for conda). The default spec is `oeway/imjoy-binder-image/master`, and you can change by pass a URL parameter named `spec` to the ImJoy docs (e.g. `https://ij.imjoy.io/?spec=oeway/pyimagej-binder-image/master`)
+
+?> If you want to use your own Jupyter notebook server, you can 1) start your notebook server and obtain the URL with token 2) Pass another URL parameters with your notebook URL as `engine`, for example: `https://ij.imjoy.io/?engine=http://127.0.0.1:8080/?token=fad30034546630efk3923l304s3134o20d2592a3f060f3795`.
 
 ## Benchmark
 We did a preliminary benchmark to check the performance, and it seems ImageJ.JS is ~3x slower than the native.

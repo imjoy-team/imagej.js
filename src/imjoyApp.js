@@ -118,7 +118,11 @@ async function startImJoy(app, imjoy) {
   window.runImJoyPlugin = code => {
     loader.style.display = "block";
     imjoy.pm
-      .reloadPlugin({ code: code, load_dependencies: true, hot_reloading: true })
+      .reloadPlugin({
+        code: code,
+        load_dependencies: true,
+        hot_reloading: true
+      })
       .then(plugin => {
         Snackbar.show({
           text: `Plugin "${plugin.name}" loaded successfully.`,
@@ -143,7 +147,11 @@ async function startImJoy(app, imjoy) {
   window.reloadImJoyPlugin = code => {
     loader.style.display = "block";
     imjoy.pm
-      .reloadPlugin({ code: code, load_dependencies: true, hot_reloading: true})
+      .reloadPlugin({
+        code: code,
+        load_dependencies: true,
+        hot_reloading: true
+      })
       .then(plugin => {
         Snackbar.show({
           text: `Plugin "${plugin.name}" loaded successfully.`,
@@ -392,10 +400,45 @@ export async function setupImJoyApp(setAPI) {
       });
       this.imjoy = imjoy;
       startImJoy(this, this.imjoy).then(() => {
-        imjoy.pm.reloadPluginRecursively({
-          uri:
-            "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html"
-        });
+        imjoy.pm
+          .reloadPluginRecursively({
+            uri:
+              "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html"
+          })
+          .then(enginePlugin => {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const engine = queryString.get("engine");
+            const spec = urlParams.get("spec");
+            if (engine) {
+              enginePlugin.api
+                .createEngine({
+                  name: "MyCustomEngine",
+                  nbUrl: engine,
+                  url: engine.split("?")[0],
+                  spec: "oeway/imjoy-binder-image/master"
+                })
+                .then(() => {
+                  console.log("Binder Engine connected!");
+                })
+                .catch(e => {
+                  console.error("Failed to connect to MyBinder Engine", e);
+                });
+            } else {
+              enginePlugin.api
+                .createEngine({
+                  name: "MyBinder Engine",
+                  url: "https://mybinder.org",
+                  spec: spec || "oeway/imjoy-binder-image/master"
+                })
+                .then(() => {
+                  console.log("Binder Engine connected!");
+                })
+                .catch(e => {
+                  console.error("Failed to connect to MyBinder Engine", e);
+                });
+            }
+          });
       });
     },
     methods: {
