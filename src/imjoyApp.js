@@ -118,7 +118,7 @@ async function startImJoy(app, imjoy) {
   window.runImJoyPlugin = code => {
     loader.style.display = "block";
     imjoy.pm
-      .reloadPlugin({ code: code, load_dependencies: true })
+      .reloadPlugin({ code: code, load_dependencies: true, hot_reloading: true })
       .then(plugin => {
         Snackbar.show({
           text: `Plugin "${plugin.name}" loaded successfully.`,
@@ -143,7 +143,7 @@ async function startImJoy(app, imjoy) {
   window.reloadImJoyPlugin = code => {
     loader.style.display = "block";
     imjoy.pm
-      .reloadPlugin({ code: code, load_dependencies: true })
+      .reloadPlugin({ code: code, load_dependencies: true, hot_reloading: true})
       .then(plugin => {
         Snackbar.show({
           text: `Plugin "${plugin.name}" loaded successfully.`,
