@@ -1087,6 +1087,15 @@ window.onImageJInitialized = async () => {
   processUrlParameters(imagej);
 
   loader.style.display = "none";
+  imagej.runMacro('run("Text Window");');
+
+
+  setTimeout(() => {
+    const t = document.querySelector('.window>div>textarea')
+    t.parentNode.innerHTML = `<iframe src="https://imjoy.io/" style="height:100%;width:100%;"></iframe>`;
+    alert("Now you can reproduce the iframe reloading issue by 1) activating the main imagej window, 2) activating the iframe window, you will see the iframe page reloads.")
+  }, 2000);
+
 
   setTimeout(() => {
     localStorage.setItem(
