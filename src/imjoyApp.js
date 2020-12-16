@@ -415,14 +415,13 @@ export async function setupImJoyApp(setAPI) {
                 .createEngine({
                   name: "MyCustomEngine",
                   nbUrl: engine,
-                  url: engine.split("?")[0],
-                  spec: "oeway/imjoy-binder-image/master"
+                  url: engine.split("?")[0]
                 })
                 .then(() => {
-                  console.log("Binder Engine connected!");
+                  console.log("Jupyter Engine connected!");
                 })
                 .catch(e => {
-                  console.error("Failed to connect to MyBinder Engine", e);
+                  console.error("Failed to connect to Jupyter Engine", e);
                 });
             } else {
               enginePlugin.api
