@@ -116,7 +116,7 @@ window.shareViaQRCode = (name, content) => {
         type: "text/plain"
       });
       mountFile(file).then(filepath => {
-        ij.openAsync(filepath).finally(() => {
+        ij.open(filepath).finally(() => {
           cheerpjRemoveStringFile(filepath);
         });
       });
@@ -718,7 +718,7 @@ function downloadBytesFile(fileByteArray, filename) {
 
 function openImage(imagej, path) {
   if (path) {
-    return imagej.openAsync(path);
+    return imagej.open(path);
   }
   return new Promise((resolve, reject) => {
     const fileInput = document.getElementById("open-file");
@@ -736,7 +736,7 @@ function openImage(imagej, path) {
           mountFile(files[i])
             .then(filepath => {
               imagej
-                .openAsync(filepath)
+                .open(filepath)
                 .then(resolve)
                 .catch(reject)
                 .finally(() => {
@@ -819,7 +819,7 @@ function setupDragDropPaste(imagej) {
               type: "text/plain"
             });
             mountFile(file).then(filepath => {
-              imagej.openAsync(filepath).finally(() => {
+              imagej.open(filepath).finally(() => {
                 cheerpjRemoveStringFile(filepath);
               });
             });
@@ -831,7 +831,7 @@ function setupDragDropPaste(imagej) {
           saveFileToFS(imagej, file);
         } else {
           mountFile(file).then(filepath => {
-            imagej.openAsync(filepath).finally(() => {
+            imagej.open(filepath).finally(() => {
               cheerpjRemoveStringFile(filepath);
             });
           });
@@ -909,7 +909,7 @@ function setupDragDropPaste(imagej) {
                 { type: blob.type || type }
               );
               mountFile(file).then(filepath => {
-                imagej.openAsync(filepath).finally(() => {
+                imagej.open(filepath).finally(() => {
                   cheerpjRemoveStringFile(filepath);
                 });
               });
@@ -1186,7 +1186,7 @@ async function loadContentFromUrl(imagej, url) {
       url = tmp || url;
     }
 
-    await imagej.openAsync(url);
+    await imagej.open(url);
     Snackbar.show({
       text: "Successfully opened " + url,
       pos: "bottom-left"
@@ -1217,7 +1217,7 @@ async function processUrlParameters(imagej) {
             type: "text/plain"
           });
           mountFile(file).then(filepath => {
-            imagej.openAsync(filepath).finally(() => {
+            imagej.open(filepath).finally(() => {
               cheerpjRemoveStringFile(filepath);
             });
           });
@@ -1392,9 +1392,6 @@ window.onImageJInitialized = async () => {
       window.onMacroReject = resolve;
       imagej.runMacro(macro, args);
     });
-  };
-  imagej.openAsync = async function(url) {
-    await imagej.open(url);
   };
   window.ij = imagej;
   setupDragDropPaste(imagej);
