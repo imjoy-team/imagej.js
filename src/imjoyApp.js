@@ -1,6 +1,7 @@
 import Snackbar from "node-snackbar/dist/snackbar";
 
 const builtinPlugins = [
+  "https://gist.githubusercontent.com/oeway/9c78d23c101f468e723888d05b6fac6d/raw/ImageJScriptEditor.imjoy.html",
   "https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html",
   "https://gist.githubusercontent.com/oeway/e5c980fbf6582f25fde795262a7e33ec/raw/itk-vtk-viewer-imagej.imjoy.html"
 ];
@@ -131,7 +132,7 @@ async function startImJoy(app, imjoy) {
         app.plugins[plugin.name] = plugin;
         app.$forceUpdate();
         if (plugin.api && plugin.api.run) {
-          plugin.api.run({});
+          plugin.api.run({ config: {}, data: {} });
         } else {
           Snackbar.show({
             text: `No "run" function defined in Plugin "${plugin.name}".`,
@@ -193,7 +194,7 @@ async function startImJoy(app, imjoy) {
       }
 
       const result = await plugin[functionName].apply(plugin, args);
-      if (promise) {
+      if (promise && typeof promise === "function") {
         if (typeof result === "string") {
           await cjCall(promise, "resolveString", result);
         } else if (result._rtype === "ndarray") {
@@ -408,7 +409,7 @@ export async function setupImJoyApp(setAPI) {
           .then(enginePlugin => {
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
-            const engine = queryString.get("engine");
+            const engine = urlParams.get("engine");
             const spec = urlParams.get("spec");
             if (engine) {
               enginePlugin.api
