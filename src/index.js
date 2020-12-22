@@ -38,18 +38,12 @@ if (!isChrome && !isFirefox) {
 }
 
 const codeEditors = {};
-window.onEditorResized = () => {
-  setTimeout(() => {
-    for (let id in codeEditors) {
-      const textArea = document.getElementById(id);
-      if (textArea) {
-        const bbox = textArea.getBoundingClientRect();
-        codeEditors[id].setSize(bbox.width, bbox.height);
-      } else {
-        delete codeEditors[id];
-      }
-    }
-  }, 1);
+window.onEditorResized = () => {};
+
+window.createImJoyCodeEditor = async (name, type, arg) => {
+  await window.callPlugin("ImageJScriptEditor", "run", {
+    data: { arg, name, type }
+  });
 };
 
 // Returns a function, that, as long as it continues to be invoked, will not
@@ -122,7 +116,7 @@ window.shareViaQRCode = (name, content) => {
         type: "text/plain"
       });
       mountFile(file).then(filepath => {
-        ij.openAsync(filepath).finally(() => {
+        ij.open(filepath).finally(() => {
           cheerpjRemoveStringFile(filepath);
         });
       });
@@ -481,7 +475,6 @@ async function startImageJ() {
       _addEL.apply(elm, [event, handler, options]);
     }
   };
-  fixWindowOrder();
   cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53g.jar");
 }
 
@@ -725,7 +718,7 @@ function downloadBytesFile(fileByteArray, filename) {
 
 function openImage(imagej, path) {
   if (path) {
-    return imagej.openAsync(path);
+    return imagej.open(path);
   }
   return new Promise((resolve, reject) => {
     const fileInput = document.getElementById("open-file");
@@ -743,7 +736,7 @@ function openImage(imagej, path) {
           mountFile(files[i])
             .then(filepath => {
               imagej
-                .openAsync(filepath)
+                .open(filepath)
                 .then(resolve)
                 .catch(reject)
                 .finally(() => {
@@ -769,56 +762,6 @@ async function saveFileToFS(imagej, file) {
   console.log(await listFiles(imagej, "/files/"));
 }
 
-function fixWindowOrder() {
-  const cdisplay = document.getElementById("cheerpjDisplay");
-  const _appendChild = cdisplay.appendChild;
-  const sortByZIndex = function(a, b) {
-    return a.style.zIndex - b.style.zIndex;
-  };
-  function bringToTop(elm) {
-    const windows = Array.from(cdisplay.querySelectorAll(".window.bordered"));
-    let index = 0;
-    for (const w of windows.sort(sortByZIndex)) {
-      if (w === elm) {
-        w.style["z-index"] = windows.length + 1;
-      } else {
-        w.style["z-index"] = index;
-      }
-      index += 1;
-    }
-  }
-  cdisplay.appendChild = elm => {
-    try {
-      if (
-        elm.classList.contains("window") &&
-        elm.classList.contains("bordered")
-      ) {
-        bringToTop(bringToTop);
-        return;
-      }
-      elm.addEventListener("click", () => {
-        if (
-          elm.classList.contains("window") &&
-          elm.classList.contains("bordered")
-        ) {
-          bringToTop(elm);
-        }
-      });
-      setTimeout(() => {
-        if (
-          elm.classList.contains("window") &&
-          elm.classList.contains("bordered")
-        ) {
-          bringToTop(elm);
-        }
-      }, 100);
-      return _appendChild.apply(cdisplay, [elm]);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-}
-
 async function fixMenu() {
   const removes = [
     "Open Recent",
@@ -839,30 +782,17 @@ async function fixMenu() {
       const el = it.parentNode;
       el.parentNode.removeChild(el);
     }
-    // else if (it.text === "Open...") {
-    //   const openNode = it.parentNode;
-    //   const openMenu = openNode.cloneNode(true);
-    //   it.text = "Open Internal"
-    //   openMenu.onclick = e => {
-    //     e.stopPropagation();
-    //     openImage(imagej);
-    //   };
-    //   openNode.parentNode.insertBefore(openMenu, openNode)
-    // }
   }
-
-  // addMenuItem({
-  //   label: "Debug",
-  //   async callback() {
-  //     const bytes = new ArrayBuffer(100*100*2);
-  //     const pixels = new Uint16Array(bytes);
-  //     for(let i=0;i<1000;i++){
-  //       pixels[i] = i;
-  //     }
-  //     const shape = Int16Array.from([1, 1, 1, 100, 100]);
-  //     await ij.createImagePlus(cjTypedArrayToJava(new Uint8Array(bytes)), 1, cjTypedArrayToJava(shape), "test image");
-  //   }
-  // });
+  addMenuItem({
+    label: "ImJoy Code Editor",
+    group: "Plugins",
+    position: "3.1",
+    async callback() {
+      await window.callPlugin("ImageJScriptEditor", "run", {
+        data: { name: "macro.ijm" }
+      }, null);
+    }
+  });
 }
 
 function setupDragDropPaste(imagej) {
@@ -889,7 +819,7 @@ function setupDragDropPaste(imagej) {
               type: "text/plain"
             });
             mountFile(file).then(filepath => {
-              imagej.openAsync(filepath).finally(() => {
+              imagej.open(filepath).finally(() => {
                 cheerpjRemoveStringFile(filepath);
               });
             });
@@ -901,7 +831,7 @@ function setupDragDropPaste(imagej) {
           saveFileToFS(imagej, file);
         } else {
           mountFile(file).then(filepath => {
-            imagej.openAsync(filepath).finally(() => {
+            imagej.open(filepath).finally(() => {
               cheerpjRemoveStringFile(filepath);
             });
           });
@@ -979,7 +909,7 @@ function setupDragDropPaste(imagej) {
                 { type: blob.type || type }
               );
               mountFile(file).then(filepath => {
-                imagej.openAsync(filepath).finally(() => {
+                imagej.open(filepath).finally(() => {
                   cheerpjRemoveStringFile(filepath);
                 });
               });
@@ -1064,16 +994,32 @@ function addMenuItem(config) {
   };
   const index = menuIndexs[config.group || "Plugins"];
 
-  const targetMenu = document.querySelector(
+  let targetMenu = document.querySelector(
     `#cheerpjDisplay>.window>div.menuBar>.menu>.menuItem:nth-child(${index})>ul`
   );
-  for (let ch of targetMenu.children) {
-    if (ch.children[0].innerHTML === config.label) {
-      targetMenu.removeChild(ch);
-    }
-  }
+
   if (config.position) {
-    targetMenu.insertBefore(newMenu, targetMenu.children[config.position]);
+    if (typeof config.position === "number") {
+      for (let ch of targetMenu.children) {
+        if (ch.children[0].innerHTML === config.label) {
+          targetMenu.removeChild(ch);
+        }
+      }
+      targetMenu.insertBefore(newMenu, targetMenu.children[config.position]);
+    } else {
+      const [p1, p2] = config.position.split(".");
+      const menu = targetMenu.children[parseInt(p1)];
+      const subMenu = menu.querySelector(
+        `ul>.menuItem:nth-child(${parseInt(p2)})`
+      );
+      targetMenu = menu.querySelector("ul");
+      for (let ch of targetMenu.children) {
+        if (ch.children[0].innerHTML === config.label) {
+          targetMenu.removeChild(ch);
+        }
+      }
+      targetMenu.insertBefore(newMenu, subMenu);
+    }
   } else {
     targetMenu.appendChild(newMenu);
   }
@@ -1224,13 +1170,6 @@ function fixTouch() {
   }
 }
 
-function cheerpjRemoveStringFile(name) {
-  var mount = cheerpjGetFSMountForPath(name);
-  assert(mount instanceof CheerpJDataFolder);
-  const path = name.substr(mount.mountPoint.length - 1);
-  delete mount.files[path];
-}
-
 async function loadContentFromUrl(imagej, url) {
   try {
     Snackbar.show({
@@ -1247,7 +1186,7 @@ async function loadContentFromUrl(imagej, url) {
       url = tmp || url;
     }
 
-    await imagej.openAsync(url);
+    await imagej.open(url);
     Snackbar.show({
       text: "Successfully opened " + url,
       pos: "bottom-left"
@@ -1278,7 +1217,7 @@ async function processUrlParameters(imagej) {
             type: "text/plain"
           });
           mountFile(file).then(filepath => {
-            imagej.openAsync(filepath).finally(() => {
+            imagej.open(filepath).finally(() => {
               cheerpjRemoveStringFile(filepath);
             });
           });
@@ -1452,12 +1391,6 @@ window.onImageJInitialized = async () => {
       // TODO: handle reject
       window.onMacroReject = resolve;
       imagej.runMacro(macro, args);
-    });
-  };
-  imagej.openAsync = function(url) {
-    return new Promise(resolve => {
-      window.onOpenResolve = resolve;
-      imagej.open(url);
     });
   };
   window.ij = imagej;
