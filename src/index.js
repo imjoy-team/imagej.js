@@ -788,9 +788,14 @@ async function fixMenu() {
     group: "Plugins",
     position: "3.1",
     async callback() {
-      await window.callPlugin("ImageJScriptEditor", "run", {
-        data: { name: "macro.ijm" }
-      }, null);
+      await window.callPlugin(
+        "ImageJScriptEditor",
+        "run",
+        {
+          data: { name: "macro.ijm" }
+        },
+        null
+      );
     }
   });
 }
@@ -1170,6 +1175,18 @@ function fixTouch() {
   }
 }
 
+function getUrlExtension(url) {
+  url = new URL(url);
+  const tmp = url.pathname.split("/");
+  url = tmp[tmp.length - 1];
+  if (!url) return null;
+  return url
+    .split(/[#?]/)[0]
+    .split(".")
+    .pop()
+    .trim();
+}
+
 async function loadContentFromUrl(imagej, url) {
   try {
     Snackbar.show({
@@ -1185,8 +1202,33 @@ async function loadContentFromUrl(imagej, url) {
         (await githubUrlRaw(url, ".imjoy.html"));
       url = tmp || url;
     }
-
-    await imagej.open(url);
+    // if the url contains no file extension,
+    // then try to guess the file type based on Content-Type header
+    if (!getUrlExtension(url)) {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const type = response.headers.get("Content-Type");
+      let format;
+      if (type === "image/jpeg") {
+        format = ".jpg";
+      } else if (type === "image/png") {
+        format = ".jpg";
+      } else if (type === "image/gif") {
+        format = ".gif";
+      } else {
+        throw new Error("Unsupported file type: " + type);
+      }
+      const file = new File([blob], "image" + format, {
+        type
+      });
+      mountFile(file).then(filepath => {
+        imagej.open(filepath).finally(() => {
+          cheerpjRemoveStringFile(filepath);
+        });
+      });
+    } else {
+      await imagej.open(url);
+    }
     Snackbar.show({
       text: "Successfully opened " + url,
       pos: "bottom-left"
