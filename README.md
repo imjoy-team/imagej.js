@@ -292,6 +292,38 @@ Now you can go to http://127.0.0.1:9090/ to visit your local site.
 
 If you make any changes to the code, you might need to reload the page to see them.
 
+### Compile a plugin and use it in ImageJ.JS
+
+If you have an ImageJ-1 plugin and you want to use it with ImageJ.JS, you can compile it yourself.
+Here are the steps:
+ 1. get ImageJ.JS running locally by following the steps in **Run the ImageJ.JS site locally**.
+ Make sure you have the `ij-*.jar` file and `plugins` folder under the folder named `dist/ij153`.
+ 1. download and install [cheerpj compiler](https://www.leaningtech.com/pages/cheerpj.html#Download)
+
+    Change the following path to your actual path of cheerpj:
+    ```bash
+    # set CHEERPJ_DIR
+    export CHEERPJ_DIR=/path/to/your/cheerpj/installation
+    ```
+ 1. we can place the plugin jar file under `dist/ij153/plugins` and compile it with cheerpj. 
+    Here we can take MorphoLibJ plugin as an example:
+    ```bash
+    cd dist/ij153
+    # download MorphoLibJ
+    curl https://github.com/ijpb/MorphoLibJ/releases/download/v1.4.2.1/MorphoLibJ_-1.4.2.1.jar -LO
+    mv MorphoLibJ_-1.4.2.1.jar plugins/MorphoLibJ_-1.4.2.1.jar
+ 
+    # compile MorphoLibJ
+    ${CHEERPJ_DIR}/cheerpjfy.py  --deps=ij.jar plugins/MorphoLibJ_-1.4.2.1.jar
+    # extract plugins.config
+    jar xf plugins/MorphoLibJ_-1.4.2.1.jar plugins.config
+    mv plugins.config MorphoLibJ_-1.4.2.1.jar.config
+    ```
+    Now you should get `MorphoLibJ_-1.4.2.1.jar`, `MorphoLibJ_-1.4.2.1.jar.js` and `MorphoLibJ_-1.4.2.1.jar.config` in side `dist/ij153/plugins`
+  1. Now. we need to update the text file `dist/ij153/plugins/index.list`, and add a new line with the jar file name (i.e.: `MorphoLibJ_-1.4.2.1.jar`). With this file, ImageJ.JS will know there is a new plugin.
+  
+  Finally, you can go to http://127.0.0.1:9090/ and see if the plugin works (make sure you started the server via `npm run serve`). In case it doesn't work, you can use the Chrome dev tool to check errors in the console.
+
 ### Compile ImageJ into Javascript
 The above step runs [`get-imagej.sh`](https://github.com/imjoy-team/imagej.js/blob/master/get-imagej.sh) to obtain the precompiled imagej with plugins. You can compile them locally by following these:
 
@@ -318,17 +350,6 @@ Before start, you need to:
     mv ij-1.53g.jar ij.jar
     # compile ij.jar and we should get
     ${CHEERPJ_DIR}/cheerpjfy.py ij.jar
-    ```
- 1. compile a plugin, take MorphoLibJ plugin as an example:
-    ```bash
-    mkdir -p plugins
-    # download MorphoLibJ
-    curl https://github.com/ijpb/MorphoLibJ/releases/download/v1.4.2.1/MorphoLibJ_-1.4.2.1.jar -LO
-    mv MorphoLibJ_-1.4.2.1.jar plugins/MorphoLibJ_-1.4.2.1.jar
-    # compile MorphoLibJ
-    ${CHEERPJ_DIR}/cheerpjfy.py  --deps=ij.jar plugins/MorphoLibJ_-1.4.2.1.jar
-    # extract plugins.config
-    jar xf plugins/MorphoLibJ_-1.4.2.1.jar plugins.config
     ```
 
 The compiled files can be placed under imagej.js/dist folder, and used by your local imagej.js site.
