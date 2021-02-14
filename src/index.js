@@ -425,8 +425,8 @@ async function startImageJ() {
             e.target !== elm &&
             e.target.nodeName !== "TEXTAREA" &&
             e.target.getAttribute("role") !== "presentation" &&
-            window._imjoy_menu_element &&
-            !window._imjoy_menu_element.contains(e.target)
+            (!window._imjoy_menu_element ||
+              !window._imjoy_menu_element.contains(e.target))
           ) {
             handler.apply(null, [e]);
           } else {
