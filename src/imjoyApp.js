@@ -1,4 +1,5 @@
 import Snackbar from "node-snackbar/dist/snackbar";
+import { version } from "../package.json";
 
 const builtinPlugins = [
   "https://gist.githubusercontent.com/oeway/9c78d23c101f468e723888d05b6fac6d/raw/ImageJScriptEditor.imjoy.html",
@@ -268,7 +269,7 @@ const APP_TEMPLATE = `
     <hr class="solid"  v-if="dialogWindows && dialogWindows.length>0">
     <a v-for="wdialog in dialogWindows" :title="wdialog.name" style="font-size: 14px;" class="btn btn-default" @click="showWindow(wdialog)"><i class="fa-window-maximize fa"></i>&nbsp;{{wdialog.name}}</a>
     <hr class="solid">
-    <a class="badge" href="https://github.com/imjoy-team/imagej.js" target="_blank"><img src="https://img.shields.io/badge/Github-ImageJ.JS-blue" alt="Github"></img></a>
+    <a class="badge" href="https://github.com/imjoy-team/imagej.js" target="_blank"><img src="https://img.shields.io/badge/Github-ImageJ.JS-blue" alt="Github"></img>&nbsp;<span style="font-size:0.8rem; color: blue">v${version}</span></a>
   </div>
 </div>
 
