@@ -11,6 +11,10 @@ body {
   height: 100%;
 }
 
+.always-top {
+  z-index: 9999 !important;
+}
+
 ::-webkit-scrollbar {
   display: inherit;
   -webkit-appearance: none;
