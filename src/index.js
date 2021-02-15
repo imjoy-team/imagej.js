@@ -762,6 +762,13 @@ async function saveFileToFS(imagej, file) {
   console.log(await listFiles(imagej, "/files/"));
 }
 
+async function fixZOrder() {
+  const ijWindow = document.querySelector(
+    "#cheerpjDisplay>.window:nth-child(2)"
+  );
+  ijWindow.classList.add("always-top");
+}
+
 async function fixMenu() {
   const removes = [
     "Open Recent",
@@ -1438,6 +1445,7 @@ window.onImageJInitialized = async () => {
   window.ij = imagej;
   setupDragDropPaste(imagej);
   fixMenu();
+  fixZOrder();
   fixTouch();
 
   function setAPI(core_api) {
