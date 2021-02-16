@@ -85,7 +85,7 @@ async function startImJoy(app, imjoy) {
       const elem = document.createElement("div");
       elem.id = w.window_id;
       elem.style.marginTop = "20px";
-      elem.style.height = "100%";
+      elem.style.height = "calc(100% - 20px)";
       container.appendChild(elem);
       titleBar.addEventListener("dragstart", () => {
         elem.style.pointerEvents = "none";
