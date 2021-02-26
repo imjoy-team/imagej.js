@@ -19,7 +19,8 @@ async function startImJoy(app, imjoy) {
     app.$forceUpdate();
   });
   imjoy.event_bus.on("plugin_loaded", p => {
-    app.plugins[p.name] = p;
+    // only add if it's not a window instance
+    if (!p.window_id) app.plugins[p.name] = p;
     if (
       !builtinPlugins.includes(p.config.origin) &&
       p.type !== "window" &&

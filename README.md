@@ -181,7 +181,11 @@ Get the ROI selection in the current image.
 The returned roi is a encoded byte string, to parse it, you can use https://github.com/hadim/read-roi/.
 
 ### addMenuItem(config)
-Add a menu item to the `Plugins` menu.
+Add a menu item to the `Plugins` menu. You can pass the following arguments:
+ * `label`: The label of the menu item
+ * `callback`: The callback function for the  menu item
+ * `group`: Name of the menu group, the default group is `Plugins`
+ * `position`: A index number for the insert position within the menu group, for submenu items, you can pass a string with numbers separated by `.`.  For example: `position="3.2"` means  the second  sub-menu of the third menu item.
 
 ```python
 ij = await api.createWindow(src="https://ij.imjoy.io")

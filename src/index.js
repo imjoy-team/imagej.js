@@ -1033,6 +1033,11 @@ function addMenuItem(config) {
       targetMenu.insertBefore(newMenu, subMenu);
     }
   } else {
+    for (let ch of targetMenu.children) {
+      if (ch.children[0].innerHTML === config.label) {
+        targetMenu.removeChild(ch);
+      }
+    }
     targetMenu.appendChild(newMenu);
   }
 }
