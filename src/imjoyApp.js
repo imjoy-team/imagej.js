@@ -196,7 +196,7 @@ async function startImJoy(app, imjoy) {
       }
 
       const result = await plugin[functionName].apply(plugin, args);
-      if (promise && typeof promise === "function") {
+      if (promise && typeof promise === "object") {
         if (typeof result === "string") {
           await cjCall(promise, "resolveString", result);
         } else if (result._rtype === "ndarray") {
