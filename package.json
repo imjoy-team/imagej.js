@@ -36,7 +36,7 @@
   "homepage": "https://github.com/imjoy-team/imagej.js#readme",
   "dependencies": {
     "a11y-dialog": "^5.3.2",
-    "imjoy-core": "0.13.67",
+    "imjoy-core": "0.13.72",
     "imjoy-rpc": "^0.2.32",
     "lz-string": "^1.4.4",
     "mobile-drag-drop": "^2.3.0-rc.2",
