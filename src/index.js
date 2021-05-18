@@ -7,6 +7,7 @@ import "node-snackbar/dist/snackbar.css";
 import A11yDialog from "a11y-dialog";
 import { polyfill } from "mobile-drag-drop";
 import QRCode from "qrcode";
+import { loadZarrImage } from "./zarrUtils";
 
 // optional import of scroll behaviour
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
@@ -790,6 +791,24 @@ async function fixMenu() {
       el.parentNode.removeChild(el);
     }
   }
+
+  addMenuItem({
+    label: "NGFF (Experimental)",
+    group: "Plugins",
+    async callback() {
+      const url = prompt(
+        "Please type a OME-Zarr/NGFF image URL",
+        "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.zarr"
+      );
+      const img = await loadZarrImage({ source: url });
+      await ij.openVirtualStack(img);
+      if (img.sizeT > 1 || img.sizeZ > 1)
+        await ij.runMacro(
+          `run("Stack to Hyperstack...", "order=xyzct channels=${img.sizeC} slices=${img.sizeZ} frames=${img.sizeT} display=Grayscale");`
+        );
+    }
+  });
+
   addMenuItem({
     label: "ImJoy Code Editor",
     group: "Plugins",
@@ -1452,6 +1471,11 @@ window.onImageJInitialized = async () => {
       "java.lang.String"
     ]),
     saveBytes: await cjResolveCall("ij.IJ", "saveBytes", null),
+    createJSVirtualStack: await cjResolveCall(
+      "ij.IJ",
+      "createJSVirtualStack",
+      null
+    ),
     // updateImageJMenus: await cjResolveCall("ij.Menus", "updateImageJMenus", null),
     // getPrefsDir: await cjResolveCall("ij.Prefs", "getPrefsDir", null),
     getImageData,
@@ -1467,6 +1491,41 @@ window.onImageJInitialized = async () => {
       imagej.runMacro(macro, args);
     });
   };
+
+  imagej.openVirtualStack = img => {
+    // img should contain the following properties:
+    // name, dtype, width, height, nSlice, and a getSlice(index) function
+    return new Promise(async (resolve, reject) => {
+      try {
+        const key = `${Date.now()}`;
+        allVirtualStacks[key] = img;
+        const typeMapping = {
+          uint8: 0, //GRAY8 8-bit grayscale (unsigned)
+          uint16: 1, //GRAY16 16-bit grayscale (unsigned)
+          float32: 2 //	GRAY32 32-bit floating-point grayscale
+        };
+        if (typeMapping[img.dtype] === undefined) {
+          throw new Error("Unsupported image data type: " + img.dtype);
+        }
+        await imagej.createJSVirtualStack(
+          key,
+          img.width,
+          img.height,
+          img.nSlice,
+          typeMapping[img.dtype],
+          img.name
+        );
+        img._resolve = resolve;
+      } catch (e) {
+        reject(e);
+      }
+    });
+  };
+
+  imagej.closeVirtualStack = async key => {
+    delete allVirtualStacks[key];
+  };
+
   window.ij = imagej;
   setupDragDropPaste(imagej);
   fixMenu();
@@ -1503,6 +1562,36 @@ window.onImageJInitialized = async () => {
     localStorage.setItem("cheepjPreload", cjGetRuntimeResources());
   }, 1000);
   console.timeEnd("Loading ImageJ.JS");
+};
+
+const allVirtualStacks = {};
+
+window.getVirtualStackSlice = async (key, index, promise) => {
+  if (!allVirtualStacks[key]) {
+    throw new Error("virtual stack not found: " + key);
+  }
+  allVirtualStacks[key]
+    .getSlice(index)
+    .then(data => {
+      if (data instanceof ArrayBuffer) data = new Uint8Array(data);
+      cjCall(promise, "resolve", cjTypedArrayToJava(data));
+    })
+    .catch(e => {
+      cjCall(promise, "reject", `${e}`);
+    });
+};
+
+window.onJSVirtualStackReady = async (key, imp) => {
+  console.log("virtual stack is ready", key, imp);
+  const img = allVirtualStacks[key];
+  if (img._resolve) {
+    img._resolve(key);
+    delete img._resolve;
+  }
+};
+
+window.onJSVirtualStackClosed = async key => {
+  console.log("virtual stack closed: ", key);
 };
 
 function updateViewPort() {

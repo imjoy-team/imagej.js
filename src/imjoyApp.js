@@ -5,7 +5,7 @@ const builtinPlugins = [
   "https://gist.githubusercontent.com/oeway/9c78d23c101f468e723888d05b6fac6d/raw/ImageJScriptEditor.imjoy.html",
   "https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html",
   "https://gist.githubusercontent.com/oeway/e5c980fbf6582f25fde795262a7e33ec/raw/itk-vtk-viewer-imagej.imjoy.html",
-  "https://gist.githubusercontent.com/oeway/16d189e53d23cb2e26c3618ed6e40be6/raw/ImJoyModelRunner.imjoy.html",
+  "https://gist.githubusercontent.com/oeway/16d189e53d23cb2e26c3618ed6e40be6/raw/ImJoyModelRunner.imjoy.html"
 ];
 async function startImJoy(app, imjoy) {
   await imjoy.start();
@@ -170,11 +170,10 @@ async function startImJoy(app, imjoy) {
   };
 
   window.loadPlugin = async function(uri) {
-    await imjoy.pm
-      .reloadPluginRecursively({
-        uri
-      })
-  }
+    await imjoy.pm.reloadPluginRecursively({
+      uri
+    });
+  };
 
   window.callPlugin = async function(pluginName, functionName) {
     let args = Array.prototype.slice.call(arguments).slice(2);

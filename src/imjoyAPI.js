@@ -1,5 +1,6 @@
 import { setupRPC } from "imjoy-rpc";
 import { version, description } from "../package.json";
+import { loadZarrImage } from "./zarrUtils";
 
 export async function setupImJoyAPI(
   api,
@@ -80,6 +81,21 @@ export async function setupImJoyAPI(
     },
     runPlugIn(className, args) {
       imagej.runPlugIn(className, args || "");
+    },
+    async openVirtualStack(img) {
+      return await imagej.openVirtualStack(img);
+    },
+    async closeVirtualStack(key) {
+      await imagej.closeVirtualStack(key);
+    },
+    async viewZarr(config) {
+      config = config || {};
+      const img = await loadZarrImage(config);
+      await imagej.openVirtualStack(img);
+      if (img.sizeT > 1 || img.sizeZ > 1)
+        await ij.runMacro(
+          `run("Stack to Hyperstack...", "order=xyzct channels=${img.sizeC} slices=${img.sizeZ} frames=${img.sizeT} display=Grayscale");`
+        );
     },
     async viewImage(img, options) {
       loader.style.display = "block";
