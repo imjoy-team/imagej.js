@@ -163,6 +163,7 @@ Close the virtual stack by its ID.
 
 ### viewZarr(config)
 **This function is in experimental state**
+
 Show a zarr image stored with [NGFF](https://ngff.openmicroscopy.org/latest/) format. The input argument `config` is an object contains the following field:
  * source: an URL or a valid Zarr Group object
  * name: name of the image
