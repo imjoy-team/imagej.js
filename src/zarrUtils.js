@@ -60,15 +60,22 @@ export async function loadZarrImage(config) {
     "<f8": "float64"
   };
 
-  if (sizeX * sizeY > 50000 * 50000) {
-    throw new Error("The image size exceeded the limit for ImageJ.JS.");
+  const startX = config.offsetX || 0;
+  const endX = config.sizeX ? config.sizeX + startX : sizeX;
+  const startY = config.offsetY || 0;
+  const endY = config.sizeY ? config.sizeY + startY : sizeY;
+
+  if (!config.sizeX && !config.sizeY && sizeX * sizeY > 50000 * 50000) {
+    throw new Error(
+      "The image size exceeded the limit, please specify sizeX and sizeY explicitly."
+    );
   }
 
   return {
     name: config.name,
     dtype: dtypes[zarr_arr.dtype] || "uint16",
-    width: sizeX,
-    height: sizeY,
+    width: endX - startX,
+    height: endY - startY,
     nSlice: sizeC * sizeZ * sizeT,
     sizeC,
     sizeZ,
@@ -78,7 +85,13 @@ export async function loadZarrImage(config) {
       const c = parseInt(index / sizeZ);
       const z = parseInt(index % sizeZ);
       // const d = await zarr_arr.getRawChunk([t, c, z, 0, 0]);
-      const d = await zarr_arr.getRaw([t, c, z, null, null]);
+      const d = await zarr_arr.getRaw([
+        t,
+        c,
+        z,
+        zarrLib.slice(startY, endY),
+        zarrLib.slice(startX, endX)
+      ]);
       return d.data.buffer;
     }
   };

@@ -166,6 +166,10 @@ Close the virtual stack by its ID.
 Show a zarr image stored with [NGFF](https://ngff.openmicroscopy.org/latest/) format. The input argument `config` is an object contains the following field:
  * source: an URL or a valid Zarr store object
  * name: name of the image
+ * offsetX: starting position for x axis (used to display a small portion of the image plane)
+ * sizeX: the size for x axis (used to display a small portion of the image plane)
+ * offsetY: starting position for y axis (used to display a small portion of the image plane)
+ * sizeY: the size for y axis (used to display a small portion of the image plane)
 
 For example:
 ```js
@@ -175,7 +179,7 @@ await ij.viewZarr({source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.z
 
 A Zarr store can be constructed in either Javascript or Python, for examples in Python please take a look at [vizarr](https://github.com/hms-dbmi/vizarr/tree/master/example).
 
-**Note: This function uses Virtual Stack in ImageJ to display, this means it will load the image plane as a whole -- as a result, it doesn't support loading image with large width and height (e.g. much less than 50000 pixels on each dimension ). You can however, make a stack with all the tiles.**
+**Note: This function uses Virtual Stack in ImageJ to display, this means it will load the image plane as a whole -- as a result, it doesn't support loading image with large width and height (e.g. much less than 50000 pixels on each dimension ). You will need to use `offsetX`, `offsetY`, `sizeX`, `sizeY` to crop the image plane.**
 ### getImage(format)
 
 Get the current image (current slice for a stack), for example, in Python you can get it as numpy array by setting the format to "ndarray".
