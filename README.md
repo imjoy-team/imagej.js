@@ -177,7 +177,34 @@ const ij = await api.getWindow("ImageJ.JS")
 await ij.viewZarr({source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.zarr", name: '6001240'})
 ```
 
-A Zarr store can be constructed in either Javascript or Python, for examples in Python please take a look at [vizarr](https://github.com/hms-dbmi/vizarr/tree/master/example).
+A Zarr store can be constructed in either Javascript or Python, for example:
+```python
+from imjoy import api
+import zarr
+from fsspec.implementations.http import HTTPFileSystem
+
+from imjoy_rpc import register_default_codecs
+
+register_default_codecs()
+fs = HTTPFileSystem()
+
+class Plugin:
+    async def setup(self):
+        pass
+
+    async def run(self, ctx):
+        ij = await api.createWindow(
+            type="ImageJ.JS", src="https://ij.imjoy.io"
+        )
+        
+        http_map = fs.get_mapper('https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001237.zarr')
+        z_group = zarr.open(http_map, mode='r')
+        await ij.viewZarr({"source": z_group})
+
+
+api.export(Plugin())
+```
+For more Python examples, you can also take a look at the [vizarr](https://github.com/hms-dbmi/vizarr/tree/master/example) repo.
 
 **Note: This function uses Virtual Stack in ImageJ to display, this means it will load the image plane as a whole -- as a result, it doesn't support loading image with large width and height (e.g. much less than 50000 pixels on each dimension ). You will need to use `offsetX`, `offsetY`, `sizeX`, `sizeY` to crop the image plane.**
 ### getImage(format)
