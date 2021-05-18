@@ -164,7 +164,7 @@ Close the virtual stack by its ID.
 ### viewZarr(config)
 **This function is in experimental state**
 Show a zarr image stored with [NGFF](https://ngff.openmicroscopy.org/latest/) format. The input argument `config` is an object contains the following field:
- * source: an URL or a valid Zarr store object
+ * source: an URL or a valid Zarr Group object
  * name: name of the image
  * offsetX: starting position for x axis (used to display a small portion of the image plane)
  * sizeX: the size for x axis (used to display a small portion of the image plane)
@@ -177,7 +177,7 @@ const ij = await api.getWindow("ImageJ.JS")
 await ij.viewZarr({source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.zarr", name: '6001240'})
 ```
 
-A Zarr store can be constructed in either Javascript or Python, for example:
+A Zarr Group object can be constructed in either Javascript or Python, for example:
 ```python
 from imjoy import api
 import zarr
