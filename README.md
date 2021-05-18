@@ -139,6 +139,74 @@ await ij.viewImage(image)
 
 If you pass raw bytes of an image in other formats, you need to specify the file name with the corresponding file extension. For example: `ij.viewImage(image_bytes, {"name": "my_image.png"})`.
 
+### openVirtualStack(img)
+**This function is in experimental state**
+
+Load a virtual stack that provide data in a lazy fashion. The input argument `img` should contain the following properties:
+ * name: String, the name of the virtual stack image
+ * dtype: String, the data type of the virtual stack image, should be one of the following: `"uint8"`, `"uint16"` or ``"float32"``.
+ * width: Integer, width of the virtual stack image
+ * height: Integer, height of the virtual stack image
+ * nSlices: Integer, the total number of slides in the virtual stack image
+ * getSlice: Function, a function that takes an index (`Integer`) as input and return the an `ArrayBuffer` (for Javascript) or `bytes` (for Python) with the specified image plane.
+
+If successful, it will return a virtual stack ID, with which you can close the virutal stack via `closeVirtualStack(ID)`.
+
+Note: this function can only support 3D image stack, if you want to load 4D or 5D images, you can run the `Stack to Hyperstack` macro to convert it into a Hyperstack, for example:
+```js
+await ij.runMacro(`run("Stack to Hyperstack...", "order=xyzct channels=4 slices=30 frames=10 display=Grayscale");`)
+```
+### closeVirtualStack(id)
+**This function is in experimental state**
+
+Close the virtual stack by its ID.
+
+### viewZarr(config)
+**This function is in experimental state**
+Show a zarr image stored with [NGFF](https://ngff.openmicroscopy.org/latest/) format. The input argument `config` is an object contains the following field:
+ * source: an URL or a valid Zarr Group object
+ * name: name of the image
+ * offsetX: starting position for x axis (used to display a small portion of the image plane)
+ * sizeX: the size for x axis (used to display a small portion of the image plane)
+ * offsetY: starting position for y axis (used to display a small portion of the image plane)
+ * sizeY: the size for y axis (used to display a small portion of the image plane)
+
+For example:
+```js
+const ij = await api.getWindow("ImageJ.JS")
+await ij.viewZarr({source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.zarr", name: '6001240'})
+```
+
+A Zarr Group object can be constructed in either Javascript or Python, for example:
+```python
+from imjoy import api
+import zarr
+from fsspec.implementations.http import HTTPFileSystem
+
+from imjoy_rpc import register_default_codecs
+
+register_default_codecs()
+fs = HTTPFileSystem()
+
+class Plugin:
+    async def setup(self):
+        pass
+
+    async def run(self, ctx):
+        ij = await api.createWindow(
+            type="ImageJ.JS", src="https://ij.imjoy.io"
+        )
+        
+        http_map = fs.get_mapper('https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001237.zarr')
+        z_group = zarr.open(http_map, mode='r')
+        await ij.viewZarr({"source": z_group})
+
+
+api.export(Plugin())
+```
+For more Python examples, you can also take a look at the [vizarr](https://github.com/hms-dbmi/vizarr/tree/master/example) repo.
+
+**Note: This function uses Virtual Stack in ImageJ to display, this means it will load the image plane as a whole -- as a result, it doesn't support loading image with large width and height (e.g. much less than 50000 pixels on each dimension ). You will need to use `offsetX`, `offsetY`, `sizeX`, `sizeY` to crop the image plane.**
 ### getImage(format)
 
 Get the current image (current slice for a stack), for example, in Python you can get it as numpy array by setting the format to "ndarray".
