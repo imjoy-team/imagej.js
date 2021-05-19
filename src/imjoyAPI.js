@@ -89,7 +89,7 @@ export async function setupImJoyAPI(
       await imagej.closeVirtualStack(key);
     },
     async viewZarr(config) {
-      return await imagej.viewZarr(config)
+      return await imagej.viewZarr(config);
     },
     async viewImage(img, options) {
       loader.style.display = "block";

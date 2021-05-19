@@ -1238,13 +1238,13 @@ async function loadContentFromUrl(imagej, url) {
       text: "Opening " + url,
       pos: "bottom-left"
     });
-    if(url.split('?')[0].endsWith('.zarr')){
+    if (url.split("?")[0].endsWith(".zarr")) {
       await ij.viewZarr({ source: url });
       Snackbar.show({
         text: "Successfully opened " + url,
         pos: "bottom-left"
       });
-      return
+      return;
     }
     // convert to raw if we can
     else if (url.includes("//zenodo.org/record")) {
@@ -1538,7 +1538,7 @@ window.onImageJInitialized = async () => {
         `run("Stack to Hyperstack...", "order=xyzct channels=${img.sizeC} slices=${img.sizeZ} frames=${img.sizeT} display=Grayscale");`
       );
     return vsid;
-  }
+  };
 
   window.ij = imagej;
   setupDragDropPaste(imagej);
@@ -1585,7 +1585,7 @@ window.getVirtualStackSlice = async (key, index, promise) => {
     throw new Error("virtual stack not found: " + key);
   }
   allVirtualStacks[key]
-    .getSlice(index-1) // imagej uses 1-based indexes
+    .getSlice(index - 1) // imagej uses 1-based indexes
     .then(data => {
       if (data instanceof ArrayBuffer) data = new Uint8Array(data);
       cjCall(promise, "resolve", cjTypedArrayToJava(data));
