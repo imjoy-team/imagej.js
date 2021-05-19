@@ -793,19 +793,14 @@ async function fixMenu() {
   }
 
   addMenuItem({
-    label: "NGFF (Experimental)",
+    label: "Load NGFF (Experimental)",
     group: "Plugins",
     async callback() {
       const url = prompt(
         "Please type a OME-Zarr/NGFF image URL",
         "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.zarr"
       );
-      const img = await loadZarrImage({ source: url });
-      await ij.openVirtualStack(img);
-      if (img.sizeT > 1 || img.sizeZ > 1)
-        await ij.runMacro(
-          `run("Stack to Hyperstack...", "order=xyzct channels=${img.sizeC} slices=${img.sizeZ} frames=${img.sizeT} display=Grayscale");`
-        );
+      await ij.viewZarr({ source: url });
     }
   });
 
@@ -1243,8 +1238,16 @@ async function loadContentFromUrl(imagej, url) {
       text: "Opening " + url,
       pos: "bottom-left"
     });
+    if(url.split('?')[0].endsWith('.zarr')){
+      await ij.viewZarr({ source: url });
+      Snackbar.show({
+        text: "Successfully opened " + url,
+        pos: "bottom-left"
+      });
+      return
+    }
     // convert to raw if we can
-    if (url.includes("//zenodo.org/record")) {
+    else if (url.includes("//zenodo.org/record")) {
       url = await convertZenodoFileUrl(url);
     } else {
       const tmp =
@@ -1525,6 +1528,17 @@ window.onImageJInitialized = async () => {
   imagej.closeVirtualStack = async key => {
     delete allVirtualStacks[key];
   };
+
+  imagej.viewZarr = async config => {
+    config = config || {};
+    const img = await loadZarrImage(config);
+    const vsid = await imagej.openVirtualStack(img);
+    if (img.sizeT > 1 || img.sizeZ > 1)
+      await ij.runMacro(
+        `run("Stack to Hyperstack...", "order=xyzct channels=${img.sizeC} slices=${img.sizeZ} frames=${img.sizeT} display=Grayscale");`
+      );
+    return vsid;
+  }
 
   window.ij = imagej;
   setupDragDropPaste(imagej);

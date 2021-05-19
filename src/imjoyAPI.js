@@ -89,13 +89,7 @@ export async function setupImJoyAPI(
       await imagej.closeVirtualStack(key);
     },
     async viewZarr(config) {
-      config = config || {};
-      const img = await loadZarrImage(config);
-      await imagej.openVirtualStack(img);
-      if (img.sizeT > 1 || img.sizeZ > 1)
-        await ij.runMacro(
-          `run("Stack to Hyperstack...", "order=xyzct channels=${img.sizeC} slices=${img.sizeZ} frames=${img.sizeT} display=Grayscale");`
-        );
+      return await imagej.viewZarr(config)
     },
     async viewImage(img, options) {
       loader.style.display = "block";

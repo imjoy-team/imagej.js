@@ -18,7 +18,7 @@ This project is currently under development, please expect frequent changes.
 ## Sharing images, macro or plugins with URL parameters
 
 To facilitate the sharing of images, macro, and plugins, ImageJ.JS web app supports loading predefined images, macro or plugin by constructing a URL. The following options are supported:
-1. `open`: used to open an image or macro script automatically when the user click the link. For example: `https://ij.imjoy.io/?open=https://github.com/imjoy-team/imagej.js/blob/master/src/assets/img/screenshot-1.png`.
+1. `open`: used to open an image or macro script automatically when the user click the link. For example: `https://ij.imjoy.io/?open=https://github.com/imjoy-team/imagej.js/blob/master/src/assets/img/screenshot-1.png`. **Experimental feature: it can also be a NGFF zarr image URL, for example: https://ij.imjoy.io/?open=https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.zarr**
 1. `run`: used to directly run a macro script stored under a url, e.g. on Github or Gist. For example: `https://ij.imjoy.io/?run=https://gist.github.com/oeway/ab45cc8295efbb0fb5ae1c6f9babd4ac`.
 1. `plugin`: used to load an ImJoy plugin when the user click the link. For example: `https://ij.imjoy.io/?plugin=https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html`
 1. `spec`: For ImJoy plugins in Python, by default a free compute service MyBinder will be used to run Python plugins, this `spec` is used to specify the specification of MyBinder server (see details in the **ImJoy Plugin Development**)
