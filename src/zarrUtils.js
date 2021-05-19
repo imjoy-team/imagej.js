@@ -72,14 +72,12 @@ export async function loadZarrImage(config) {
   }
 
   return {
+    _rintf: true, // make sure getSlice can be called multiple times
     name: config.name,
     dtype: dtypes[zarr_arr.dtype] || "uint16",
     width: endX - startX,
     height: endY - startY,
     nSlice: sizeC * sizeZ * sizeT,
-    sizeC,
-    sizeZ,
-    sizeT,
     async getSlice(index) {
       const t = parseInt(index / (sizeC * sizeZ));
       const c = parseInt(index / sizeZ);
@@ -93,6 +91,9 @@ export async function loadZarrImage(config) {
         zarrLib.slice(startX, endX)
       ]);
       return d.data.buffer;
-    }
+    },
+    sizeC,
+    sizeZ,
+    sizeT,
   };
 }
