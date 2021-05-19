@@ -1585,7 +1585,7 @@ window.getVirtualStackSlice = async (key, index, promise) => {
     throw new Error("virtual stack not found: " + key);
   }
   allVirtualStacks[key]
-    .getSlice(index)
+    .getSlice(index-1) // imagej uses 1-based indexes
     .then(data => {
       if (data instanceof ArrayBuffer) data = new Uint8Array(data);
       cjCall(promise, "resolve", cjTypedArrayToJava(data));
