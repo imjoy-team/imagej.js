@@ -148,14 +148,18 @@ Load a virtual stack that provide data in a lazy fashion. The input argument `im
  * width: Integer, width of the virtual stack image
  * height: Integer, height of the virtual stack image
  * nSlices: Integer, the total number of slides in the virtual stack image
- * getSlice: Function, a function that takes an index (`Integer`) as input and return the an `ArrayBuffer` (for Javascript) or `bytes` (for Python) with the specified image plane.
+ * getSlice: Function, a function that takes an index (`Integer`) as input and return the an `ArrayBuffer` (for Javascript) or `bytes` (for Python) with the specified image plane. 
 
 If successful, it will return a virtual stack ID, with which you can close the virutal stack via `closeVirtualStack(ID)`.
+
+
+An example in Javascript can be found [here](https://github.com/imjoy-team/imagej.js/blob/3517079cde5d8b21b27c94b0b9ec3f30eff4f003/src/zarrUtils.js#L74-L94).
 
 Note: this function can only support 3D image stack, if you want to load 4D or 5D images, you can run the `Stack to Hyperstack` macro to convert it into a Hyperstack, for example:
 ```js
 await ij.runMacro(`run("Stack to Hyperstack...", "order=xyzct channels=4 slices=30 frames=10 display=Grayscale");`)
 ```
+
 ### closeVirtualStack(id)
 **This function is in experimental state**
 
