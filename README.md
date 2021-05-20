@@ -153,7 +153,8 @@ Load a virtual stack that provide data in a lazy fashion. The input argument `im
 If successful, it will return a virtual stack ID, with which you can close the virutal stack via `closeVirtualStack(ID)`.
 
 
-An example in Javascript can be found [here](https://github.com/imjoy-team/imagej.js/blob/3517079cde5d8b21b27c94b0b9ec3f30eff4f003/src/zarrUtils.js#L74-L94).
+An example in Javascript can be found [here](https://gist.github.com/oeway/7a30f3d0c6eb24e9de68e3cece9a5441), this plugin uses constructs a virtual stack which can be used to dynamically pull data from the [HPA cell atlas](https://www.proteinatlas.org/humanproteome/cell), you can also see it in action [here](https://ij.imjoy.io/?plugin=https://gist.github.com/oeway/7a30f3d0c6eb24e9de68e3cece9a5441) (After loading click "HPACellAtlasImages" menu under the ImJoy icon).
+
 
 Note: this function can only support 3D image stack, if you want to load 4D or 5D images, you can run the `Stack to Hyperstack` macro to convert it into a Hyperstack, for example:
 ```js
