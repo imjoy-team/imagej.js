@@ -94,6 +94,6 @@ export async function loadZarrImage(config) {
     },
     sizeC,
     sizeZ,
-    sizeT,
+    sizeT
   };
 }

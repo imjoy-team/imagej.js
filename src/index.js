@@ -767,7 +767,17 @@ async function fixZOrder() {
   const ijWindow = document.querySelector(
     "#cheerpjDisplay>.window:nth-child(2)"
   );
-  ijWindow.classList.add("always-top");
+
+  ijWindow.addEventListener("mouseenter", () => {
+    ijWindow.classList.add("always-top");
+  });
+  ijWindow.addEventListener("mouseleave", () => {
+    ijWindow.classList.remove("always-top");
+  });
+  const menuBar = ijWindow.querySelector(".menuBar");
+  menuBar.addEventListener("mousedown", () => {
+    ijWindow.classList.add("always-top");
+  });
 }
 
 async function fixMenu() {
