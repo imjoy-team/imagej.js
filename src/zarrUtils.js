@@ -80,8 +80,8 @@ export async function loadZarrImage(config) {
     nSlice: sizeC * sizeZ * sizeT,
     async getSlice(index) {
       const t = parseInt(index / (sizeC * sizeZ));
-      const c = parseInt(index / sizeZ);
-      const z = parseInt(index % sizeZ);
+      const z = parseInt((index % (sizeC * sizeZ)) / sizeC);
+      const c = parseInt(index % sizeC);
       // const d = await zarr_arr.getRawChunk([t, c, z, 0, 0]);
       const d = await zarr_arr.getRaw([
         t,
