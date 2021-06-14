@@ -436,4 +436,12 @@ The compiled files can be placed under imagej.js/dist folder, and used by your l
 Note: you may need to adjust the imagej jar file name to keep consistent with the one defined in `index.js`.
 
 
+## Citation
 
+ImageJ.JS is a part of the ImJoy project, please consider citing the ImJoy paper on Nature Methods (https://www.nature.com/articles/s41592-019-0627-0, free access: https://rdcu.be/bYbGO ):
+
+```
+Ouyang, W., Mueller, F., Hjelmare, M. et al. ImJoy: an open-source computational platform for the deep learning era. Nat Methods (2019) doi:10.1038/s41592-019-0627-0
+```
+
+Alternatively, you can also cite: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4944984.svg)](https://doi.org/10.5281/zenodo.4944984).
