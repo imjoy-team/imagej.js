@@ -2,8 +2,8 @@
 set -e
 
 
-# download imagej 1.53g to make the transition smoother
-curl -OL https://github.com/imjoy-team/ImageJA.JS/releases/download/1.53g/imagej-js-dist.tgz
+# download imagej 1.53h to make the transition smoother
+curl -OL https://github.com/imjoy-team/ImageJA.JS/releases/download/1.53h/imagej-js-dist.tgz
 tar -xvzf imagej-js-dist.tgz
 
 # download the latest imagej

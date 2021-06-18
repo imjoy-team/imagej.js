@@ -476,7 +476,7 @@ async function startImageJ() {
       _addEL.apply(elm, [event, handler, options]);
     }
   };
-  cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53h.jar");
+  cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53j.jar");
 }
 
 async function listFiles(imagej, path) {
