@@ -356,38 +356,37 @@ window.onFileOpened = (path, error) => {
   cheerpjRemoveStringFile(path);
 };
 
-window.ipfCreateIFrame = function()
-{
-	var ret = document.createElement("iframe");
-	ret.onload = function(e)
-	{
-		clearInterval(IFrameProxyDownloader.intervalId);
-		var i = e.target;
-		var c = new MessageChannel();
-		var q = IFrameProxyDownloader.portOrQueue;
-		c.port1.onmessage = ipfMessage;
-		IFrameProxyDownloader.portOrQueue = c.port1;
-		i.contentWindow.postMessage({t:"port",port:c.port2}, location.origin, [c.port2]);
-		// Dispatch pending loads
-		for(var i=0;i<q.length;i=i+1|0)
-			q[i].send();
-	};
-	ret.src = "/c.html";
-	ret.width = "0px";
-	ret.height = "0px";
-	ret.style.border = "0px";
-	ret.style.position = "fixed";
-	ret.style.visibility = "hidden";
-	IFrameProxyDownloader.iframe = ret;
-	if(document.body)
-		document.body.appendChild(ret);
-	else
-		document.addEventListener("DOMContentLoaded", function(e) { document.body.appendChild(IFrameProxyDownloader.iframe); })
-	IFrameProxyDownloader.intervalId = setInterval(function(){
-		IFrameProxyDownloader.iframe.src = "/c.html";
-	}, 10000);
-}
-
+window.ipfCreateIFrame = function() {
+  var ret = document.createElement("iframe");
+  ret.onload = function(e) {
+    clearInterval(IFrameProxyDownloader.intervalId);
+    var i = e.target;
+    var c = new MessageChannel();
+    var q = IFrameProxyDownloader.portOrQueue;
+    c.port1.onmessage = ipfMessage;
+    IFrameProxyDownloader.portOrQueue = c.port1;
+    i.contentWindow.postMessage({ t: "port", port: c.port2 }, location.origin, [
+      c.port2
+    ]);
+    // Dispatch pending loads
+    for (var i = 0; i < q.length; i = (i + 1) | 0) q[i].send();
+  };
+  ret.src = "/c.html";
+  ret.width = "0px";
+  ret.height = "0px";
+  ret.style.border = "0px";
+  ret.style.position = "fixed";
+  ret.style.visibility = "hidden";
+  IFrameProxyDownloader.iframe = ret;
+  if (document.body) document.body.appendChild(ret);
+  else
+    document.addEventListener("DOMContentLoaded", function(e) {
+      document.body.appendChild(IFrameProxyDownloader.iframe);
+    });
+  IFrameProxyDownloader.intervalId = setInterval(function() {
+    IFrameProxyDownloader.iframe.src = "/c.html";
+  }, 10000);
+};
 
 window.openURL = async url => {
   window.open(url);
