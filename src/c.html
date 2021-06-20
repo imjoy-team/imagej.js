@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <script src="https://cjrtnc.leaningtech.com/20201217_2/cheerpOS.js"></script>
+    <script>
+    // Copyright 2018 Leaning Technologies Ltd
+            
+    function registerServiceWorker() {
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function() {
+            navigator.serviceWorker.register("/service-worker.js").then(
+                function(registration) {
+                // Registration was successful
+                console.log(
+                    "ServiceWorker registration successful with scope: ",
+                    registration.scope
+                );
+                },
+                function(err) {
+                // registration failed :(
+                console.log("ServiceWorker registration failed: ", err);
+                }
+            );
+            });
+        }
+    }
+
+	var controlPort = null;
+        function handleMessage(e)
+        {
+		var d = e.data;
+		switch(d.t)
+		{
+			case "port":
+				controlPort = d.port;
+				window.removeEventListener("message", handleMessage);
+				controlPort.onmessage = handleMessage;
+				break;
+			case "load":
+				var dl = new DirectDownloader(d.url, d.method, d.responseType);
+				dl.onload = function(dlData)
+				{
+					var t = [];
+					if(dlData.response)
+						t.push(dlData.response);
+					controlPort.postMessage({url: dlData.url, responseURL: dlData.responseURL, response: dlData.response, fileLength: dlData.fileLength}, t);
+				};
+				dl.send();
+				break;
+			default:
+				debugger;
+		}
+        }
+        window.addEventListener("message", handleMessage);
+        registerServiceWorker();
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
