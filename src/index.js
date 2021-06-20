@@ -372,7 +372,7 @@ window.ipfCreateIFrame = function()
 		for(var i=0;i<q.length;i=i+1|0)
 			q[i].send();
 	};
-	ret.src = "./c.html";
+	ret.src = "/c.html";
 	ret.width = "0px";
 	ret.height = "0px";
 	ret.style.border = "0px";
@@ -384,7 +384,7 @@ window.ipfCreateIFrame = function()
 	else
 		document.addEventListener("DOMContentLoaded", function(e) { document.body.appendChild(IFrameProxyDownloader.iframe); })
 	IFrameProxyDownloader.intervalId = setInterval(function(){
-		IFrameProxyDownloader.iframe.src = loaderPath + "/c.html";
+		IFrameProxyDownloader.iframe.src = "/c.html";
 	}, 10000);
 }
 
