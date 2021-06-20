@@ -255,7 +255,9 @@
             this.missPolicy = DEFAULT_MISS_POLICY;
           }
         }
-
+        const swScriptUrl = new URL(self.location).href;
+        const tmp = swScriptUrl.split("/");
+        const baseURL = tmp.slice(0, tmp.length - 1).join("/");
         SimpleOfflineCache.prototype.onFetch = function soc_onFetch(
           request,
           response
@@ -267,6 +269,16 @@
           }
 
           var _this = this;
+
+          // Enable cache only for this site and leaningtech
+          if (
+            !request.url.startsWith(baseURL) &&
+            !request.url.startsWith("https://cjrtnc.leaningtech.com/")
+          ) {
+            return fetch(request);
+          }
+          // since we cannot just cache the HEAD requests
+          // here we make a copy of it and change it to a GET request
           if (request.method === "HEAD") {
             return _this.ensureHeadCache().then(function(cache) {
               const opt = Object.assign({}, _this.options);
@@ -275,17 +287,34 @@
               }
               return cache.match(request, opt).then(function(res) {
                 if (res) {
-                  console.log("cached=====>", request.method, request.url);
                   return res;
+                } else {
+                  return _this
+                    .ensureCache()
+                    .then(function(cache) {
+                      return cache.match(request, _this.options);
+                    })
+                    .then(function(res) {
+                      if (res) {
+                        return res;
+                      } else {
+                        return _this.fetchAndCache(
+                          modifyRequest(request),
+                          cache
+                        );
+                      }
+                    });
                 }
-                return _this.fetchAndCache(modifyRequest(request), cache);
               });
             });
           } else {
-            return this.ensureCache().then(function(cache) {
+            return _this.ensureCache().then(function(cache) {
               return cache.match(request, _this.options).then(function(res) {
                 if (res) {
-                  console.log("cached=====>", request.method, request.url);
+                  // try to fetch anyway
+                  if (!request.url.startsWith(baseURL)) {
+                    _this.fetchAndCache(request, cache);
+                  }
                   return res;
                 }
                 // So far we just support one policy
@@ -335,7 +364,6 @@
           request,
           cache
         ) {
-          console.log("fetching=====>", request.method, request.url);
           return fetch(request.clone()).then(function(response) {
             // if (parseInt(response.status) < 400) {
             cache.put(request.clone(), response.clone());
