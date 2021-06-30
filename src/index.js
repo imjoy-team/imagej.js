@@ -1340,6 +1340,66 @@ async function loadContentFromUrl(imagej, url) {
 async function processUrlParameters(imagej) {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
+  if (urlParams.has("install-tool")) {
+    const urls = urlParams.getAll("install-tool");
+    for (let url of urls) {
+      let script;
+      if (url.startsWith("http")) {
+        if (url.includes("//zenodo.org/record")) {
+          url = await convertZenodoFileUrl(url);
+        } else {
+          const tmp =
+            (await githubUrlRaw(url, ".ijm")) ||
+            (await githubUrlRaw(url, ".txt"));
+          url = tmp || url;
+        }
+        const response = await fetch(url);
+        if (!response.ok) {
+          alert("Failed to install tool from url:" + url);
+          return;
+        }
+        script = await response.text();
+      } else {
+        const decompressed = LZString.decompressFromEncodedURIComponent(url);
+        if (decompressed) {
+          script = JSON.parse(decompressed);
+        } else {
+          console.error("Failed to decompress url: ", url);
+        }
+      }
+      if (script) await window.ij.installTool(script);
+      else alert("No script found");
+    }
+  }
+  if (urlParams.has("install-macro")) {
+    const urls = urlParams.getAll("install-macro");
+    for (let url of urls) {
+      let script;
+      if (url.startsWith("http")) {
+        if (url.includes("//zenodo.org/record")) {
+          url = await convertZenodoFileUrl(url);
+        } else {
+          const tmp = await githubUrlRaw(url, ".ijm");
+          url = tmp || url;
+        }
+        const response = await fetch(url);
+        if (!response.ok) {
+          alert("Failed to install macro from url:" + url);
+          return;
+        }
+        script = await response.text();
+      } else {
+        const decompressed = LZString.decompressFromEncodedURIComponent(url);
+        if (decompressed) {
+          script = JSON.parse(decompressed);
+        } else {
+          console.error("Failed to decompress url: ", url);
+        }
+      }
+      if (script) await window.ij.installMacro(script);
+      else alert("No script found");
+    }
+  }
   if (urlParams.has("open")) {
     const urls = urlParams.getAll("open");
     for (let url of urls) {
