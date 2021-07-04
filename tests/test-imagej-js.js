@@ -25,7 +25,7 @@ const testMacro = `run("Blobs (25K)");
 setAutoThreshold("Default");
 setOption("BlackBackground", true);
 run("Convert to Mask");
-run("Analyze Particles...", "size=5-Infinity add");`
+run("Analyze Particles...", "size=5-Infinity add");`;
 
 async function clickMenu(path) {
   const items = path.split(">");
@@ -41,33 +41,39 @@ async function closeWindow(title) {
 }
 
 let screenshotIndex = 0;
-if(!fs.existsSync("./screenshots")) fs.mkdirSync("./screenshots");
+if (!fs.existsSync("./screenshots")) fs.mkdirSync("./screenshots");
 
-async function takeScreenshot(){
-    await screenshot({path: `./screenshots/screenshot-${screenshotIndex}.png`})
-    screenshotIndex++;
+async function takeScreenshot() {
+  await screenshot({ path: `./screenshots/screenshot-${screenshotIndex}.png` });
+  screenshotIndex++;
 }
-async function has(string, timeout){
-    await assert.ok(await text(string).exists(timeout), `Text not found: ${string}`);
+async function has(string, timeout) {
+  await assert.ok(
+    await text(string).exists(timeout),
+    `Text not found: ${string}`
+  );
 }
 
 describe("Testing ImageJ.JS", () => {
   before(async () => {
     await openBrowser({ headless: headless });
-    goto("http://127.0.0.1:9090/");
-    await takeScreenshot();
-    await text("CheerpJ runtime ready").exists();
-    await text("Graphics system is initializing").exists();
-    await takeScreenshot();
-    await text("ImageJ").exists(10000);
-    await text("About ImJoy").exists(10000);
-    await has("ImageJ");
-    await click("ImageJ");
-    await has("File");
-    await takeScreenshot();
   });
 
   describe("ImageJ.JS", () => {
+    it("Start imagej.js", async () => {
+      goto("http://127.0.0.1:9090/");
+      await takeScreenshot();
+      await text("CheerpJ runtime ready").exists();
+      await text("Graphics system is initializing").exists();
+      await takeScreenshot();
+      await text("ImageJ").exists(10000);
+      await text("About ImJoy").exists(10000);
+      await has("ImageJ");
+      await click("ImageJ");
+      await has("File");
+      await takeScreenshot();
+    });
+
     it("Segment step by step", async () => {
       await has("File");
       await clickMenu("File>Open Samples>Blobs");
