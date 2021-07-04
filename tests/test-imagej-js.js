@@ -20,7 +20,7 @@ const {
 } = require("taiko");
 const fs = require("fs");
 const assert = require("assert");
-const headless = false;
+const headless = true;
 const testMacro = `run("Blobs (25K)");
 setAutoThreshold("Default");
 setOption("BlackBackground", true);
