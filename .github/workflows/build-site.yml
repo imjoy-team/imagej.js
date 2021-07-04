@@ -29,7 +29,6 @@ jobs:
     - name: Get compiled imagej.js
       run: bash get-imagej.sh
     - name: install browser dependencies
-      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y \
