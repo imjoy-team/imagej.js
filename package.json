@@ -5,10 +5,11 @@
   "main": "lib/index.js",
   "module": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no tests available\" && exit 1",
     "build": "webpack --mode production --devtool source-map",
     "watch": "webpack --watch",
     "serve": "webpack-dev-server --watch",
+    "http-server": "http-server -p 9090 ./dist &",
+    "test": "mocha tests/test*.js --timeout 90000",
     "stats": "webpack --profile --json > stats.json",
     "format": "prettier --write \"{src,tests}/**/**\"",
     "check-format": "prettier --check \"{src,tests}/**/**\"",
@@ -46,6 +47,8 @@
     "vue-js-modal": "github:imjoy-team/vue-js-modal#2.0.0-rc.3g"
   },
   "devDependencies": {
+    "mocha": "^6.1.4",
+    "taiko": "^0.7.1",
     "@babel/core": "^7.0.0-beta.39",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0-beta.39",
     "@babel/preset-env": "^7.0.0-beta.39",
