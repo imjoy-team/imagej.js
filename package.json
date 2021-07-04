@@ -9,7 +9,7 @@
     "watch": "webpack --watch",
     "serve": "webpack-dev-server --watch",
     "http-server": "http-server -p 9090 ./dist &",
-    "test": "mocha tests/test*.js --timeout 90000",
+    "test": "mocha tests/test*.js --timeout 200000",
     "stats": "webpack --profile --json > stats.json",
     "format": "prettier --write \"{src,tests}/**/**\"",
     "check-format": "prettier --check \"{src,tests}/**/**\"",
