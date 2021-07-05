@@ -28,8 +28,8 @@ jobs:
     - run: npm run build
     - name: Get compiled imagej.js
       run: bash get-imagej.sh
-    - name: Start testing
-      run: npm run http-server # start http server in the background
+    - name: Start testing server
+      run: npm run serve & # start http server in the background
     - run: npm run test
     - name: Install ImageMagick
       run: sudo apt install imagemagick
