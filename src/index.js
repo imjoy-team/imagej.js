@@ -425,7 +425,12 @@ const downloadQueue = {};
 
 async function startImageJ() {
   loader.style.display = "block";
-  let preload = localStorage.getItem("cheepjPreload");
+  let preload;
+  try {
+    preload = localStorage.getItem("cheepjPreload");
+  } catch (e) {
+    console.error(e);
+  }
   if (preload) preload = JSON.parse(preload);
   else preload = [];
   cheerpjInit({
