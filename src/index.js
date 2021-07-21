@@ -181,6 +181,72 @@ window.debug = async message => {
   debugger;
 };
 
+
+window.ipfCreateIFrame = function() {
+  var ret = document.createElement("iframe");
+  ret.onload = function(e) {
+    clearInterval(IFrameProxyDownloader.intervalId);
+    var i = e.target;
+    var c = new MessageChannel();
+    var q = IFrameProxyDownloader.portOrQueue;
+    c.port1.onmessage = ipfMessage;
+    IFrameProxyDownloader.portOrQueue = c.port1;
+    i.contentWindow.postMessage({ t: "port", port: c.port2 }, location.origin, [
+      c.port2
+    ]);
+    // Dispatch pending loads
+    for (var i = 0; i < q.length; i = (i + 1) | 0) q[i].send();
+  };
+  ret.src = "/c.html";
+  ret.width = "0px";
+  ret.height = "0px";
+  ret.style.border = "0px";
+  ret.style.position = "fixed";
+  ret.style.visibility = "hidden";
+  IFrameProxyDownloader.iframe = ret;
+  if (document.body) document.body.appendChild(ret);
+  else
+    document.addEventListener("DOMContentLoaded", function(e) {
+      document.body.appendChild(IFrameProxyDownloader.iframe);
+    });
+  IFrameProxyDownloader.intervalId = setInterval(function() {
+    IFrameProxyDownloader.iframe.src = "/c.html";
+  }, 10000);
+};
+
+window.openURL = async url => {
+  window.open(url);
+};
+
+const loader = document.getElementById("loader");
+loader.style.display = "none";
+window.getBytesFromUrl = async (originalUrl, promise) => {
+  try {
+    loader.style.display = "block";
+    let url = originalUrl.replace("http://", "https://");
+    Snackbar.show({
+      text: "Fetching data from: " + originalUrl,
+      pos: "bottom-left"
+    });
+    const blob = await fetch(url).then(r => r.blob());
+    const buffer = await new Response(blob).arrayBuffer();
+    await cjCall(
+      promise,
+      "resolve",
+      cjTypedArrayToJava(new Uint8Array(buffer))
+    );
+  } catch (e) {
+    console.error("Failed to get data from " + originalUrl, e);
+    Snackbar.show({
+      text: "Failed to fetch data from: " + originalUrl + ": " + e.toString(),
+      pos: "bottom-left"
+    });
+    await cjCall(promise, "reject", e.toString());
+  } finally {
+    loader.style.display = "none";
+  }
+};
+
 // Get the dialog element (with the accessor method you want)
 const el = document.getElementById("open-file-dialog");
 
