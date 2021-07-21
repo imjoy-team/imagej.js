@@ -5,7 +5,7 @@ const HtmlReplaceWebpackPlugin = require('html-replace-webpack-plugin')
 // const WriteFilePlugin = require('write-file-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin
-const WorkboxPlugin = require('workbox-webpack-plugin');
+// const WorkboxPlugin = require('workbox-webpack-plugin');
 
 const config = (env, argv) => ({
   mode: 'development',
@@ -22,7 +22,7 @@ const config = (env, argv) => ({
   devServer: {
     contentBase: path.resolve(__dirname, 'dist'),
     publicPath: '/',
-    port: 9090,
+    port: 9099,
     host: '0.0.0.0',
     hot: true,
     headers: {
@@ -39,6 +39,12 @@ const config = (env, argv) => ({
       },
       {
         from: path.resolve(__dirname, 'src', 'CNAME')
+      },
+      {
+        from: path.resolve(__dirname, 'src', 'c.html')
+      },
+      {
+        from: path.resolve(__dirname, 'src', 'service-worker.js')
       },
       {
         from: path.resolve(__dirname, 'src', 'style.css')

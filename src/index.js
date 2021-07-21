@@ -181,7 +181,6 @@ window.debug = async message => {
   debugger;
 };
 
-
 window.ipfCreateIFrame = function() {
   var ret = document.createElement("iframe");
   ret.onload = function(e) {
@@ -212,39 +211,6 @@ window.ipfCreateIFrame = function() {
   IFrameProxyDownloader.intervalId = setInterval(function() {
     IFrameProxyDownloader.iframe.src = "/c.html";
   }, 10000);
-};
-
-window.openURL = async url => {
-  window.open(url);
-};
-
-const loader = document.getElementById("loader");
-loader.style.display = "none";
-window.getBytesFromUrl = async (originalUrl, promise) => {
-  try {
-    loader.style.display = "block";
-    let url = originalUrl.replace("http://", "https://");
-    Snackbar.show({
-      text: "Fetching data from: " + originalUrl,
-      pos: "bottom-left"
-    });
-    const blob = await fetch(url).then(r => r.blob());
-    const buffer = await new Response(blob).arrayBuffer();
-    await cjCall(
-      promise,
-      "resolve",
-      cjTypedArrayToJava(new Uint8Array(buffer))
-    );
-  } catch (e) {
-    console.error("Failed to get data from " + originalUrl, e);
-    Snackbar.show({
-      text: "Failed to fetch data from: " + originalUrl + ": " + e.toString(),
-      pos: "bottom-left"
-    });
-    await cjCall(promise, "reject", e.toString());
-  } finally {
-    loader.style.display = "none";
-  }
 };
 
 // Get the dialog element (with the accessor method you want)
@@ -359,7 +325,11 @@ async function startImageJ(version) {
     enableInputMethods: true,
     clipboardMode: "java",
     enablePreciseClassLoaders: true,
-    javaProperties: ["java.protocol.handler.pkgs=com.leaningtech.handlers", "user.dir=/files", "plugins.dir=/app/ij153/plugins"]
+    javaProperties: [
+      "java.protocol.handler.pkgs=com.leaningtech.handlers",
+      "user.dir=/files",
+      "plugins.dir=/app/ij153/plugins"
+    ]
   });
   const appContainer = document.getElementById("imagej-container");
   const elm = cheerpjCreateDisplay(-1, -1, appContainer);
@@ -427,10 +397,12 @@ async function startImageJ(version) {
       _addEL.apply(elm, [event, handler, options]);
     }
   };
-  if(version === '2'){
-    cheerpjRunMain("net.imagej.Main", "/app/ij211/imagej2-cheerpj-0-SNAPSHOT-all.jar");
-  }
-  else{
+  if (version === "2") {
+    cheerpjRunMain(
+      "net.imagej.Main",
+      "/app/ij211/imagej2-cheerpj-0-SNAPSHOT-all.jar"
+    );
+  } else {
     cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53f.jar");
   }
 }
@@ -1192,9 +1164,9 @@ document.addEventListener(
 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    window.ij_version = urlParams.get('version');
-    startImageJ(window.ij_version)
-    if(window.ij_version === '2'){
+    window.ij_version = urlParams.get("version");
+    startImageJ(window.ij_version);
+    if (window.ij_version === "2") {
       // setTimeout(window.onImageJInitialized, 5000);
       loader.style.display = "none";
     }
