@@ -1,11 +1,11 @@
 import { setupRPC } from "imjoy-rpc";
 import { version, description } from "../package.json";
+import { loadZarrImage } from "./zarrUtils";
 
 export async function setupImJoyAPI(
   api,
   imagej,
   loader,
-  getImageData,
   javaBytesToArrayBuffer,
   saveImage,
   openImage,
@@ -54,7 +54,7 @@ export async function setupImJoyAPI(
     },
     async runMacro(macro, args) {
       try {
-        await imagej.runMacro(macro, args || "");
+        return await imagej.runMacroAsync(macro, args || "");
       } catch (e) {
         throw e;
       } finally {
@@ -82,57 +82,19 @@ export async function setupImJoyAPI(
     runPlugIn(className, args) {
       imagej.runPlugIn(className, args || "");
     },
+    async openVirtualStack(img) {
+      return await imagej.openVirtualStack(img);
+    },
+    async closeVirtualStack(key) {
+      await imagej.closeVirtualStack(key);
+    },
+    async viewZarr(config) {
+      return await imagej.viewZarr(config);
+    },
     async viewImage(img, options) {
       loader.style.display = "block";
       try {
-        options = options || {};
-        options.name = options.name || "tmp";
-        const filepath = "/str/" + options.name;
-        if (img instanceof ArrayBuffer) {
-          cheerpjAddStringFile(filepath, new Uint8Array(img));
-          return await openImage(imagej, filepath);
-        } else {
-          const formats = {
-            uint8: "8-bit",
-            uint16: "16-bit Unsigned",
-            int16: "16-bit Signed",
-            uint32: "32-bit Unsigned",
-            int32: "32-bit Signed",
-            float32: "32-bit Real",
-            flaot64: "64-bit Real"
-          };
-          cheerpjAddStringFile(filepath, new Uint8Array(img._rvalue));
-          let format = formats[img._rdtype];
-
-          if (img._rshape.length === 3) {
-            let number = img._rshape[2];
-            if (img._rshape[2] === 3) {
-              format = "24-bit RGB";
-              number = 1;
-            }
-            return await imagej.run(
-              "Raw...",
-              `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} number=${number} little-endian`
-            );
-          } else if (img._rshape.length === 4) {
-            if (img._rshape[3] === 3) {
-              format = "24-bit RGB";
-            } else {
-              if (img._rshape[3] !== 1) {
-                throw "channel dimension (last) can only be 1 or 3";
-              }
-            }
-            return await imagej.run(
-              "Raw...",
-              `open=${filepath} image=[${format}] width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]} little-endian`
-            );
-          } else if (img._rshape.length === 2) {
-            return await imagej.run(
-              "Raw...",
-              `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} little-endian`
-            );
-          }
-        }
+        imagej.showImage(img, options);
       } catch (e) {
         throw e;
       } finally {
@@ -160,9 +122,10 @@ export async function setupImJoyAPI(
         if (!format || format === "ndarray" || typeof format !== "string") {
           const imp = await imagej.getImage();
           format = format || {};
-          const data = await getImageData(
+          const data = await imagej.getImageData(
             imagej,
             imp,
+            format.all || false,
             format.channel || 0,
             format.slice || 0,
             format.frame || 0
@@ -184,35 +147,4 @@ export async function setupImJoyAPI(
   };
 
   api.export(service_api);
-
-  window.runImJoyPlugin =
-    window.runImJoyPlugin ||
-    (code => {
-      loader.style.display = "block";
-      api
-        .getPlugin(code)
-        .then(plugin_api => {
-          api.showMessage(`Plugin loaded successfully.`);
-          if (plugin_api && plugin_api.run) {
-            plugin_api.run({});
-          } else {
-            api.showMessage(`No "run" function defined in the plugin.`);
-          }
-        })
-        .finally(() => {
-          loader.style.display = "none";
-        });
-    });
-
-  window.reloadImJoyPlugin = code => {
-    loader.style.display = "block";
-    api
-      .getPlugin(code)
-      .then(() => {
-        api.showMessage(`Plugin loaded successfully.`);
-      })
-      .finally(() => {
-        loader.style.display = "none";
-      });
-  };
 }

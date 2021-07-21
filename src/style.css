@@ -2,12 +2,17 @@ body {
   width: 100vw;
   height: 100vh;
   margin: 0px;
+  overflow: hidden;
   font-family: Arial, Helvetica, sans-serif;
 }
 
 #app {
   width: 100%;
   height: 100%;
+}
+
+.always-top {
+  z-index: 9999 !important;
 }
 
 ::-webkit-scrollbar {
@@ -102,6 +107,35 @@ input[type="button"]:focus {
   min-height: 20px;
 }
 
+#ijWindowPlaceholder {
+  z-index: 999;
+  width: 100px;
+  height: 20px;
+  max-width: 100%;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  background-color: #4489ffb4;
+  color: white !important;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+#ijWindowPlaceholder:hover {
+  background-color: #1168fe;
+}
+
+.titleBar > .closeButton {
+  padding-right: 15px;
+  color: white;
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 24px;
+  line-height: 13px;
+}
+
 .titleBar {
   background-color: #448aff !important;
   color: white !important;
@@ -126,6 +160,10 @@ textarea {
   outline-width: thin;
 }
 
+#cheerpjDisplay {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
 #cheerpjDisplay > div.bordered {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3) !important;
   border-radius: 0 0 4px 4px;
@@ -139,8 +177,17 @@ textarea {
   border-radius: 0 0 4px 4px;
 }
 
+.cjScrollbarButton {
+  color: #5d5e5f;
+}
+
 .window > div > input {
   height: 15px !important;
+}
+
+#site-tips-container a {
+  color: #448aff;
+  text-decoration: none;
 }
 
 #drag-overlay {
@@ -422,7 +469,7 @@ dialog::backdrop {
   display: none;
   position: absolute;
   background-color: #f1f1f1;
-  min-width: 180px;
+  min-width: 185px;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }

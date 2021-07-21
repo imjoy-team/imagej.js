@@ -46,7 +46,18 @@ jobs:
           path: ./dist
       - name: Deploy the plugin file to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3.5.0
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         with:
           deploy_key: ${{ secrets.ACTION_DEPLOY_KEY }}
           publish_dir: ./dist
           commit_message: Deploy to GitHub Pages
+      - name: Setup aliyun oss
+        uses: manyuanrong/setup-ossutil@v2.0
+        with:
+          endpoint: "oss-cn-hongkong.aliyuncs.com"
+          access-key-id: ${{ secrets.OSS_ACCESSKEYID }}
+          access-key-secret: ${{ secrets.OSS_ACCESSKEYSECRET }}
+      - name: Deploy to aliyun
+        run: ossutil cp -rf ./dist oss://imagej/
+

@@ -50,6 +50,12 @@ const config = (env, argv) => ({
         from: path.resolve(__dirname, 'src', 'style.css')
       },
       {
+        from: path.resolve(__dirname, 'src', 'service-worker.js')
+      },
+      {
+        from: path.resolve(__dirname, 'src', 'c.html')
+      },
+      {
         from: path.resolve(__dirname, 'src', 'manifest.webmanifest')
       }
     ]),
