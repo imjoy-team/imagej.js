@@ -259,7 +259,7 @@ function replaceTextArea(elm, fileName) {
 
 document.createElement = function(type) {
   const elm = _createElement.call(document, type);
-  elm.addEventListener("touchstart", touchClick, false);
+  elm.addEventListener("touchstart", touchClick, { passive: true });
   if (elm.nodeName === "TEXTAREA") {
     function tryReplace() {
       if (!document.contains(elm)) {
