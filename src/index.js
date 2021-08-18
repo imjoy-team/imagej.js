@@ -289,6 +289,38 @@ window.debug = async message => {
   debugger;
 };
 
+window.ipfCreateIFrame = function() {
+  var ret = document.createElement("iframe");
+  ret.onload = function(e) {
+    clearInterval(IFrameProxyDownloader.intervalId);
+    var i = e.target;
+    var c = new MessageChannel();
+    var q = IFrameProxyDownloader.portOrQueue;
+    c.port1.onmessage = ipfMessage;
+    IFrameProxyDownloader.portOrQueue = c.port1;
+    i.contentWindow.postMessage({ t: "port", port: c.port2 }, location.origin, [
+      c.port2
+    ]);
+    // Dispatch pending loads
+    for (var i = 0; i < q.length; i = (i + 1) | 0) q[i].send();
+  };
+  ret.src = "/c.html";
+  ret.width = "0px";
+  ret.height = "0px";
+  ret.style.border = "0px";
+  ret.style.position = "fixed";
+  ret.style.visibility = "hidden";
+  IFrameProxyDownloader.iframe = ret;
+  if (document.body) document.body.appendChild(ret);
+  else
+    document.addEventListener("DOMContentLoaded", function(e) {
+      document.body.appendChild(IFrameProxyDownloader.iframe);
+    });
+  IFrameProxyDownloader.intervalId = setInterval(function() {
+    IFrameProxyDownloader.iframe.src = "/c.html";
+  }, 10000);
+};
+
 // Get the dialog element (with the accessor method you want)
 const el = document.getElementById("open-file-dialog");
 
@@ -423,7 +455,7 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
 
 const downloadQueue = {};
 
-async function startImageJ() {
+async function startImageJ(version) {
   loader.style.display = "block";
   let preload;
   try {
@@ -513,7 +545,15 @@ async function startImageJ() {
       _addEL.apply(elm, [event, handler, options]);
     }
   };
-  cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53j.jar");
+
+  if (version === "2") {
+    cheerpjRunMain(
+      "net.imagej.Main",
+      "/app/ij211/imagej2-cheerpj-0-SNAPSHOT-all.jar"
+    );
+  } else {
+    cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53j.jar");
+  }
 }
 
 async function listFiles(imagej, path) {
@@ -1736,7 +1776,15 @@ document.addEventListener(
     fixHeight();
     fixStyle();
     console.time("Loading ImageJ.JS");
-    startImageJ();
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    window.ij_version = urlParams.get("version");
+    startImageJ(window.ij_version);
+    if (window.ij_version === "2") {
+      // setTimeout(window.onImageJInitialized, 5000);
+      loader.style.display = "none";
+    }
   },
   false
 );
