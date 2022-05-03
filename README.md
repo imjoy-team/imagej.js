@@ -182,7 +182,7 @@ Show a zarr image stored with [NGFF](https://ngff.openmicroscopy.org/latest/) fo
 For example:
 ```js
 const ij = await api.getWindow("ImageJ.JS")
-await ij.viewZarr({source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.zarr", name: '6001240'})
+await ij.viewZarr({source: "https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001241.zarr", name: '6001241'})
 ```
 
 A Zarr Group object can be constructed in either Javascript or Python, for example:
