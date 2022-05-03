@@ -1,6 +1,5 @@
-import { setupRPC } from "imjoy-rpc";
+import { imjoyRPC } from "imjoy-rpc";
 import { version, description } from "../package.json";
-import { loadZarrImage } from "./zarrUtils";
 
 export async function setupImJoyAPI(
   api,
@@ -11,14 +10,15 @@ export async function setupImJoyAPI(
   openImage,
   addMenuItem
 ) {
-  if (!api)
-    api = await setupRPC({
+  if (!api){
+    api = await imjoyRPC.setupRPC({
       name: "ImageJ.JS",
       version: version,
       description: description,
       type: "rpc-window",
       defaults: { fullscreen: true }
     });
+  }
   const service_api = {
     setup() {
       api.log("ImageJ.JS loaded successfully.");
