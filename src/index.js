@@ -845,7 +845,7 @@ async function fixMenu() {
     async callback() {
       const url = prompt(
         "Please type a OME-Zarr/NGFF image URL",
-        "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001240.zarr"
+        "https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001237.zarr"
       );
       await ij.viewZarr({ source: url });
     }
