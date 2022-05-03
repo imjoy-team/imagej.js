@@ -205,14 +205,15 @@ class Plugin:
             type="ImageJ.JS", src="https://ij.imjoy.io"
         )
         
-        http_map = fs.get_mapper('https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001237.zarr')
+        http_map = fs.get_mapper('https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.1/6001241.zarr')
         z_group = zarr.open(http_map, mode='r')
         await ij.viewZarr({"source": z_group})
 
 
 api.export(Plugin())
 ```
-For more Python examples, you can also take a look at the [vizarr](https://github.com/hms-dbmi/vizarr/tree/master/example) repo.
+For more Python examples, you can also take a look at the [vizarr](https://github.com/hms-dbmi/vizarr/tree/master/example) repo. For more example NGFF images, you can get them from here: https://www.openmicroscopy.org/2020/11/04/zarr-data.html.
+
 
 **Note: This function uses Virtual Stack in ImageJ to display, this means it will load the image plane as a whole -- as a result, it doesn't support loading image with large width and height (e.g. much less than 50000 pixels on each dimension ). You will need to use `offsetX`, `offsetY`, `sizeX`, `sizeY` to crop the image plane.**
 ### getImage(format)
