@@ -286,7 +286,7 @@
                 opt.ignoreMethod = true;
               }
               return cache.match(request, opt).then(function(res) {
-                if (res) {
+                if (res && res.ok) {
                   return res;
                 } else {
                   return _this
@@ -310,7 +310,7 @@
           } else {
             return _this.ensureCache().then(function(cache) {
               return cache.match(request, _this.options).then(function(res) {
-                if (res) {
+                if (res && res.ok) {
                   // try to fetch anyway
                   if (!request.url.startsWith(baseURL)) {
                     _this.fetchAndCache(request, cache);
