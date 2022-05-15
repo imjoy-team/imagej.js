@@ -8,6 +8,7 @@ import A11yDialog from "a11y-dialog";
 import { polyfill } from "mobile-drag-drop";
 import QRCode from "qrcode";
 import { loadZarrImage } from "./zarrUtils";
+import { version } from "../package.json";
 
 // optional import of scroll behaviour
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
@@ -1113,6 +1114,13 @@ function registerServiceWorker() {
             "ServiceWorker registration successful with scope: ",
             registration.scope
           );
+
+          const currentVersion = localStorage.getItem("service-worker-version");
+          if (!currentVersion || currentVersion != version) {
+            console.log("Upgrading ServiceWorker to " + version);
+            registration.update();
+            localStorage.setItem("service-worker-version", version);
+          }
         },
         function(err) {
           // registration failed :(

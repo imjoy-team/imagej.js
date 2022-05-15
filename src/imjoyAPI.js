@@ -10,7 +10,7 @@ export async function setupImJoyAPI(
   openImage,
   addMenuItem
 ) {
-  if (!api){
+  if (!api) {
     api = await imjoyRPC.setupRPC({
       name: "ImageJ.JS",
       version: version,
