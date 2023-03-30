@@ -813,7 +813,8 @@ async function fixSetScaleWindowSize() {
         // If the added node is a child element of the div, do something
         if (node.parentNode === myDiv) {
           if (node.querySelector(".titleBar").textContent === "Set Scale✖") {
-            node.style.height = `${parseInt(node.style.height) + 20}px`;
+            node.querySelector("div").style.marginTop = "14px";
+            node.style.height = `${parseInt(node.style.height) + 40}px`;
           }
         }
       });
