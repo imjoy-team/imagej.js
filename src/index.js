@@ -801,6 +801,33 @@ async function saveFileToFS(imagej, file) {
   console.log(await listFiles(imagej, "/files/"));
 }
 
+async function fixSetScaleWindowSize() {
+  // Get the div element
+  const myDiv = document.querySelector("#cheerpjDisplay");
+
+  // Create a new instance of the MutationObserver
+  const observer = new MutationObserver(mutations => {
+    // Check each mutation for added nodes
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(node => {
+        // If the added node is a child element of the div, do something
+        if (node.parentNode === myDiv) {
+          if (node.querySelector(".titleBar").textContent === "Set Scale✖") {
+            node.querySelector("div").style.marginTop = "14px";
+            node.style.height = `${parseInt(node.style.height) + 40}px`;
+          }
+        }
+      });
+    });
+  });
+
+  // Configure the observer to watch for additions of child nodes
+  const config = { childList: true };
+
+  // Start observing the div element for changes
+  observer.observe(myDiv, config);
+}
+
 async function fixZOrder() {
   const ijWindow = document.querySelector(
     "#cheerpjDisplay>.window:nth-child(2)"
@@ -1657,6 +1684,7 @@ window.onImageJInitialized = async () => {
 
   window.ij = imagej;
   setupDragDropPaste(imagej);
+  fixSetScaleWindowSize();
   fixMenu();
   fixZOrder();
   fixTouch();
