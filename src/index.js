@@ -522,10 +522,15 @@ async function listFiles(imagej, path) {
   return files.map(cjStringJavaToJs);
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function mountFile(file) {
   const filepath = "/str/" + file.name;
   const bytes = await readFile(file);
   cheerpjAddStringFile(filepath, bytes);
+  await sleep(1);
   return filepath;
 }
 
@@ -536,6 +541,7 @@ async function showImage(img, options) {
   const filepath = "/str/" + options.name;
   if (img instanceof ArrayBuffer) {
     cheerpjAddStringFile(filepath, new Uint8Array(img));
+    await sleep(1);
     return await openImage(imagej, filepath);
   } else {
     const formats = {
@@ -548,6 +554,7 @@ async function showImage(img, options) {
       flaot64: "64-bit Real"
     };
     cheerpjAddStringFile(filepath, new Uint8Array(img._rvalue));
+    await sleep(1);
     let format = formats[img._rdtype];
 
     if (img._rshape.length === 3) {
