@@ -552,14 +552,20 @@ async function showImage(img, options) {
 
     if (img._rshape.length === 3) {
       let number = img._rshape[2];
-      if (img._rshape[2] === 3) {
+      if (img._rshape[2] === 3 && img._rdtype === "uint8") {
         format = "24-bit RGB";
         number = 1;
+        return await imagej.run(
+          "Raw...",
+          `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} number=${number} little-endian`
+        );
       }
-      return await imagej.run(
-        "Raw...",
-        `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} number=${number} little-endian`
-      );
+      else{
+        return await imagej.run(
+          "Raw...",
+          `open=${filepath} image=[${format}] width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]} little-endian`
+        );
+      }
     } else if (img._rshape.length === 4) {
       if (img._rshape[3] === 3) {
         format = "24-bit RGB";

@@ -124,7 +124,7 @@ Load an image into ImageJ.JS. For example, you can pass images from Python with 
  * [height, width]
  * [height, width, 1]
  * [height, width, 3] (will show as RGB image)
- * [height, width, z-stack]
+ * [z-stack, height, width]
  * [z-stack, height, width, 1]
  * [z-stack, height, width, 3] (will show as a stack of RGB image)
 
