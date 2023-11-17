@@ -142,7 +142,7 @@ await ij.viewImage(image)
 If you pass raw bytes of an image in other formats, you need to specify the file name with the corresponding file extension. For example: `ij.viewImage(image_bytes, {"name": "my_image.png"})`.
 
 
-#### Supporting 5D
+#### Supporting more image dimensions
 
 The `viewImage` api only limited dimensions, e.g.: `z-stack, height, width`, however, more dimensions can be supported by running a macro to convert the image stack into a hyper stack.
 
