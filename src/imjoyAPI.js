@@ -132,7 +132,7 @@ export async function setupImJoyAPI(
           );
           return {
             _rtype: "ndarray",
-            _rvalue: data.bytes,
+            _rvalue: new Uint8Array(data.bytes),
             _rshape: data.shape,
             _rdtype: data.type
           };

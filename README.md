@@ -377,7 +377,7 @@ git clone https://github.com/imjoy-team/imagej.js
 cd imagej.js
 npm install
 npm run build # files will be saved into ./dist folder
-sh get-imagej.sh # fetch precompiled imagej
+sh get-imagej.sh # fetch precompiled imagej, use get-imagej.bat on Windows
 npm run serve
 ```
 
