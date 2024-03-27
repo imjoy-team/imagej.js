@@ -28,6 +28,13 @@ jobs:
     - run: npm run build
     - name: Get compiled imagej.js
       run: bash get-imagej.sh
+    - name: Start testing server
+      run: npm run serve & # start http server in the background
+    - run: npm run test
+    - name: Install ImageMagick
+      run: sudo apt install imagemagick
+    - name: Convert screenshots to gif
+      run: convert -fuzz 1% -delay 1x1 ./screenshots/*.png -coalesce -layers OptimizeTransparency ./dist/imagej-js-test-screenshots.gif
     - name: Save build output
       uses: actions/upload-artifact@v1
       with:
