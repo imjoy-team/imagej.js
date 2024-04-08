@@ -5,21 +5,22 @@ const builtinPlugins = [
   "https://gist.githubusercontent.com/oeway/9c78d23c101f468e723888d05b6fac6d/raw/ImageJScriptEditor.imjoy.html",
   "https://gist.githubusercontent.com/oeway/c9592f23c7ee147085f0504d2f3e993a/raw/CellPose-ImageJ.imjoy.html",
   "https://gist.githubusercontent.com/oeway/e5c980fbf6582f25fde795262a7e33ec/raw/itk-vtk-viewer-imagej.imjoy.html",
-  "https://gist.githubusercontent.com/oeway/16d189e53d23cb2e26c3618ed6e40be6/raw/ImJoyModelRunner.imjoy.html"
+  "https://gist.githubusercontent.com/oeway/16d189e53d23cb2e26c3618ed6e40be6/raw/ImJoyModelRunner.imjoy.html",
+  "https://bioimage-io.github.io/bioengine-web-client/",
 ];
 async function startImJoy(app, imjoy) {
   await imjoy.start();
-  imjoy.event_bus.on("show_message", msg => {
+  imjoy.event_bus.on("show_message", (msg) => {
     Snackbar.show({
       text: msg,
-      pos: "bottom-left"
+      pos: "bottom-left",
     });
   });
-  imjoy.event_bus.on("close_window", w => {
+  imjoy.event_bus.on("close_window", (w) => {
     app.closeWindow(w);
     app.$forceUpdate();
   });
-  imjoy.event_bus.on("plugin_loaded", p => {
+  imjoy.event_bus.on("plugin_loaded", (p) => {
     // only add if it's not a window instance
     if (!p.window_id) app.plugins[p.name] = p;
     if (
@@ -31,7 +32,7 @@ async function startImJoy(app, imjoy) {
     app.$forceUpdate();
   });
   let windowCount = 0;
-  imjoy.event_bus.on("add_window", async w => {
+  imjoy.event_bus.on("add_window", async (w) => {
     windowCount++;
     if (document.getElementById(w.window_id)) return;
     if (w.dialog) {
@@ -95,7 +96,7 @@ async function startImJoy(app, imjoy) {
       titleBar.addEventListener("dragend", () => {
         elem.style.pointerEvents = "auto";
       });
-      const observer = new MutationObserver(mutationsList => {
+      const observer = new MutationObserver((mutationsList) => {
         for (const mutation of mutationsList) {
           if (mutation.type === "childList") {
             // resizerBord div added during resizing
@@ -119,18 +120,18 @@ async function startImJoy(app, imjoy) {
     app.loadPlugin(p);
   }
   app.loadPluginByQuery();
-  window.runImJoyPlugin = code => {
+  window.runImJoyPlugin = (code) => {
     loader.style.display = "block";
     imjoy.pm
       .reloadPlugin({
         code: code,
         load_dependencies: true,
-        hot_reloading: true
+        hot_reloading: true,
       })
-      .then(plugin => {
+      .then((plugin) => {
         Snackbar.show({
           text: `Plugin "${plugin.name}" loaded successfully.`,
-          pos: "bottom-left"
+          pos: "bottom-left",
         });
         app.plugins[plugin.name] = plugin;
         app.$forceUpdate();
@@ -139,7 +140,7 @@ async function startImJoy(app, imjoy) {
         } else {
           Snackbar.show({
             text: `No "run" function defined in Plugin "${plugin.name}".`,
-            pos: "bottom-left"
+            pos: "bottom-left",
           });
         }
       })
@@ -148,18 +149,18 @@ async function startImJoy(app, imjoy) {
       });
   };
 
-  window.reloadImJoyPlugin = code => {
+  window.reloadImJoyPlugin = (code) => {
     loader.style.display = "block";
     imjoy.pm
       .reloadPlugin({
         code: code,
         load_dependencies: true,
-        hot_reloading: true
+        hot_reloading: true,
       })
-      .then(plugin => {
+      .then((plugin) => {
         Snackbar.show({
           text: `Plugin "${plugin.name}" loaded successfully.`,
-          pos: "bottom-left"
+          pos: "bottom-left",
         });
         app.plugins[plugin.name] = plugin;
         app.$forceUpdate();
@@ -171,7 +172,7 @@ async function startImJoy(app, imjoy) {
 
   window.loadPlugin = async function(uri) {
     await imjoy.pm.reloadPluginRecursively({
-      uri
+      uri,
     });
   };
 
@@ -197,7 +198,7 @@ async function startImJoy(app, imjoy) {
             _rtype: "ndarray",
             _rshape: imgData.shape,
             _rdtype: imgData.type,
-            _rvalue: imgData.bytes
+            _rvalue: imgData.bytes,
           };
         }
       }
@@ -352,7 +353,7 @@ export async function setupImJoyApp(setAPI) {
       plugins: {},
       fullscreen: false,
       imjoy: null,
-      active_plugin: null
+      active_plugin: null,
     },
     mounted() {
       console.log(`ImJoy Core (v${imjoyCore.VERSION}) loaded.`);
@@ -398,24 +399,24 @@ export async function setupImJoyApp(setAPI) {
             duration = duration || 5;
             Snackbar.show({
               text: msg,
-              pos: "bottom-left"
+              pos: "bottom-left",
             });
             await window.ij.showStatus(msg);
           },
           async showDialog(_plugin, config) {
             config.dialog = true;
             return await imjoy.pm.createWindow(_plugin, config);
-          }
-        }
+          },
+        },
       });
       this.imjoy = imjoy;
       startImJoy(this, this.imjoy).then(() => {
         imjoy.pm
           .reloadPluginRecursively({
             uri:
-              "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html"
+              "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html",
           })
-          .then(enginePlugin => {
+          .then((enginePlugin) => {
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
             const engine = urlParams.get("engine");
@@ -425,12 +426,12 @@ export async function setupImJoyApp(setAPI) {
                 .createEngine({
                   name: "MyCustomEngine",
                   nbUrl: engine,
-                  url: engine.split("?")[0]
+                  url: engine.split("?")[0],
                 })
                 .then(() => {
                   console.log("Jupyter Engine connected!");
                 })
-                .catch(e => {
+                .catch((e) => {
                   console.error("Failed to connect to Jupyter Engine", e);
                 });
             } else {
@@ -438,12 +439,12 @@ export async function setupImJoyApp(setAPI) {
                 .createEngine({
                   name: "MyBinder Engine",
                   url: "https://mybinder.org",
-                  spec: spec || "oeway/imjoy-binder-image/master"
+                  spec: spec || "oeway/imjoy-binder-image/master",
                 })
                 .then(() => {
                   console.log("Binder Engine connected!");
                 })
-                .catch(e => {
+                .catch((e) => {
                   console.error("Failed to connect to MyBinder Engine", e);
                 });
             }
@@ -464,19 +465,19 @@ export async function setupImJoyApp(setAPI) {
         this.imjoy.pm.imjoy_api.showDialog(null, {
           src: "https://imjoy.io/#/app",
           fullscreen: true,
-          passive: true
+          passive: true,
         });
       },
       aboutImJoy() {
         this.imjoy.pm.imjoy_api.showDialog(null, {
           src: "https://imjoy.io/#/about",
-          passive: true
+          passive: true,
         });
       },
       showAPIDocs() {
         this.imjoy.pm.imjoy_api.createWindow(null, {
           src: "https://imjoy.io/docs/#/api",
-          passive: true
+          passive: true,
         });
       },
       async connectPlugin() {
@@ -498,7 +499,7 @@ export async function setupImJoyApp(setAPI) {
             }
             await plugin.api.run({
               config: config,
-              data: {}
+              data: {},
             });
           }
         } catch (e) {
@@ -516,14 +517,14 @@ export async function setupImJoyApp(setAPI) {
         }
         await plugin.api.run({
           config: config,
-          data: {}
+          data: {},
         });
       },
       showMessage(msg, duration) {
         duration = duration || 5;
         Snackbar.show({
           text: msg,
-          pos: "bottom-left"
+          pos: "bottom-left",
         });
       },
       loadPlugin(p) {
@@ -536,9 +537,9 @@ export async function setupImJoyApp(setAPI) {
         }
         this.imjoy.pm
           .reloadPluginRecursively({
-            uri: p
+            uri: p,
           })
-          .then(async plugin => {
+          .then(async (plugin) => {
             this.plugins[plugin.name] = plugin;
             if (!builtinPlugins.includes(plugin.config.origin))
               this.showMessage(
@@ -546,7 +547,7 @@ export async function setupImJoyApp(setAPI) {
               );
             this.$forceUpdate();
           })
-          .catch(e => {
+          .catch((e) => {
             console.error(e);
             this.showMessage(`Failed to load the plugin, error: ${e}`);
           });
@@ -578,8 +579,8 @@ export async function setupImJoyApp(setAPI) {
       },
       maximizeWindow() {
         this.fullscreen = !this.fullscreen;
-      }
-    }
+      },
+    },
   });
   window.connectPlugin = async function() {
     await app.connectPlugin();

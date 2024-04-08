@@ -141,6 +141,18 @@ await ij.viewImage(image)
 
 If you pass raw bytes of an image in other formats, you need to specify the file name with the corresponding file extension. For example: `ij.viewImage(image_bytes, {"name": "my_image.png"})`.
 
+
+#### Supporting more image dimensions
+
+The `viewImage` api only limited dimensions, e.g.: `z-stack, height, width`, however, more dimensions can be supported by running a macro to convert the image stack into a hyper stack.
+
+See the following [javascript example](https://github.com/will-moore/omero-imjoy/blob/9ec52590b730d5246201de547ebb09c69147478a/omero_imjoy/templates/omero_imjoy/index.html#L174-L177):
+```javascript
+// encode the image data as an ndarray
+await ij.viewImage({ _rtype: 'ndarray', _rdtype: dtype, _rshape: [sizeZ * sizeC * sizeT, sizeY, sizeX, 1], _rvalue: zarrPlanes.buffer });
+await ij.runMacro(`run("Stack to Hyperstack...", "order=xyzct channels=${sizeC} slices=${sizeZ} frames=${sizeT} display=Grayscale");`)
+```
+
 ### openVirtualStack(img)
 **This function is in experimental state**
 
@@ -365,7 +377,7 @@ git clone https://github.com/imjoy-team/imagej.js
 cd imagej.js
 npm install
 npm run build # files will be saved into ./dist folder
-sh get-imagej.sh # fetch precompiled imagej
+sh get-imagej.sh # fetch precompiled imagej, use get-imagej.bat on Windows
 npm run serve
 ```
 
