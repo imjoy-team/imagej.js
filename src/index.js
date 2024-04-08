@@ -1646,6 +1646,8 @@ window.onImageJInitialized = async () => {
       window.onMacroResolve = resolve;
       // TODO: handle reject
       window.onMacroReject = resolve;
+      // fix nih sample url
+      macro = macro.replace(/https:\/\/imagej.nih.gov\/ij\/images\//g, 'https://imagej.net/images/')
       imagej.runMacro(macro, args);
     });
   };
