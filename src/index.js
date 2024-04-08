@@ -1642,10 +1642,9 @@ window.onImageJInitialized = async () => {
   };
 
   imagej.runMacroAsync = function(macro, args) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       window.onMacroResolve = resolve;
-      // TODO: handle reject
-      window.onMacroReject = resolve;
+      window.onMacroReject = reject;
       imagej.runMacro(macro, args);
     });
   };
