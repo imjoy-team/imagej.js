@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="ResourceLoaderDynamicStyles" content="" />
+    <meta name="generator" content="MediaWiki 1.28.0" />
+    <meta
+      name="description"
+      content="ImageJ is an open source image processing program designed for scientific multidimensional images."
+    />
+    <link rel="shortcut icon" href="assets/img/ij2.ico" />
+    <meta property="og:type" content="website" />
+
+    <meta property="og:title" content="ImageJ.JS" />
+
+    <meta property="og:image" content="assets/img/imagej-js-imjoy.png" />
+
+    <meta
+      property="og:description"
+      content="ImageJ.JS is an open source image processing web application designed for scientific multidimensional images"
+    />
+    <meta
+      id="index-viewport"
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>ImageJ.JS</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="https://cjrtnc.leaningtech.com/20201217_2/loader.js"></script>
+    <link
+      rel="apple-touch-icon"
+      sizes="48x48"
+      href="assets/icons/android/android-launchericon-48-48.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="assets/icons/android/android-launchericon-72-72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="96x96"
+      href="assets/icons/android/android-launchericon-96-96.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="assets/icons/android/android-launchericon-144-144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="192x192"
+      href="assets/icons/android/android-launchericon-192-192.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="512x512"
+      href="assets/icons/android/android-launchericon-512-512.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="assets/icons/android/android-launchericon-192-192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="assets/icons/firefox/firefox-general-32-32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="assets/icons/android/android-launchericon-96-96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="assets/icons/chrome/chrome-favicon-16-16.png"
+    />
+    <script
+      async
+      src="https://cdn.jsdelivr.net/npm/pwacompat"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/codemirror.min.js"
+      integrity="sha512-K8GMktcEqOI28I3f5C6kraFm1F4wVLvnBxGU+imS/zOLT1COAT799Ln4DJyAbpdyNt6LgMIWcwy4ptCYXCIDqA=="
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/codemirror.min.css"
+      integrity="sha512-/BlxZbYLtYGExexketXsTi47eHp+r2kTeq2OHecQPZlfbc7WFXVrwbVW9HOYjI6c9Ti+P60ASmVLxittZ0EBGw=="
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/mode/xml/xml.min.js"
+      integrity="sha512-k1HnoY9EXahEfPz7kq/lD9DltloKH9OrB9XNKYoUQrNz9epe5F4mQP5PfuIfeRfoXHkNrE0gF3Mx4LhC5BVl9Q=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/mode/css/css.min.js"
+      integrity="sha512-DG+5u//fVN9kpDgTGe78IJhJW8e5+tlrPaMgNqcrzyPXsn+GPaF2T62+X3ds7SuhFR9Qeb7XZ6kMD8X09FeJhA=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/mode/javascript/javascript.min.js"
+      integrity="sha512-9miXlEjnHTF+nVGdc2IGOLGTFW2wWkWbd1/7Ltlre+dM53ZSCUQ/PNN+jtsmYqr3ndiD5RW6XQJUm/Hz8JvyOQ=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/mode/python/python.min.js"
+      integrity="sha512-DS+asaww1mE0V/N6YGVgoNIRj+yXB9hAV68vM6rVeWs0G+OyMd24LKrnS4Z+g26rgghU7qvGeEnRVUArV7nVog=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/mode/htmlmixed/htmlmixed.min.js"
+      integrity="sha512-p15qsXPrhaUkH+/RPE6QzCmxUAPkCRw89ityx+tWC1lAYI6Et2L0UpN+iqifxUdt+ss1FQ+9CuzxpBeT9mR3/w=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/mode/markdown/markdown.min.js"
+      integrity="sha512-i0WWgBhBBkoMBlFQAsWUqSGwbGx6ZRKHJqGvuLdAl1qu1SDSyxJmwPAiVSPkzGqz1TM64yiH7b8sCUjNeoW8Kw=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/addon/search/search.min.js"
+      integrity="sha512-Scy8gOuTrwkguZyL89xZe5MMIdgZGUUQAkkDKtUI4mq2fNVTRg+pSsPcXkRtNmFN8sQ23MZNA0FsqJUPEQ0PUQ=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/addon/search/searchcursor.min.js"
+      integrity="sha512-DVIRH6DkN3F/ZpyO69rw0Z4v2KmSXzt281MckBasGKgKfLSi2n4n5L0SByrLFZzZP1cunvJY8xkjhtZKk9k8HA=="
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/addon/dialog/dialog.min.css"
+      integrity="sha512-Vogm+Cii1SXP5oxWQyPdkA91rHB776209ZVvX4C/i4ypcfBlWVRXZGodoTDAyyZvO36JlTqDqkMhVKAYc7CMjQ=="
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.57.0/addon/dialog/dialog.min.js"
+      integrity="sha512-YU8ue8QADzIU/tOodVSM+D74vp1FICLl737eY54IbYYuu+ZsG/JEoZFgfUGOXWWyp3lo02wKTnPHrroWRy+Fgg=="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+
+  <body>
+    <div id="site-tips-container" style="display: none;text-align: center;">
+      中国用户请使用镜像站点
+      <a href="https://cnij.imjoy.io">https://cnij.imjoy.io</a>
+    </div>
+    <div id="drag-overlay">
+      <input type="file" id="open-file" style="display: none;" />
+      <span>Drop file here to open</span>
+    </div>
+    <div id="ijWindowPlaceholder" style="visibility: hidden;">
+      <a>ImageJ</a><a class="controls closeButton">+</a>
+    </div>
+    <div class="container" id="imagej-container"></div>
+
+    <div class="lds-ellipsis" id="loader">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <div class="dialog" id="open-file-dialog">
+      <div class="dialog-overlay" tabindex="-1" data-a11y-dialog-hide></div>
+      <dialog
+        class="dialog-content"
+        aria-labelledby="dialogTitle"
+        aria-describedby="dialogDescription"
+      >
+        <button
+          data-a11y-dialog-hide
+          class="dialog-close"
+          aria-label="Close this dialog window"
+        >
+          &times;
+        </button>
+
+        <h1 id="dialogTitle">Open File</h1>
+
+        <p id="dialogDescription">
+          You can either select a file from your local file system or cached
+          files in the browser.
+        </p>
+
+        <div class="dialog-button-group">
+          <button aria-label="Select a local file" id="open-file-modal-select">
+            Select Local File
+          </button>
+          <button
+            aria-label="Select a cached file"
+            id="open-file-modal-internal"
+          >
+            Select Cached File
+          </button>
+          <button
+            aria-label="Cancel the selection"
+            id="open-file-modal-cancel"
+            data-a11y-dialog-hide
+          >
+            Cancel
+          </button>
+        </div>
+      </dialog>
+    </div>
+
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+      crossorigin="anonymous"
+    />
+    <script>
+      function unRegisterServiceWorker(){
+        navigator.serviceWorker.getRegistrations().then(
+          function(registrations) {
+            for (let registration of registrations) {
+                registration.unregister().then(function() {
+                    return self.clients.matchAll();
+                }).then(function(clients) {
+                    clients.forEach(client => {
+                        if (client.url && "navigate" in client) {
+                            client.navigate(client.url);
+                        }
+                    });
+                    console.log('Service worker unregistered');
+                });
+            }
+        });
+      }
+      document.addEventListener(
+        "DOMContentLoaded",
+        async function() {
+          unRegisterServiceWorker();
+          await startImageJ();
+          const imjoy = await window.imjoyReady;
+          await imjoy.api.loadPlugin(window.location.origin + "/imagej-js-chatbot-extension.imjoy.html")
+        },
+        false
+      );
+    </script>
+    <script>
+      const siteTipsContainer = document.getElementById("site-tips-container");
+      setTimeout(() => {
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const hostnameArr = [
+          "cnij.imjoy.io",
+          "0.0.0.0",
+          "127.0.0.1",
+          "localhost"
+        ];
+        if (
+          timeZone === "Asia/Shanghai" &&
+          !hostnameArr.includes(window.location.hostname)
+        ) {
+          siteTipsContainer.style.display = "block";
+        }
+      }, 1000);
+    </script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-134837258-3"
+    ></script>
+    <script>
+      const dnt =
+        navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      if (dnt != "1" && dnt != "yes") {
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
+
+        gtag("config", "UA-134837258-3");
+      } else {
+        console.debug("Respecting Do-Not-Track, not loading analytics.");
+      }
+    </script>
+  <script type="text/javascript" src="index.js"></script></body>
+</html>
