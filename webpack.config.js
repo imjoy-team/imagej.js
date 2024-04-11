@@ -51,11 +51,19 @@ const config = (env, argv) => ({
       },
       {
         from: path.resolve(__dirname, 'src', 'manifest.webmanifest')
+      },
+      {
+        from: path.resolve(__dirname, 'src', 'imagej-js-chatbot-extension.imjoy.html')
       }
     ]),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: path.resolve(__dirname, 'src', 'index.html'),
+      inject: true
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'chat.html',
+      template: path.resolve(__dirname, 'src', 'chat.html'),
       inject: true
     }),
     new HtmlReplaceWebpackPlugin([{

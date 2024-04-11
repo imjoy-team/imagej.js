@@ -8,8 +8,11 @@ const builtinPlugins = [
   "https://gist.githubusercontent.com/oeway/16d189e53d23cb2e26c3618ed6e40be6/raw/ImJoyModelRunner.imjoy.html",
   "https://bioimage-io.github.io/bioengine-web-client/",
 ];
+
+
 async function startImJoy(app, imjoy) {
   await imjoy.start();
+  window.imjoy = imjoy;
   imjoy.event_bus.on("show_message", (msg) => {
     Snackbar.show({
       text: msg,
@@ -333,6 +336,10 @@ function promisify_functions(obj, bind) {
   return ret;
 }
 
+window.imjoyReady = new Promise((resolve) => {
+  window.resolveImJoyReady = resolve;
+});
+
 export async function setupImJoyApp(setAPI) {
   const vue = await import("vue/dist/vue.common");
   const vuejsmodal = await import("vue-js-modal");
@@ -411,6 +418,7 @@ export async function setupImJoyApp(setAPI) {
       });
       this.imjoy = imjoy;
       startImJoy(this, this.imjoy).then(() => {
+        if (window.resolveImJoyReady) window.resolveImJoyReady(this.imjoy);
         imjoy.pm
           .reloadPluginRecursively({
             uri:
