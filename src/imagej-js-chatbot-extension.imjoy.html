@@ -1,0 +1,103 @@
+
+<docs>
+[TODO: write documentation for this plugin.]
+</docs>
+
+<config lang="json">
+{
+  "name": "ImageJ.JS Chatbot Extension",
+  "type": "web-worker",
+  "tags": [],
+  "ui": "",
+  "version": "0.1.0",
+  "cover": "",
+  "description": "Run ImageJ.JS macro in the chatbot",
+  "icon": "extension",
+  "inputs": null,
+  "outputs": null,
+  "api_version": "0.1.8",
+  "env": "",
+  "permissions": [],
+  "requirements": [],
+  "dependencies": []
+}
+</config>
+
+<script lang="javascript">
+class ImJoyPlugin {
+  async setup() {
+    if (api.registerChatbotExtension) {
+      const chatbot = api
+      await this.registerExtensions(chatbot.registerChatbotExtension)
+    } else {
+      let chatbot = await api.getWindow("BioImage.IO Chatbot")
+      if (chatbot) {
+        await this.registerExtensions(chatbot.registerExtension)
+      } else {
+        chatbot = await api.createWindow({src: "https://bioimage.io/chat", w: 28, h: 20, name: "BioImage.IO Chatbot"})
+        await this.registerExtensions(chatbot.registerExtension)
+      }
+      let ij = await api.getWindow("ImageJ.JS")
+      if (!ij) {
+        ij = await api.createWindow({src: "https://ij.imjoy.io/", name: "ImageJ.JS"})
+        await ij.runMacro('run("Blobs (25K)")')
+      }
+    }
+  }
+
+  async registerExtensions(register) {
+    await register({
+      _rintf: true,
+      id: "imagej_js",
+      type: "bioimageio-chatbot-extension",
+      name: "ImageJ.JS",
+      description: "Run ImageJ macro for image analysis; This allows the user to interact with a ImageJ instance running in the chat assitant, the imagej macro will be executed in imagej and the result will be shown to the user; The state of the ImageJ instance will be preserved between different macro executions. Try to fix the macro if an error occurs.",
+      async get_schema() {
+        return {
+            run_macro: {
+              type: "object",
+              title: "run_macro",
+              description: "Run ImageJ macro",
+              properties: {
+                macro: {
+                  type: "string",
+                  description: "ImageJ macro (for running inside imagej1, with no plugin support)",
+                },
+              },
+              required: ["macro"]
+            }
+        }
+      },
+      tools: {
+          async run_macro(config) {
+            let ij = await api.getWindow("ImageJ.JS")
+            if(!ij){
+              ij = await api.createWindow({src: "https://ij.imjoy.io/", name: "ImageJ.JS"})
+            }
+            // patch example images
+            // replace https://imagej.nih.gov/ij/images/* to https://imagej.net/images/*
+            config.macro = config.macro.replace(/https:\/\/imagej.nih.gov\/ij\/images\//g, "https://imagej.net/images/")
+            try{
+                await ij.runMacro(config.macro)
+                return "Macro executed successfully."
+            }
+            catch(e){
+                // hack to handle null pointer exception
+                if(e === "java.lang.NullPointerException"){
+                  return "Macro executed successfully."
+                }
+                console.error(e)
+                return "Failed to execute the macro: "+e
+            }
+          },
+      }
+    })
+
+    api.log('initialized')
+  }
+
+  async run(ctx) {  }
+}
+
+api.export(new ImJoyPlugin())
+</script>
