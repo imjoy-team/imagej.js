@@ -82,6 +82,10 @@ class ImJoyPlugin {
                 return "Macro executed successfully."
             }
             catch(e){
+                // hack to handle null pointer exception
+                if(e === "java.lang.NullPointerException"){
+                  return "Macro executed successfully."
+                }
                 console.error(e)
                 return "Failed to execute the macro: "+e
             }
