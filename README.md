@@ -370,7 +370,7 @@ We are currently investigating ways to compile plugins in advance to boost the p
 
 ### Run the ImageJ.JS site locally
 
-Before start, please make sure you have [nodejs](https://nodejs.org/en/download/) installed.
+Before start, please make sure you have [nodejs](https://nodejs.org/en/download/) installed. The version should be `13` which you can install using `nvm install 13` and `nvm use 13`.
 
 ```bash
 git clone https://github.com/imjoy-team/imagej.js
