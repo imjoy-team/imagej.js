@@ -48,15 +48,17 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/master'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Load saved build output
         uses: actions/download-artifact@v4
         with:
           name: built-output
           path: ./dist
       - name: Deploy the plugin file to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3.5.0
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        uses: peaceiris/actions-gh-pages@v3.9.3
         with:
           deploy_key: ${{ secrets.ACTION_DEPLOY_KEY }}
           publish_dir: ./dist
