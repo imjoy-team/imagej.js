@@ -38,7 +38,7 @@ jobs:
     - name: Get compiled imagej.js
       run: bash get-imagej.sh
     - name: Save build output
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: built-output
         path: ./dist
@@ -49,7 +49,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Load saved build output
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: built-output
           path: ./dist
