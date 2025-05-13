@@ -359,8 +359,6 @@ window.onFileOpened = (path, error) => {
   cheerpjRemoveStringFile(path);
 };
 
-
-
 window.openURL = async url => {
   window.open(url);
 };
@@ -396,7 +394,7 @@ window.getBytesFromUrl = async (originalUrl, promise) => {
 
 const downloadQueue = {};
 
-window.startImageJ = async function () {
+window.startImageJ = async function() {
   updateViewPort();
   window.addEventListener("resize", updateViewPort);
   fixHeight();
@@ -492,7 +490,7 @@ window.startImageJ = async function () {
     }
   };
   cheerpjRunMain("ij.ImageJ", "/app/ij153/ij-1.53m.jar");
-}
+};
 
 async function listFiles(imagej, path) {
   const files = await imagej.listDir(path);
@@ -543,8 +541,7 @@ async function showImage(img, options) {
           "Raw...",
           `open=${filepath} image=[${format}] width=${img._rshape[1]} height=${img._rshape[0]} number=${number} little-endian`
         );
-      }
-      else{
+      } else {
         return await imagej.run(
           "Raw...",
           `open=${filepath} image=[${format}] width=${img._rshape[2]} height=${img._rshape[1]} number=${img._rshape[0]} little-endian`
@@ -1146,7 +1143,7 @@ window.registerServiceWorker = function() {
       );
     });
   }
-}
+};
 
 function isIpadOS() {
   return (
@@ -1624,7 +1621,10 @@ window.onImageJInitialized = async () => {
       // TODO: handle reject
       window.onMacroReject = reject;
       // fix nih sample url
-      macro = macro.replace(/https:\/\/imagej.nih.gov\/ij\/images\//g, 'https://imagej.net/images/')
+      macro = macro.replace(
+        /https:\/\/imagej.nih.gov\/ij\/images\//g,
+        "https://imagej.net/images/"
+      );
       imagej.runMacro(macro, args);
     });
   };
@@ -1743,7 +1743,6 @@ window.onJSVirtualStackClosed = async key => {
   console.log("virtual stack closed: ", key);
 };
 
-
 function updateViewPort() {
   const mvp = document.getElementById("index-viewport");
   if (screen.width < 400) {
@@ -1755,5 +1754,3 @@ function updateViewPort() {
     );
   }
 }
-
-
